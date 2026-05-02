@@ -1,10 +1,10 @@
-// LOCAL SEO REVIEW ENGINE — SaaS V1 Worker
-// Multi-tenant · Freemium · Auth par session cookie
+// LOCAL SEO REVIEW ENGINE — SaaS V2 Worker
+// Multi-tenant · Trial 7j → Premium · Auth par session cookie
+// AI Agent: llama-3.3-70b-fast (génération) + llama-3.1-8b-fast (scorer SEO) + bge-m3 (fidélité)
 
-// ─── Utilities ───────────────────────────────────────────────────────────────
+// ─── Utilities ────────────────────────────────────────────────────────────────
 
 const uuid = () => crypto.randomUUID();
-const QUOTA_FREE = 30;
 
 function makeSlug(nom, ville) {
   return (nom + '-' + ville)
@@ -16,7 +16,7 @@ function makeSlug(nom, ville) {
 }
 
 function currentMonth() {
-  return new Date().toISOString().slice(0, 7); // "2026-05"
+  return new Date().toISOString().slice(0, 7);
 }
 
 function json(data, status = 200, headers = {}) {
@@ -38,22 +38,16 @@ function randomToken(len = 8) {
 }
 
 // ─── WhatsApp phone normalizer ────────────────────────────────────────────────
-// Converts any format to international digits only (no + sign)
-// 0605932376      → 212605932376  (Moroccan local)
-// +212605932376   → 212605932376
-// 00212605932376  → 212605932376
-// 212605932376    → 212605932376  (already good)
 function formatWAPhone(phone) {
   if (!phone) return '';
-  let n = String(phone).replace(/\D/g, ''); // strip everything except digits
+  let n = String(phone).replace(/\D/g, '');
   if (!n) return '';
-  if (n.startsWith('00')) n = n.slice(2);              // 00212… → 212…
-  if (n.startsWith('0') && n.length >= 9) n = '212' + n.slice(1); // 06… → 2126…
+  if (n.startsWith('00')) n = n.slice(2);
+  if (n.startsWith('0') && n.length >= 9) n = '212' + n.slice(1);
   return n;
 }
 
-// ─── Password hashing (PBKDF2) ───────────────────────────────────────────────
-
+// ─── Password hashing (PBKDF2) ────────────────────────────────────────────────
 async function hashPassword(password) {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
@@ -76,7 +70,6 @@ async function verifyPassword(password, stored) {
 }
 
 // ─── Session management ───────────────────────────────────────────────────────
-
 async function createSession(env, doctor_id) {
   const token = uuid();
   const expires = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
@@ -100,25 +93,38 @@ function sessionCookie(token) {
   return `session=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${7 * 24 * 3600}`;
 }
 
-// ─── Premium check ───────────────────────────────────────────────────────────
+// ─── Trial & Access Status ────────────────────────────────────────────────────
+// Every new doctor starts with 7-day full trial.
+// After trial expires and no paid plan → form blocked, dashboard shows upgrade CTA.
+// Admin activates premium via set-plan (plan='premium' + plan_expires_at).
 
-function isPremium(doctor) {
-  if (doctor.plan !== 'premium') return false;
-  if (!doctor.plan_expires_at) return false;
-  return new Date() < new Date(doctor.plan_expires_at);
+function getTrialStatus(doctor) {
+  const now = new Date();
+
+  // Paid premium: plan='premium' AND plan_expires_at in future
+  const isPaidPremium = doctor.plan === 'premium'
+    && doctor.plan_expires_at
+    && now < new Date(doctor.plan_expires_at);
+
+  // Trial: trial_ends_at set AND not yet expired
+  const trialEnd = doctor.trial_ends_at ? new Date(doctor.trial_ends_at) : null;
+  const inTrial = trialEnd !== null && now < trialEnd;
+
+  // Expired: had trial, it's over, not paid
+  const trialExpired = trialEnd !== null && now >= trialEnd && !isPaidPremium;
+
+  // Full access = paid OR in trial
+  const hasFullAccess = isPaidPremium || inTrial;
+
+  // Days left in trial (0 if expired/paid)
+  const daysLeft = (inTrial && trialEnd)
+    ? Math.max(0, Math.ceil((trialEnd - now) / 86400000))
+    : 0;
+
+  return { isPaidPremium, inTrial, trialExpired, hasFullAccess, daysLeft };
 }
 
-async function checkQuota(env, doctor) {
-  if (isPremium(doctor)) return true;
-  const mois = currentMonth();
-  if (doctor.mois_courant !== mois) {
-    await env.DB.prepare("UPDATE doctors SET avis_ce_mois=0, mois_courant=? WHERE id=?").bind(mois, doctor.id).run();
-    return true;
-  }
-  return doctor.avis_ce_mois < QUOTA_FREE;
-}
-
-// ─── AI helpers ──────────────────────────────────────────────────────────────
+// ─── AI Helpers ───────────────────────────────────────────────────────────────
 
 function cleanOutput(text) {
   if (!text) return '';
@@ -127,26 +133,225 @@ function cleanOutput(text) {
     /^je suis (ravi|heureux|content|prêt)[^.\n]*[.!:]\s*/i,
     /^voici (l'avis|le texte|la réponse|un exemple)[^:\n]*:\s*/i,
     /^(bien sûr|certainement|avec plaisir|absolument)[^.\n]*[.!]\s*/i,
-    /^(réponse|avis amélioré|texte|résultat)\s*:\s*/i,
+    /^(réponse|avis amélioré|texte|résultat|voici)\s*:\s*/i,
     /^«\s*/, /\s*»$/,
   ];
   for (const p of patterns) t = t.replace(p, '');
   if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith('«') && t.endsWith('»'))) {
     t = t.slice(1, -1).trim();
   }
+  // Limit to 3 sentences
   const sentences = t.match(/[^.!?]+[.!?]+/g) || [t];
   return sentences.slice(0, 3).join(' ').trim();
 }
 
-async function callLlama(env, messages, max_tokens = 200) {
+// ─── Doctor SEO Profile (KV cache, 7 days) ────────────────────────────────────
+// One profile per doctor — built once, reused for every patient review.
+// Cached in KV to avoid recomputing on every request.
+async function getDoctorSeoProfile(env, doctor) {
+  const cacheKey = `doctor_seo:${doctor.slug}`;
   try {
-    const res = await env.AI.run('@cf/meta/llama-3-8b-instruct', { messages, max_tokens });
-    return cleanOutput(res.response || '');
-  } catch { return ''; }
+    const cached = await env.SESSIONS_KV.get(cacheKey, 'json');
+    if (cached && cached.cached_at) {
+      const age = Date.now() - new Date(cached.cached_at).getTime();
+      if (age < 7 * 86400 * 1000) return cached; // valid for 7 days
+    }
+  } catch(e) {}
+
+  // Build profile algorithmically from doctor data
+  let chips = [];
+  try { chips = JSON.parse(doctor.chips_positifs || '[]').slice(0, 5); } catch(e) {}
+
+  let vocab = [];
+  try { vocab = JSON.parse(doctor.vocabulaire_positif || '[]').slice(0, 5); } catch(e) {}
+
+  const profile = {
+    nom: doctor.nom,
+    specialite: doctor.specialite,
+    ville: doctor.ville,
+    seo_context: `${doctor.nom} est ${doctor.specialite} à ${doctor.ville}.`,
+    target_keywords: [
+      `${doctor.specialite} ${doctor.ville}`.toLowerCase(),
+      doctor.specialite.toLowerCase(),
+      doctor.ville.toLowerCase(),
+    ].filter(Boolean),
+    key_qualities: chips,
+    vocab_positif: vocab,
+    cached_at: new Date().toISOString(),
+  };
+
+  try {
+    await env.SESSIONS_KV.put(cacheKey, JSON.stringify(profile), { expirationTtl: 7 * 86400 });
+  } catch(e) {}
+
+  return profile;
 }
 
-// ─── SEO Score ───────────────────────────────────────────────────────────────
+// ─── 3-Step AI Agent ──────────────────────────────────────────────────────────
+// Step 1: Generate enriched review with llama-3.3-70b-instruct-fp8-fast
+// Step 2: Score SEO criteria with llama-3.1-8b-instruct-fast (JSON)
+// Step 3: Retry with targeted fix if score < 72
+// Step 4: Semantic faithfulness check with bge-m3 (cosine similarity)
+// Step 5: Anti-hallucination final gate
+async function generateReviewWithAgent(env, doctor, chips, comment) {
+  const seoProfile = await getDoctorSeoProfile(env, doctor);
 
+  const chipsCtx = chips.length
+    ? `Points positifs mentionnés par le patient : ${chips.join(', ')}.`
+    : '';
+  const commentCtx = comment
+    ? `Commentaire du patient : "${comment}"`
+    : "Le patient n'a pas laissé de commentaire détaillé.";
+
+  // ── System prompt: SEO Expert per doctor ──
+  const systemPrompt = `Tu es un expert SEO local spécialisé en référencement Google Maps pour les médecins marocains.
+Tu reformules et enrichis les avis patients pour maximiser la visibilité locale sur Google.
+
+MÉDECIN : ${seoProfile.seo_context}
+MOTS-CLÉS CIBLES : ${seoProfile.target_keywords.join(', ')}
+
+CRITÈRES D'UN EXCELLENT AVIS GOOGLE MAPS (tous obligatoires) :
+1. ✅ Mentionner naturellement "${doctor.specialite}" dans l'avis
+2. ✅ Mentionner "${doctor.ville}"
+3. ✅ Entre 80 et 160 mots
+4. ✅ Détail d'expérience concrète (accueil, attente, consultation, explications)
+5. ✅ Ton authentique, première personne — vocabulaire de patient, pas de médecin
+6. ✅ Commencer directement par l'avis (0 introduction, 0 préambule)
+
+RÈGLES ABSOLUES — jamais enfreintes :
+- N'utiliser QUE les informations données par le patient
+- INTERDIT d'inventer : actes médicaux, opérations, traitements, médicaments, diagnostics, durées, prix
+- Si le patient ne mentionne pas une procédure → ne pas l'écrire`;
+
+  const userPrompt = `${chipsCtx}
+${commentCtx}
+
+Génère un avis Google Maps enrichi et optimisé SEO (commence directement par l'avis) :`;
+
+  // ── STEP 1 : Generate with 70B Fast ─────────────────────────────────────────
+  let generatedReview = '';
+  try {
+    const res = await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      max_tokens: 300,
+    });
+    generatedReview = cleanOutput(res.response || '');
+  } catch(e) {
+    console.error('Agent 70B error:', e?.message || e);
+    return null;
+  }
+
+  if (!generatedReview || generatedReview.length < 30) return null;
+
+  // ── STEP 2 : SEO Score with 8B Fast (JSON) ───────────────────────────────────
+  let seoScore = 50;
+  let gaps = [];
+  try {
+    const scoreRes = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
+      messages: [
+        {
+          role: 'system',
+          content: 'Tu es un évaluateur SEO Google Maps. Réponds UNIQUEMENT avec du JSON valide, sans texte avant ou après.',
+        },
+        {
+          role: 'user',
+          content: `Évalue cet avis pour "${doctor.nom}", ${doctor.specialite} à ${doctor.ville} :
+
+"${generatedReview}"
+
+JSON uniquement (scores sur 100) :
+{"score":0,"ville":false,"specialite":false,"longueur_ok":false,"naturel":false,"details":false,"gaps":[]}`,
+        },
+      ],
+      max_tokens: 150,
+    });
+
+    const raw = (scoreRes.response || '').trim();
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const scored = JSON.parse(jsonMatch[0]);
+      seoScore = typeof scored.score === 'number' ? scored.score : 50;
+      gaps = Array.isArray(scored.gaps) ? scored.gaps : [];
+    }
+  } catch(e) {
+    // Estimate score from text if scorer fails
+    const t = generatedReview.toLowerCase();
+    seoScore = 40;
+    if (t.includes(doctor.specialite.toLowerCase())) seoScore += 20;
+    if (t.includes(doctor.ville.toLowerCase()))      seoScore += 15;
+    if (generatedReview.length > 80)                 seoScore += 10;
+    if (generatedReview.length > 130)                seoScore += 5;
+  }
+
+  // ── STEP 3 : Retry if score < 72 ────────────────────────────────────────────
+  if (seoScore < 72 && gaps.length > 0) {
+    const gapStr = gaps.slice(0, 3).join(', ');
+    try {
+      const retryRes = await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: `Améliore cet avis en intégrant les éléments manquants : ${gapStr}.
+
+Avis actuel : "${generatedReview}"
+${chipsCtx}
+${commentCtx}
+
+Version améliorée (commence directement) :`,
+          },
+        ],
+        max_tokens: 300,
+      });
+      const retried = cleanOutput(retryRes.response || '');
+      if (retried && retried.length > 30) generatedReview = retried;
+    } catch(e) { /* keep original on retry failure */ }
+  }
+
+  // ── STEP 4 : Semantic faithfulness check with bge-m3 ────────────────────────
+  const inputText = [comment, ...chips].filter(Boolean).join(' ');
+  if (inputText.length > 15) {
+    try {
+      const [embInput, embOutput] = await Promise.all([
+        env.AI.run('@cf/baai/bge-m3', { text: [inputText] }),
+        env.AI.run('@cf/baai/bge-m3', { text: [generatedReview] }),
+      ]);
+
+      const v1 = embInput.data?.[0];
+      const v2 = embOutput.data?.[0];
+
+      if (v1 && v2 && v1.length === v2.length) {
+        let dot = 0, n1 = 0, n2 = 0;
+        for (let i = 0; i < v1.length; i++) {
+          dot += v1[i] * v2[i];
+          n1  += v1[i] * v1[i];
+          n2  += v2[i] * v2[i];
+        }
+        const similarity = dot / (Math.sqrt(n1) * Math.sqrt(n2));
+        if (similarity < 0.28) return null; // Too distant from patient input → discard
+      }
+    } catch(e) { /* if embedding fails, keep review */ }
+  }
+
+  // ── STEP 5 : Anti-hallucination final gate ───────────────────────────────────
+  const inputWords = (comment + ' ' + chips.join(' ')).toLowerCase();
+  const medicalKeywords = [
+    'opération','chirurgie','intervention','anesthésie','traitement',
+    'médicament','diagnostic','prescription','ordonnance','examen','scanner',
+    'radio','biopsie','injection','greffe','hospitalisation','urgence',
+  ];
+  const hallucinationDetected = medicalKeywords.some(kw =>
+    generatedReview.toLowerCase().includes(kw) && !inputWords.includes(kw)
+  );
+  if (hallucinationDetected) return null;
+
+  return generatedReview;
+}
+
+// ─── SEO Score (local calc for dashboard display) ────────────────────────────
 function calcSeoScore(text, chips, doctor) {
   const spec  = (doctor.specialite || '').toLowerCase();
   const ville = (doctor.ville || '').toLowerCase();
@@ -163,11 +368,11 @@ function calcSeoScore(text, chips, doctor) {
   const seo_repetition  = Object.values(cnt).every(c => c <= 3) ? 5 : 0;
   return {
     seo_score: seo_specialite + seo_ville + seo_longueur + seo_chips + seo_phrases + seo_vocabulaire + seo_repetition,
-    seo_specialite, seo_ville, seo_longueur, seo_chips, seo_phrases, seo_vocabulaire, seo_repetition
+    seo_specialite, seo_ville, seo_longueur, seo_chips, seo_phrases, seo_vocabulaire, seo_repetition,
   };
 }
 
-// ─── ROUTE HANDLERS ──────────────────────────────────────────────────────────
+// ─── ROUTE HANDLERS ───────────────────────────────────────────────────────────
 
 // POST /api/auth/inscription
 async function handleInscription(request, env) {
@@ -185,14 +390,17 @@ async function handleInscription(request, env) {
   if (slugExists) slug = slug + '-' + id.slice(0, 4);
 
   const password_hash = await hashPassword(password);
+  // Trial ends 7 days from now
+  const trialEndsAt = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
+
   await env.DB.prepare(`
-    INSERT INTO doctors (id, slug, nom, specialite, ville, email, password_hash, telephone, actif)
-    VALUES (?,?,?,?,?,?,?,?,1)
-  `).bind(id, slug, nom, specialite, ville, email.toLowerCase(), password_hash, telephone || '').run();
+    INSERT INTO doctors (id, slug, nom, specialite, ville, email, password_hash, telephone, trial_ends_at, actif)
+    VALUES (?,?,?,?,?,?,?,?,?,1)
+  `).bind(id, slug, nom, specialite, ville, email.toLowerCase(), password_hash, telephone || '', trialEndsAt).run();
 
   const sessionToken = await createSession(env, id);
   return json({ ok: true, doctor_id: id, slug }, 201, {
-    'Set-Cookie': sessionCookie(sessionToken)
+    'Set-Cookie': sessionCookie(sessionToken),
   });
 }
 
@@ -208,8 +416,14 @@ async function handleLogin(request, env) {
   if (!ok) return json({ error: 'Identifiants incorrects' }, 401);
 
   const sessionToken = await createSession(env, doctor.id);
-  return json({ ok: true, onboarded: doctor.onboarded, plan: doctor.plan, slug: doctor.slug },
-    200, { 'Set-Cookie': sessionCookie(sessionToken) });
+  const trial = getTrialStatus(doctor);
+  return json({
+    ok: true,
+    onboarded: doctor.onboarded,
+    plan: trial.isPaidPremium ? 'premium' : (trial.inTrial ? 'trial' : 'expired'),
+    slug: doctor.slug,
+    trial_days_left: trial.daysLeft,
+  }, 200, { 'Set-Cookie': sessionCookie(sessionToken) });
 }
 
 // POST /api/auth/logout
@@ -218,7 +432,7 @@ async function handleLogout(request, env) {
   const match = cookie.match(/session=([^;]+)/);
   if (match) await env.SESSIONS_KV.delete(`session:${match[1]}`);
   return json({ ok: true }, 200, {
-    'Set-Cookie': 'session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'
+    'Set-Cookie': 'session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0',
   });
 }
 
@@ -236,7 +450,7 @@ async function handleOnboarding(request, env, doctor) {
   const body = await request.json();
   const {
     logo_url, google_maps_url, whatsapp_assistante, chips_positifs,
-    langue_defaut, template_suggestion, vocabulaire_positif, telephone
+    langue_defaut, template_suggestion, vocabulaire_positif, telephone,
   } = body;
 
   const chipsStr = Array.isArray(chips_positifs)
@@ -262,18 +476,20 @@ async function handleOnboarding(request, env, doctor) {
     template_suggestion || 'Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}. Je recommande vivement.',
     vocabStr,
     telephone || doctor.telephone || '',
-    doctor.id
+    doctor.id,
   ).run();
+
+  // Invalidate SEO profile cache so it rebuilds with new chips/vocab
+  try { await env.SESSIONS_KV.delete(`doctor_seo:${doctor.slug}`); } catch(e) {}
 
   return json({ ok: true, slug: doctor.slug, form_url: `/form/${doctor.slug}` });
 }
 
-// GET /api/doctor-info?slug=... — public info only, no quota check (used by QR page)
+// GET /api/doctor-info?slug=... — public info (QR poster)
 async function handleDoctorInfo(request, env) {
   const params = new URL(request.url).searchParams;
   const slug = params.get('slug');
   if (!slug) return json({ ok: false, error: 'slug requis' }, 400);
-  // No actif check — QR page is public display, any doctor can have a QR poster
   const doctor = await env.DB.prepare('SELECT * FROM doctors WHERE slug=?').bind(slug).first();
   if (!doctor) return json({ ok: false, error: 'Médecin introuvable' }, 404);
   return json({
@@ -289,13 +505,13 @@ async function handleDoctorInfo(request, env) {
 }
 
 // GET /api/form-config?slug=... OR ?token=...
+// Returns blocked:true if trial expired and not paid → patient sees "indisponible"
 async function handleFormConfig(request, env) {
   const params = new URL(request.url).searchParams;
   const slug  = params.get('slug');
   const token = params.get('token');
 
   if (token) {
-    // WhatsApp token flow
     const kv = await env.TOKENS_KV.get(`token:${token}`, 'json');
     if (!kv)                                   return json({ ok: false, error: 'Lien invalide' }, 401);
     if (kv.used)                               return json({ ok: false, error: 'Lien déjà utilisé' }, 409);
@@ -304,18 +520,21 @@ async function handleFormConfig(request, env) {
     const doctor = await env.DB.prepare('SELECT * FROM doctors WHERE id=? AND actif=1').bind(kv.doctor_id).first();
     if (!doctor) return json({ ok: false, error: 'Médecin introuvable' }, 404);
 
-    const quotaOk = await checkQuota(env, doctor);
-    if (!quotaOk) return json({ ok: false, quota: true, error: 'Limite mensuelle atteinte' }, 429);
+    // Trial / premium check
+    const trial = getTrialStatus(doctor);
+    if (trial.trialExpired) {
+      return json({ ok: false, blocked: true, blocked_reason: 'trial_expired', doctor_nom: doctor.nom }, 403);
+    }
 
     return json({
       ok: true, doctor_id: doctor.id, slug: doctor.slug,
       nom: doctor.nom, specialite: doctor.specialite, ville: doctor.ville,
-      logo_url: doctor.logo_url,
+      logo_url: doctor.logo_url || '',
       chips_positifs: JSON.parse(doctor.chips_positifs || '[]'),
       template_suggestion: (doctor.template_suggestion || '')
         .replace('{nom}', doctor.nom).replace('{specialite}', doctor.specialite).replace('{ville}', doctor.ville),
       langue_defaut: doctor.langue_defaut,
-      ab_variante: isPremium(doctor) ? 'B' : 'A',
+      ab_variante: 'B', // Full access during trial/premium
       canal: 'WA',
     });
   }
@@ -324,18 +543,21 @@ async function handleFormConfig(request, env) {
     const doctor = await env.DB.prepare('SELECT * FROM doctors WHERE slug=? AND actif=1').bind(slug).first();
     if (!doctor) return json({ ok: false, error: 'Médecin introuvable' }, 404);
 
-    const quotaOk = await checkQuota(env, doctor);
-    if (!quotaOk) return json({ ok: false, quota: true, error: 'Limite mensuelle atteinte' }, 429);
+    // Trial / premium check
+    const trial = getTrialStatus(doctor);
+    if (trial.trialExpired) {
+      return json({ ok: false, blocked: true, blocked_reason: 'trial_expired', doctor_nom: doctor.nom }, 403);
+    }
 
     return json({
       ok: true, doctor_id: doctor.id, slug: doctor.slug,
       nom: doctor.nom, specialite: doctor.specialite, ville: doctor.ville,
-      logo_url: doctor.logo_url,
+      logo_url: doctor.logo_url || '',
       chips_positifs: JSON.parse(doctor.chips_positifs || '[]'),
       template_suggestion: (doctor.template_suggestion || '')
         .replace('{nom}', doctor.nom).replace('{specialite}', doctor.specialite).replace('{ville}', doctor.ville),
       langue_defaut: doctor.langue_defaut,
-      ab_variante: isPremium(doctor) ? 'B' : 'A',
+      ab_variante: 'B',
       canal: 'QR',
     });
   }
@@ -358,9 +580,9 @@ async function handleFeedback(request, env) {
   if (!doctor) return json({ error: 'Médecin introuvable' }, 404);
   if (!note || note < 1 || note > 5) return json({ error: 'Note invalide' }, 400);
 
-  // Quota check
-  const quotaOk = await checkQuota(env, doctor);
-  if (!quotaOk) return json({ error: 'quota', message: 'Limite mensuelle atteinte (30 avis/mois gratuit)' }, 429);
+  // Trial / premium check (security: re-check even if form-config passed)
+  const trial = getTrialStatus(doctor);
+  if (trial.trialExpired) return json({ error: 'blocked', message: 'Compte expiré' }, 403);
 
   let patient_id = null;
   let canalFinal = (canal || 'QR').toUpperCase();
@@ -375,7 +597,6 @@ async function handleFeedback(request, env) {
 
   const chips   = Array.isArray(chips_selected) ? chips_selected : [];
   const comment = (commentaire || '').trim();
-  const premium = isPremium(doctor);
 
   // Sentiment + type decision
   let sentiment_ia = 'NON_APPELE', type_final;
@@ -384,63 +605,35 @@ async function handleFeedback(request, env) {
   } else if (note <= 2) {
     type_final = 'NEGATIF';
   } else if (comment) {
-    const res = await callLlama(env, [
-      { role: 'system', content: 'Tu es un analyseur de sentiment. Réponds UNIQUEMENT par le mot POSITIF ou le mot NEGATIF.' },
-      { role: 'user', content: `Sentiment de ce commentaire ?\n"${comment}"\nRéponse :` },
-    ], 5);
-    sentiment_ia = res.toUpperCase().includes('POSITIF') ? 'POSITIF' : 'NEGATIF';
+    // Use fast 8B for sentiment (lightweight task)
+    try {
+      const res = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
+        messages: [
+          { role: 'system', content: 'Tu es un analyseur de sentiment. Réponds UNIQUEMENT par le mot POSITIF ou le mot NEGATIF.' },
+          { role: 'user', content: `Sentiment ?\n"${comment}"\nRéponse :` },
+        ],
+        max_tokens: 5,
+      });
+      sentiment_ia = (res.response || '').toUpperCase().includes('POSITIF') ? 'POSITIF' : 'NEGATIF';
+    } catch { sentiment_ia = 'NEGATIF'; }
     type_final = sentiment_ia;
   } else {
     type_final = 'NEGATIF';
   }
 
-  // AI enrichment — premium gets Llama 3 enrichment; all plans get template/default suggestion
+  // ── AI Agent (enrichment) ───────────────────────────────────────────────────
+  // Runs for ALL doctors with full access (trial or paid).
+  // Falls back to template/default if agent returns null.
   let suggestion_ia = null;
+
   if (type_final === 'POSITIF') {
-    if (premium && comment) {
-      // Build context from ONLY what the patient actually provided
-      const chipsCtx = chips.length
-        ? `Points positifs mentionnés par le patient : ${chips.join(', ')}.`
-        : 'Aucun point spécifique sélectionné.';
-
-      suggestion_ia = await callLlama(env, [
-        {
-          role: 'system',
-          content:
-`Tu es un assistant qui reformule fidèlement l'avis d'un patient pour Google.
-
-RÈGLES ABSOLUES — à ne jamais enfreindre :
-1. Tu ne peux utiliser QUE les informations présentes dans le commentaire du patient et ses points sélectionnés. Aucune autre source.
-2. INTERDIT d'inventer ou d'ajouter : actes médicaux, opérations, traitements, médicaments, diagnostics, équipements, durées, prix, ou tout détail absent du commentaire.
-3. Si le patient n'a pas mentionné une procédure spécifique → ne l'écris pas.
-4. Style : naturel, 2 phrases maximum, commence directement par l'avis (zéro introduction, zéro préambule).
-5. Tu peux mentionner "${doctor.specialite}" et "${doctor.ville}" si cela s'intègre naturellement.
-6. Ne change pas le sens. Si le patient dit "bien", tu peux dire "très satisfait" — jamais "opération réussie" s'il ne l'a pas dit.`,
-        },
-        {
-          role: 'user',
-          content:
-`${chipsCtx}
-Commentaire du patient : "${comment}"
-
-Reformule cet avis en restant strictement fidèle à ce que le patient a écrit (commence directement) :`,
-        },
-      ], 200);
-
-      // Safety check: if AI hallucinated (response too different), fallback to template
-      if (suggestion_ia && suggestion_ia.length > 0) {
-        // Verify no obvious hallucination keywords unrelated to input
-        const inputWords = (comment + ' ' + chips.join(' ')).toLowerCase();
-        const medicalKeywords = ['opération','chirurgie','intervention','anesthésie','traitement','médicament','diagnostic','prescription','ordonnance','examen','scanner','radio','biopsie','injection','greffe'];
-        const hallucinationDetected = medicalKeywords.some(kw =>
-          suggestion_ia.toLowerCase().includes(kw) && !inputWords.includes(kw)
-        );
-        if (hallucinationDetected) suggestion_ia = null;
-      }
+    // Try 3-step AI agent (70B + 8B scorer + bge-m3)
+    if (comment || chips.length > 0) {
+      suggestion_ia = await generateReviewWithAgent(env, doctor, chips, comment);
     }
 
+    // Fallback: template or basic construction
     if (!suggestion_ia) {
-      // All plans: use configured template or build from chips + comment
       const tmpl = (doctor.template_suggestion || '').trim();
       if (tmpl) {
         suggestion_ia = tmpl
@@ -448,25 +641,22 @@ Reformule cet avis en restant strictement fidèle à ce que le patient a écrit 
           .replace(/\{specialite\}/g, doctor.specialite)
           .replace(/\{ville\}/g, doctor.ville);
       } else if (chips.length > 0 || comment) {
-        // Build honest suggestion from only what the patient provided
         const chipsStr = chips.length ? chips.slice(0, 3).join(', ') : '';
         const base = comment
           ? comment.charAt(0).toUpperCase() + comment.slice(1).replace(/\.?\s*$/, '') + '.'
           : `Très bonne expérience chez ${doctor.nom} à ${doctor.ville}.`;
-        suggestion_ia = chipsStr
-          ? `${base} Je recommande particulièrement pour : ${chipsStr}.`
-          : base;
+        suggestion_ia = chipsStr ? `${base} Je recommande particulièrement pour : ${chipsStr}.` : base;
       }
     }
   }
 
-  // SEO score — premium only
+  // ── SEO score for dashboard display ────────────────────────────────────────
   const textForSeo = suggestion_ia || comment;
-  const seo = (type_final === 'POSITIF' && premium && textForSeo)
+  const seo = (type_final === 'POSITIF' && textForSeo)
     ? calcSeoScore(textForSeo, chips, doctor)
     : { seo_score: null, seo_specialite: 0, seo_ville: 0, seo_longueur: 0, seo_chips: 0, seo_phrases: 0, seo_vocabulaire: 0, seo_repetition: 0 };
 
-  const variantFinal = ab_variante || (premium ? 'B' : 'A');
+  const variantFinal = ab_variante || 'B';
   const feedbackId = uuid();
 
   await env.DB.prepare(`
@@ -478,10 +668,10 @@ Reformule cet avis en restant strictement fidèle à ce que le patient a écrit 
     feedbackId, doctor.id, patient_id, canalFinal, note, comment, JSON.stringify(chips),
     sentiment_ia, type_final, suggestion_ia, seo.seo_score,
     seo.seo_specialite, seo.seo_ville, seo.seo_longueur, seo.seo_chips,
-    seo.seo_phrases, seo.seo_vocabulaire, seo.seo_repetition, variantFinal
+    seo.seo_phrases, seo.seo_vocabulaire, seo.seo_repetition, variantFinal,
   ).run();
 
-  // Update quota counter
+  // Update quota counter (kept for analytics, no enforcement)
   const mois = currentMonth();
   if (doctor.mois_courant !== mois) {
     await env.DB.prepare("UPDATE doctors SET avis_ce_mois=1, mois_courant=? WHERE id=?").bind(mois, doctor.id).run();
@@ -526,13 +716,10 @@ async function handleTrackGoogle(request, env) {
 
 // ─── Dashboard (auth required) ────────────────────────────────────────────────
 
-// GET /api/dashboard — main dashboard data
+// GET /api/dashboard
 async function handleDashboard(env, doctor) {
-  const premium = isPremium(doctor);
-  const mois = currentMonth();
-
-  // Refresh doctor data (quota may have been reset)
   const freshDoctor = await env.DB.prepare('SELECT * FROM doctors WHERE id=?').bind(doctor.id).first();
+  const trial = getTrialStatus(freshDoctor);
 
   const [total, pos, neg, google] = await Promise.all([
     env.DB.prepare('SELECT COUNT(*) as n FROM feedbacks WHERE doctor_id=?').bind(doctor.id).first(),
@@ -545,9 +732,24 @@ async function handleDashboard(env, doctor) {
     SELECT * FROM feedbacks WHERE doctor_id=? ORDER BY created_at DESC LIMIT 5
   `).bind(doctor.id).all();
 
+  // Build admin WA link for upgrade CTA
+  const kvWa = await env.SESSIONS_KV.get('admin_wa');
+  const adminWa = kvWa || formatWAPhone(env.ADMIN_WA);
+  const upgradeMsg = `🚀 Je souhaite activer mon compte Premium ReviewPro\n\nMédecin : ${freshDoctor.nom}\nSpécialité : ${freshDoctor.specialite}\nVille : ${freshDoctor.ville}\nEmail : ${freshDoctor.email}`;
+  const upgradeWaUrl = adminWa ? `https://wa.me/${adminWa}?text=${encodeURIComponent(upgradeMsg)}` : null;
+
   return json({
     ok: true,
     base_url: env.BASE_URL || 'https://reviewpro-saas.pages.dev',
+    trial: {
+      in_trial: trial.inTrial,
+      trial_expired: trial.trialExpired,
+      is_paid: trial.isPaidPremium,
+      has_full_access: trial.hasFullAccess,
+      days_left: trial.daysLeft,
+      trial_ends_at: freshDoctor.trial_ends_at || null,
+    },
+    upgrade_wa_url: upgradeWaUrl,
     doctor: {
       id: freshDoctor.id, nom: freshDoctor.nom, specialite: freshDoctor.specialite,
       ville: freshDoctor.ville, slug: freshDoctor.slug, email: freshDoctor.email,
@@ -558,10 +760,9 @@ async function handleDashboard(env, doctor) {
       template_suggestion: freshDoctor.template_suggestion,
       vocabulaire_positif: freshDoctor.vocabulaire_positif,
       langue_defaut: freshDoctor.langue_defaut,
-      plan: premium ? 'premium' : 'free',
+      plan: trial.isPaidPremium ? 'premium' : (trial.inTrial ? 'trial' : 'expired'),
       plan_expires_at: freshDoctor.plan_expires_at,
       avis_ce_mois: freshDoctor.avis_ce_mois || 0,
-      mois_courant: freshDoctor.mois_courant,
       onboarded: freshDoctor.onboarded,
     },
     stats: {
@@ -577,9 +778,9 @@ async function handleDashboard(env, doctor) {
 // GET /api/feedbacks
 async function handleFeedbacks(request, env, doctor) {
   const params = new URL(request.url).searchParams;
-  const type   = params.get('type');   // 'POSITIF' | 'NEGATIF' | ''
-  const canal  = params.get('canal');  // 'QR' | 'WA' | ''
-  const period = params.get('period'); // 'week' | 'month' | ''
+  const type   = params.get('type');
+  const canal  = params.get('canal');
+  const period = params.get('period');
 
   const conditions = [`doctor_id='${doctor.id}'`];
   if (type)   conditions.push(`type_final='${type.toUpperCase()}'`);
@@ -597,7 +798,8 @@ async function handleFeedbacks(request, env, doctor) {
 
 // GET|POST /api/patients
 async function handlePatients(request, env, doctor) {
-  if (!isPremium(doctor)) return json({ error: 'Fonctionnalité Premium uniquement', premium_required: true }, 403);
+  const trial = getTrialStatus(doctor);
+  if (!trial.hasFullAccess) return json({ error: 'Essai expiré — activez Premium pour accéder aux patients', premium_required: true }, 403);
 
   if (request.method === 'GET') {
     const q = new URL(request.url).searchParams.get('q') || '';
@@ -637,7 +839,8 @@ async function handlePatients(request, env, doctor) {
 
 // POST /api/tokens/generate
 async function handleGenerateToken(request, env, doctor) {
-  if (!isPremium(doctor)) return json({ error: 'Fonctionnalité Premium uniquement', premium_required: true }, 403);
+  const trial = getTrialStatus(doctor);
+  if (!trial.hasFullAccess) return json({ error: 'Essai expiré — activez Premium pour envoyer des tokens', premium_required: true }, 403);
 
   const { patient_id } = await request.json();
   if (!patient_id) return json({ error: 'patient_id requis' }, 400);
@@ -651,7 +854,7 @@ async function handleGenerateToken(request, env, doctor) {
   await env.TOKENS_KV.put(
     `token:${token}`,
     JSON.stringify({ doctor_id: doctor.id, patient_id, used: false, expires_at: expires }),
-    { expirationTtl: 3600 * 48 }
+    { expirationTtl: 3600 * 48 },
   );
   await env.DB.prepare('INSERT INTO tokens (token, doctor_id, patient_id, used, expires_at) VALUES (?,?,?,0,?)')
     .bind(token, doctor.id, patient_id, expires).run();
@@ -661,9 +864,7 @@ async function handleGenerateToken(request, env, doctor) {
   const message = `Bonjour ${patient.nom} 👋\n\nMerci pour votre visite chez ${doctor.nom}.\nVotre avis est très précieux pour nous 🙏\n\n${link}\n\n(Lien valable 48h)`;
 
   const phoneNum = formatWAPhone(patient.telephone);
-  const wa_url = phoneNum
-    ? `https://wa.me/${phoneNum}?text=${encodeURIComponent(message)}`
-    : null;
+  const wa_url = phoneNum ? `https://wa.me/${phoneNum}?text=${encodeURIComponent(message)}` : null;
 
   return json({ ok: true, token, link, message, wa_url });
 }
@@ -691,27 +892,24 @@ async function handleConfig(request, env, doctor) {
   vals.push(doctor.id);
   await env.DB.prepare(`UPDATE doctors SET ${updates.join(',')}, updated_at=datetime('now') WHERE id=?`)
     .bind(...vals).run();
+  // Invalidate SEO cache
+  try { await env.SESSIONS_KV.delete(`doctor_seo:${doctor.slug}`); } catch(e) {}
   const updated = await env.DB.prepare('SELECT * FROM doctors WHERE id=?').bind(doctor.id).first();
   return json({ ok: true, doctor: updated });
 }
 
-// POST /api/upgrade
+// POST /api/upgrade — doctor requests upgrade (creates upgrade request + returns WA link)
 async function handleUpgrade(request, env, doctor) {
-  // Build wa_url first — always returned regardless of request status
-  // Priority: KV-stored admin_wa > env.ADMIN_WA
   const kvWa = await env.SESSIONS_KV.get('admin_wa');
   const adminWa = kvWa || formatWAPhone(env.ADMIN_WA);
-  const msg = `🚀 Demande Premium — ReviewPro\nMédecin : ${doctor.nom}\nSpécialité : ${doctor.specialite}\nVille : ${doctor.ville}\nEmail : ${doctor.email}\nAvis ce mois : ${doctor.avis_ce_mois || 0}\n\nActiver le compte sur /admin`;
+  const msg = `🚀 Demande Premium — ReviewPro\nMédecin : ${doctor.nom}\nSpécialité : ${doctor.specialite}\nVille : ${doctor.ville}\nEmail : ${doctor.email}\nTél : ${doctor.telephone}\n\nActiver sur /admin`;
   const wa_url = adminWa ? `https://wa.me/${adminWa}?text=${encodeURIComponent(msg)}` : null;
 
   const existing = await env.DB.prepare(
-    "SELECT id FROM upgrade_requests WHERE doctor_id=? AND statut='en_attente'"
+    "SELECT id FROM upgrade_requests WHERE doctor_id=? AND statut='en_attente'",
   ).bind(doctor.id).first();
 
-  if (existing) {
-    // Already pending — just return wa_url so user can resend WhatsApp
-    return json({ ok: true, statut: 'deja_en_attente', wa_url });
-  }
+  if (existing) return json({ ok: true, statut: 'deja_en_attente', wa_url });
 
   await env.DB.prepare('INSERT INTO upgrade_requests (id, doctor_id) VALUES (?,?)').bind(uuid(), doctor.id).run();
   return json({ ok: true, statut: 'en_attente', wa_url });
@@ -728,11 +926,18 @@ function isAdmin(request, env) {
 
 // GET /api/admin/stats
 async function handleAdminStats(env) {
-  const [total, premium, avis, pending] = await Promise.all([
+  const [total, premium, avis, pending, expiredTrials] = await Promise.all([
     env.DB.prepare('SELECT COUNT(*) as n FROM doctors').first(),
     env.DB.prepare("SELECT COUNT(*) as n FROM doctors WHERE plan='premium'").first(),
     env.DB.prepare('SELECT COUNT(*) as n FROM feedbacks').first(),
     env.DB.prepare("SELECT COUNT(*) as n FROM upgrade_requests WHERE statut='en_attente'").first(),
+    env.DB.prepare(`
+      SELECT COUNT(*) as n FROM doctors
+      WHERE trial_ends_at IS NOT NULL
+        AND trial_ends_at < datetime('now')
+        AND (plan IS NULL OR plan='free' OR plan_expires_at < datetime('now'))
+        AND actif=1
+    `).first(),
   ]);
   return json({
     ok: true,
@@ -740,6 +945,7 @@ async function handleAdminStats(env) {
     premium_doctors: premium?.n || 0,
     total_feedbacks: avis?.n || 0,
     pending_upgrades: pending?.n || 0,
+    expired_trials: expiredTrials?.n || 0,
     admin_email: env.ADMIN_EMAIL || '',
   });
 }
@@ -766,15 +972,35 @@ async function handleAdminUpgrades(env) {
   return json({ ok: true, requests: results });
 }
 
+// GET /api/admin/notifications — expired trials to contact
+async function handleAdminNotifications(env) {
+  const { results } = await env.DB.prepare(`
+    SELECT id, nom, specialite, ville, email, telephone, trial_ends_at, plan, trial_notified, created_at
+    FROM doctors
+    WHERE trial_ends_at IS NOT NULL
+      AND trial_ends_at < datetime('now')
+      AND (plan IS NULL OR plan='free' OR plan_expires_at < datetime('now'))
+      AND actif=1
+    ORDER BY trial_ends_at DESC
+  `).all();
+  return json({ ok: true, expired_trials: results });
+}
+
 // POST /api/admin/set-plan
 async function handleAdminSetPlan(request, env) {
   const { doctor_id, plan, plan_expires_at } = await request.json();
   if (!doctor_id || !plan) return json({ error: 'doctor_id et plan requis' }, 400);
+
+  const months = request._months || 1; // unused here but kept for clarity
   await env.DB.prepare("UPDATE doctors SET plan=?, plan_expires_at=? WHERE id=?")
     .bind(plan, plan_expires_at || null, doctor_id).run();
+
   if (plan === 'premium') {
+    // Approve pending upgrade requests
     await env.DB.prepare("UPDATE upgrade_requests SET statut='approuve' WHERE doctor_id=? AND statut='en_attente'")
       .bind(doctor_id).run();
+    // Mark trial notified (no longer relevant)
+    await env.DB.prepare("UPDATE doctors SET trial_notified=1 WHERE id=?").bind(doctor_id).run();
   }
   return json({ ok: true });
 }
@@ -814,12 +1040,17 @@ async function handleAdminCreate(request, env) {
     ? new Date(Date.now() + (parseInt(months) || 1) * 30 * 24 * 3600 * 1000).toISOString()
     : null;
 
+  // Trial ends 7 days from now for all admin-created doctors
+  const trialEndsAt = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
+
   await env.DB.prepare(`
     INSERT INTO doctors (id, slug, nom, specialite, ville, email, password_hash, plan, plan_expires_at,
-      google_maps_url, whatsapp_assistante, onboarded, actif)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,1,1)
-  `).bind(id, slug, nom, specialite, ville, email.toLowerCase(), password_hash, planFinal, expires,
-    google_maps_url || '', whatsapp_assistante || '').run();
+      google_maps_url, whatsapp_assistante, trial_ends_at, onboarded, actif)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,1)
+  `).bind(
+    id, slug, nom, specialite, ville, email.toLowerCase(), password_hash,
+    planFinal, expires, google_maps_url || '', whatsapp_assistante || '', trialEndsAt,
+  ).run();
 
   return json({ ok: true, id, slug, email, plan: planFinal }, 201);
 }
@@ -849,7 +1080,7 @@ async function handleAdminDeleteDoctor(request, env) {
   const { doctor_id } = await request.json();
   if (!doctor_id) return json({ error: 'doctor_id requis' }, 400);
 
-  const doctor = await env.DB.prepare('SELECT id, nom FROM doctors WHERE id=?').bind(doctor_id).first();
+  const doctor = await env.DB.prepare('SELECT id, nom, slug FROM doctors WHERE id=?').bind(doctor_id).first();
   if (!doctor) return json({ error: 'Médecin introuvable' }, 404);
 
   // Cascade delete in dependency order
@@ -860,10 +1091,11 @@ async function handleAdminDeleteDoctor(request, env) {
   await env.DB.prepare('DELETE FROM patients WHERE doctor_id=?').bind(doctor_id).run();
   await env.DB.prepare('DELETE FROM doctors WHERE id=?').bind(doctor_id).run();
 
+  // Clean up KV caches
+  try { await env.SESSIONS_KV.delete(`doctor_seo:${doctor.slug}`); } catch(e) {}
+
   return json({ ok: true, deleted: doctor.nom });
 }
-
-// ─── QR page route: /qr/[slug] → serve qr.html ───────────────────────────────
 
 // ─── Main fetch handler ───────────────────────────────────────────────────────
 
@@ -883,10 +1115,9 @@ export default {
     }
 
     try {
-      // ── /form/[slug] → serve form.html with slug in query
+      // ── /form/[slug] → serve form.html
       const formMatch = path.match(/^\/form\/([^/]+)$/);
       if (formMatch) {
-        // Serve the static form.html page — the form reads ?slug= from JS
         const newUrl = new URL(request.url);
         newUrl.pathname = '/form.html';
         newUrl.searchParams.set('slug', formMatch[1]);
@@ -935,14 +1166,10 @@ export default {
         return handleOnboarding(request, env, doc);
       }
 
-      // ── Public doctor info (no quota check — for QR page)
-      if (path === '/api/doctor-info' && method === 'GET') return handleDoctorInfo(request, env);
-
-      // ── Public form config (slug or token)
-      if (path === '/api/form-config' && method === 'GET') return handleFormConfig(request, env);
-
-      // ── Feedback (public)
-      if (path === '/api/feedback'    && method === 'POST') return handleFeedback(request, env);
+      // ── Public
+      if (path === '/api/doctor-info'  && method === 'GET' ) return handleDoctorInfo(request, env);
+      if (path === '/api/form-config'  && method === 'GET' ) return handleFormConfig(request, env);
+      if (path === '/api/feedback'     && method === 'POST') return handleFeedback(request, env);
       if (path === '/api/track-google' && method === 'POST') return handleTrackGoogle(request, env);
 
       // ── Dashboard (auth required)
@@ -976,7 +1203,6 @@ export default {
         return handleConfig(request, env, doc);
       }
 
-      // ── Upgrade
       if (path === '/api/upgrade' && method === 'POST') {
         const doc = await getDoctor(env, request);
         if (!doc) return json({ error: 'Non authentifié' }, 401);
@@ -989,6 +1215,7 @@ export default {
         if (path === '/api/admin/stats'          && method === 'GET' ) return handleAdminStats(env);
         if (path === '/api/admin/doctors'        && method === 'GET' ) return handleAdminDoctors(env);
         if (path === '/api/admin/upgrades'       && method === 'GET' ) return handleAdminUpgrades(env);
+        if (path === '/api/admin/notifications'  && method === 'GET' ) return handleAdminNotifications(env);
         if (path === '/api/admin/set-plan'       && method === 'POST') return handleAdminSetPlan(request, env);
         if (path === '/api/admin/toggle-actif'   && method === 'POST') return handleAdminToggleActif(request, env);
         if (path === '/api/admin/upgrade-status' && method === 'POST') return handleAdminUpgradeStatus(request, env);
@@ -999,12 +1226,57 @@ export default {
         return json({ error: 'Route admin inconnue' }, 404);
       }
 
-      // ── Static assets (Pages serves HTML, CSS, JS, images)
+      // ── Static assets
       return env.ASSETS.fetch(request);
 
     } catch (err) {
       console.error('Worker error:', err);
       return json({ error: 'Erreur serveur', details: err.message }, 500);
+    }
+  },
+
+  // ── Cron: Daily check for expired trials → notify admin ──────────────────────
+  // Configure in Cloudflare Pages → Functions → Cron Triggers: "0 8 * * *" (8h UTC daily)
+  async scheduled(event, env) {
+    try {
+      // Doctors whose trial expired in last 25h, not yet notified, not paid
+      const { results } = await env.DB.prepare(`
+        SELECT id, nom, specialite, ville, email, telephone, trial_ends_at
+        FROM doctors
+        WHERE trial_ends_at IS NOT NULL
+          AND trial_ends_at < datetime('now')
+          AND trial_ends_at > datetime('now', '-25 hours')
+          AND (plan IS NULL OR plan='free' OR plan IS NULL)
+          AND (trial_notified IS NULL OR trial_notified=0)
+          AND actif=1
+      `).all();
+
+      for (const doctor of results) {
+        // Store notification in KV (visible in admin dashboard)
+        await env.SESSIONS_KV.put(
+          `trial_expired:${doctor.id}`,
+          JSON.stringify({
+            doctor_id: doctor.id,
+            nom: doctor.nom,
+            specialite: doctor.specialite,
+            ville: doctor.ville,
+            email: doctor.email,
+            telephone: doctor.telephone,
+            expired_at: doctor.trial_ends_at,
+            notified_at: new Date().toISOString(),
+          }),
+          { expirationTtl: 30 * 86400 }, // keep 30 days
+        );
+
+        // Mark as notified in DB
+        await env.DB.prepare('UPDATE doctors SET trial_notified=1 WHERE id=?').bind(doctor.id).run();
+      }
+
+      if (results.length > 0) {
+        console.log(`Cron: ${results.length} trial(s) expirés — notifications stockées dans KV`);
+      }
+    } catch(e) {
+      console.error('Cron scheduled error:', e);
     }
   },
 };

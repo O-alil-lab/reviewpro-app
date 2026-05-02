@@ -69,6 +69,12 @@ textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .quota-error{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:16px;text-align:center;font-size:14px;font-weight:500}
 .quota-error .icon{font-size:32px;display:block;margin-bottom:8px}
 
+/* Blocked (trial expired) */
+.blocked-card{text-align:center;padding:10px 0}
+.blocked-icon{font-size:64px;margin-bottom:16px;display:block}
+.blocked-title{font-size:18px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.blocked-sub{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:0}
+
 /* Spinner */
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -94,6 +100,15 @@ textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
       <div class="quota-error">
         <span class="icon" id="errorIcon">⚠️</span>
         <div id="errorMsg">Une erreur est survenue.</div>
+      </div>
+    </div>
+
+    <!-- Blocked: trial expired -->
+    <div class="panel" id="p-blocked">
+      <div class="blocked-card">
+        <span class="blocked-icon">🔒</span>
+        <div class="blocked-title">Cabinet temporairement indisponible</div>
+        <div class="blocked-sub">Ce service est momentanément suspendu.<br>Veuillez contacter directement le cabinet.</div>
       </div>
     </div>
 
@@ -188,6 +203,10 @@ async function init() {
     const res = await fetch(url);
     const data = await res.json();
     if (!data.ok) {
+      if (data.blocked) {
+        showBlocked();
+        return;
+      }
       showError(data.quota ? '🚫' : '⚠️', data.error || 'Lien invalide.');
       return;
     }
@@ -327,6 +346,16 @@ function showError(icon, msg) {
   document.getElementById('errorIcon').textContent = icon;
   document.getElementById('errorMsg').textContent = msg;
   document.getElementById('p-error').classList.add('active');
+}
+
+function showBlocked() {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('p-blocked').classList.add('active');
+  // Grey out the header to reflect unavailability
+  document.getElementById('cardHeader').style.opacity = '0.6';
+  document.getElementById('doctorName').textContent = 'Cabinet indisponible';
+  document.getElementById('doctorSub').textContent = 'Service temporairement suspendu';
+  document.getElementById('doctorLogo').textContent = '🔒';
 }
 
 init();

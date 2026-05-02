@@ -138,6 +138,21 @@ tr:hover td{background:#f8fafc}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty-state{text-align:center;padding:40px 20px;color:#94a3b8;font-size:13px}
 .empty-state .empty-icon{font-size:36px;margin-bottom:8px}
+
+/* Trial banners */
+.trial-banner{border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.trial-banner.active{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #bfdbfe}
+.trial-banner.warning{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #fbbf24}
+.trial-banner.expired{background:linear-gradient(135deg,#fef2f2,#fecaca);border:1.5px solid #f87171}
+.trial-banner .tb-left{display:flex;align-items:center;gap:12px}
+.trial-banner .tb-icon{font-size:28px}
+.trial-banner .tb-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.trial-banner.active .tb-title{color:#1d4ed8}
+.trial-banner.warning .tb-title{color:#92400e}
+.trial-banner.expired .tb-title{color:#b91c1c}
+.trial-banner .tb-sub{font-size:12px;color:#64748b}
+.trial-wa-btn{padding:10px 18px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:.2s}
+.trial-wa-btn:hover{opacity:.9}
 </style>
 </head>
 <body>
@@ -195,6 +210,9 @@ tr:hover td{background:#f8fafc}
       </div>
       <button class="icon-btn primary" onclick="showTab('config')">⚙️ Configurer</button>
     </div>
+
+    <!-- Trial banner (shown dynamically by JS) -->
+    <div id="trialBanner" style="display:none"></div>
 
     <!-- Quota bar -->
     <div class="quota-bar-wrap">
@@ -460,7 +478,8 @@ async function init() {
     const data = await res.json();
     if (!data.ok) { window.location.href = '/login'; return; }
     doctorData = data.doctor;
-    renderSidebar(doctorData);
+    renderSidebar(doctorData, data.trial);
+    renderTrialBanner(data.trial, data.upgrade_wa_url);
     renderStats(data);
     currentChips = JSON.parse(doctorData.chips_positifs || '[]');
     renderCfgChips();
@@ -470,14 +489,77 @@ async function init() {
   }
 }
 
-function renderSidebar(d) {
+function renderTrialBanner(trial, upgradeWaUrl) {
+  const el = document.getElementById('trialBanner');
+  if (!trial) { el.style.display = 'none'; return; }
+
+  const waBtn = upgradeWaUrl
+    ? `<a class="trial-wa-btn" href="${upgradeWaUrl}" target="_blank" rel="noopener">💬 Activer Premium</a>`
+    : '';
+
+  if (trial.trial_expired) {
+    el.style.display = 'block';
+    el.innerHTML = `<div class="trial-banner expired">
+      <div class="tb-left">
+        <div class="tb-icon">🔒</div>
+        <div>
+          <div class="tb-title">Votre essai gratuit a expiré</div>
+          <div class="tb-sub">Le formulaire patient est suspendu. Activez Premium pour reprendre la collecte d'avis et l'IA.</div>
+        </div>
+      </div>
+      ${waBtn}
+    </div>`;
+  } else if (trial.in_trial && trial.days_left <= 2) {
+    el.style.display = 'block';
+    el.innerHTML = `<div class="trial-banner warning">
+      <div class="tb-left">
+        <div class="tb-icon">⏰</div>
+        <div>
+          <div class="tb-title">Plus que ${trial.days_left} jour${trial.days_left > 1 ? 's' : ''} d'essai</div>
+          <div class="tb-sub">Activez Premium maintenant pour continuer sans interruption.</div>
+        </div>
+      </div>
+      ${waBtn}
+    </div>`;
+  } else if (trial.in_trial) {
+    el.style.display = 'block';
+    el.innerHTML = `<div class="trial-banner active">
+      <div class="tb-left">
+        <div class="tb-icon">🎁</div>
+        <div>
+          <div class="tb-title">Essai Premium — ${trial.days_left} jours restants</div>
+          <div class="tb-sub">Vous profitez de toutes les fonctionnalités IA incluses. Activez Premium pour continuer après l'essai.</div>
+        </div>
+      </div>
+      ${waBtn}
+    </div>`;
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function renderSidebar(d, trial) {
   const initial = d.nom ? d.nom.split(' ').filter(p => p.length > 1).map(p => p[0]).join('').substring(0,2).toUpperCase() : 'D';
   document.getElementById('doctorInitial').textContent = initial;
   document.getElementById('doctorName').textContent = d.nom;
   document.getElementById('doctorSpec').textContent = d.specialite + ' · ' + d.ville;
-  const isPremium = d.plan === 'premium';
-  document.getElementById('planName').textContent = isPremium ? '⭐ Premium' : 'Free';
-  document.getElementById('planDetail').textContent = isPremium ? 'Avis illimités' : '30 avis / mois';
+
+  let planName, planDetail;
+  if (d.plan === 'premium') {
+    planName = '⭐ Premium';
+    planDetail = 'Avis illimités + IA';
+  } else if (trial && trial.in_trial) {
+    planName = '🎁 Essai Premium';
+    planDetail = `${trial.days_left} jour${trial.days_left > 1 ? 's' : ''} restant${trial.days_left > 1 ? 's' : ''}`;
+  } else if (trial && trial.trial_expired) {
+    planName = '🔒 Expiré';
+    planDetail = 'Activez Premium';
+  } else {
+    planName = 'Free';
+    planDetail = '30 avis / mois';
+  }
+  document.getElementById('planName').textContent = planName;
+  document.getElementById('planDetail').textContent = planDetail;
 }
 
 function renderStats(data) {
@@ -485,12 +567,13 @@ function renderStats(data) {
   const stats = data.stats || {};
   document.getElementById('headerSub').textContent = d.nom + ' · ' + d.specialite + ', ' + d.ville;
 
-  // quota
-  const quota = d.plan === 'premium' ? '∞' : d.avis_ce_mois + ' / 30';
+  // quota — trial and premium both have unlimited access
+  const hasFullAccess = d.plan === 'premium' || d.plan === 'trial';
+  const quota = hasFullAccess ? '∞ (illimité)' : d.avis_ce_mois + ' / 30';
   document.getElementById('quotaText').textContent = quota;
-  const pct = d.plan === 'premium' ? 100 : Math.min(100, (d.avis_ce_mois / 30) * 100);
+  const pct = hasFullAccess ? 100 : Math.min(100, (d.avis_ce_mois / 30) * 100);
   document.getElementById('quotaFill').style.width = pct + '%';
-  if (d.avis_ce_mois >= 24 && d.plan !== 'premium') {
+  if (!hasFullAccess && d.avis_ce_mois >= 24) {
     document.getElementById('upgradeCta').style.display = 'flex';
     document.getElementById('quotaFill').classList.add('danger');
   }

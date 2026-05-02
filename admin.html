@@ -121,6 +121,17 @@ tr:hover td{background:#0f172a}
       <div id="upgradeTable"><div class="empty">Chargement…</div></div>
     </div>
 
+    <!-- Expired Trials — À contacter -->
+    <div class="section" id="expiredTrialsSection" style="border:1.5px solid #f87171">
+      <div class="section-header">
+        <div>
+          <div class="section-title">⏰ Essais expirés — À contacter</div>
+          <div class="section-sub" id="expiredTrialsBadge" style="color:#f87171;font-weight:600"></div>
+        </div>
+      </div>
+      <div id="expiredTrialsTable"><div class="empty">Chargement…</div></div>
+    </div>
+
     <!-- Admin Settings -->
     <div class="section">
       <div class="section-header">
@@ -219,6 +230,14 @@ function renderStats(data) {
   document.getElementById('statPremium').textContent = data.premium_doctors || 0;
   document.getElementById('statFeedbacks').textContent = data.total_feedbacks || 0;
   document.getElementById('statPending').textContent = data.pending_upgrades || 0;
+  // Show expired trials badge if any
+  const expiredCount = data.expired_trials || 0;
+  const notifEl = document.getElementById('expiredTrialsBadge');
+  if (notifEl) {
+    notifEl.textContent = expiredCount > 0 ? `⚠️ ${expiredCount} essai(s) expiré(s) — à contacter` : '';
+    notifEl.style.display = expiredCount > 0 ? 'block' : 'none';
+  }
+  loadExpiredTrials();
 }
 
 async function loadDoctors() {
@@ -237,31 +256,45 @@ function renderDoctorsTable(doctors) {
     document.getElementById('doctorsTable').innerHTML = '<div class="empty">Aucun médecin inscrit.</div>';
     return;
   }
-  let html = `<table><thead><tr><th>Nom</th><th>Email</th><th>Spécialité</th><th>Ville</th><th>Plan</th><th>Avis/mois</th><th>Statut</th><th>Inscription</th><th>Actions</th></tr></thead><tbody>`;
+  let html = `<table><thead><tr><th>Nom</th><th>Email</th><th>Spécialité</th><th>Ville</th><th>Plan</th><th>Essai</th><th>Avis/mois</th><th>Statut</th><th>Actions</th></tr></thead><tbody>`;
   doctors.forEach(d => {
-    const date = d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : '—';
-    const planBadge = d.plan === 'premium' ? '<span class="badge premium">⭐ Premium</span>' : '<span class="badge free">Free</span>';
+    const now = new Date();
+    const trialEnd = d.trial_ends_at ? new Date(d.trial_ends_at) : null;
+    const inTrial = trialEnd && now < trialEnd;
+    const trialExpired = trialEnd && now >= trialEnd && d.plan !== 'premium';
+    const daysLeft = inTrial ? Math.max(0, Math.ceil((trialEnd - now) / 86400000)) : 0;
+
+    const planBadge = d.plan === 'premium'
+      ? '<span class="badge premium">⭐ Premium</span>'
+      : '<span class="badge free">Free</span>';
+
+    let trialBadge = '—';
+    if (trialExpired) {
+      trialBadge = '<span class="badge inactif">⏰ Expiré</span>';
+    } else if (inTrial) {
+      trialBadge = `<span class="badge actif">J-${daysLeft}</span>`;
+    }
+
     const actifBadge = d.actif ? '<span class="badge actif">Actif</span>' : '<span class="badge inactif">Inactif</span>';
     html += `<tr>
-      <td><strong>${d.nom}</strong></td>
-      <td>${d.email}</td>
+      <td><strong>${d.nom}</strong><br><small style="color:#94a3b8">${d.email}</small></td>
       <td>${d.specialite}</td>
       <td>${d.ville}</td>
       <td>${planBadge}</td>
+      <td>${trialBadge}</td>
       <td>${d.avis_ce_mois || 0}</td>
       <td>${actifBadge}</td>
-      <td>${date}</td>
       <td>
         ${d.plan !== 'premium'
-          ? `<button class="action-btn success" onclick="setPlan('${d.id}','premium')">→ Premium</button>`
+          ? `<button class="action-btn success" onclick="setPlan('${d.id}','premium')">✅ Premium</button>`
           : `<button class="action-btn" onclick="setPlan('${d.id}','free')">→ Free</button>`
         }
         ${d.actif
           ? `<button class="action-btn danger" onclick="toggleActif('${d.id}',0)">Désactiver</button>`
           : `<button class="action-btn success" onclick="toggleActif('${d.id}',1)">Activer</button>`
         }
-        <button class="action-btn" onclick="window.open('/qr?slug=${encodeURIComponent(d.slug)}','_blank')" title="Voir QR Code">📋 QR</button>
-        <button class="action-btn danger" onclick="deleteDoctor('${d.id}','${d.nom.replace(/'/g,"\\'")}')">🗑️ Supprimer</button>
+        <button class="action-btn" onclick="window.open('/qr?slug=${encodeURIComponent(d.slug)}','_blank')">📋 QR</button>
+        <button class="action-btn danger" onclick="deleteDoctor('${d.id}','${d.nom.replace(/'/g,"\\'")}')">🗑️</button>
       </td>
     </tr>`;
   });
@@ -371,6 +404,50 @@ async function rejectUpgrade(requestId) {
     });
     loadUpgrades();
   } catch(e) {}
+}
+
+async function loadExpiredTrials() {
+  try {
+    const res = await fetch('/api/admin/notifications', { headers: { 'X-Admin-Key': adminKey } });
+    const data = await res.json();
+    const container = document.getElementById('expiredTrialsTable');
+    if (!container) return;
+    const list = data.expired_trials || [];
+    if (!list.length) {
+      container.innerHTML = '<div class="empty">Aucun essai expiré pour l\'instant.</div>';
+      return;
+    }
+    // Get admin WA for pre-filled messages
+    const kvRes = await fetch('/api/admin/settings', { headers: { 'X-Admin-Key': adminKey } });
+    const kvData = await kvRes.json();
+    const adminWa = kvData.admin_wa || '';
+
+    let html = `<table><thead><tr><th>Médecin</th><th>Spécialité</th><th>Ville</th><th>Téléphone</th><th>Email</th><th>Expiré le</th><th>Action</th></tr></thead><tbody>`;
+    list.forEach(d => {
+      const expDate = d.trial_ends_at ? new Date(d.trial_ends_at).toLocaleDateString('fr-FR') : '—';
+      const msg = `Bonjour Dr. ${d.nom} 👋\n\nVotre essai ReviewPro a expiré. Pour continuer à collecter des avis Google et profiter de l'IA SEO, activez votre compte Premium (199 MAD/mois).\n\nRépondez à ce message pour activer.`;
+      const phone = d.telephone ? d.telephone.replace(/\D/g,'') : '';
+      let phoneIntl = phone;
+      if (phone.startsWith('0') && phone.length >= 9) phoneIntl = '212' + phone.slice(1);
+      const waUrl = phoneIntl ? `https://wa.me/${phoneIntl}?text=${encodeURIComponent(msg)}` : '';
+      html += `<tr>
+        <td><strong>${d.nom}</strong></td>
+        <td>${d.specialite}</td>
+        <td>${d.ville}</td>
+        <td>${d.telephone || '—'}</td>
+        <td>${d.email}</td>
+        <td>${expDate}</td>
+        <td>
+          ${waUrl ? `<a href="${waUrl}" target="_blank" class="action-btn success" style="text-decoration:none">💬 Contacter WA</a>` : '—'}
+          <button class="action-btn success" onclick="setPlan('${d.id}','premium')">✅ Activer Premium</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch(e) {
+    console.error('loadExpiredTrials', e);
+  }
 }
 
 async function loadSettings() {

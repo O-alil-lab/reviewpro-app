@@ -1,0 +1,14 @@
+# Wrangler cache
+.wrangler/
+
+# Node modules
+node_modules/
+
+# Environment secrets (never commit)
+.env
+.env.local
+.dev.vars
+
+# OS files
+.DS_Store
+Thumbs.db

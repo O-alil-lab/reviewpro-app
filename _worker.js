@@ -1097,6 +1097,47 @@ async function handleAdminDeleteDoctor(request, env) {
   return json({ ok: true, deleted: doctor.nom });
 }
 
+// ─── Admin cron: HTTP-triggered version of the scheduled handler ──────────────
+// Called daily by cron-job.org POST https://reviewpro-saas.pages.dev/api/admin/cron
+// Protected by X-Admin-Key: ADMIN_SECRET header
+async function handleAdminCron(env) {
+  try {
+    const { results } = await env.DB.prepare(`
+      SELECT id, nom, specialite, ville, email, telephone, trial_ends_at
+      FROM doctors
+      WHERE trial_ends_at IS NOT NULL
+        AND trial_ends_at < datetime('now')
+        AND trial_ends_at > datetime('now', '-25 hours')
+        AND (plan IS NULL OR plan='free')
+        AND (trial_notified IS NULL OR trial_notified=0)
+        AND actif=1
+    `).all();
+
+    for (const doctor of results) {
+      await env.SESSIONS_KV.put(
+        `trial_expired:${doctor.id}`,
+        JSON.stringify({
+          doctor_id: doctor.id,
+          nom: doctor.nom,
+          specialite: doctor.specialite,
+          ville: doctor.ville,
+          email: doctor.email,
+          telephone: doctor.telephone,
+          expired_at: doctor.trial_ends_at,
+          notified_at: new Date().toISOString(),
+        }),
+        { expirationTtl: 30 * 86400 }
+      );
+      await env.DB.prepare('UPDATE doctors SET trial_notified=1 WHERE id=?').bind(doctor.id).run();
+    }
+
+    return json({ ok: true, processed: results.length, ts: new Date().toISOString() });
+  } catch(e) {
+    console.error('handleAdminCron error:', e);
+    return json({ ok: false, error: e.message }, 500);
+  }
+}
+
 // ─── Main fetch handler ───────────────────────────────────────────────────────
 
 export default {
@@ -1223,6 +1264,7 @@ export default {
         if (path === '/api/admin/delete-doctor'  && method === 'POST') return handleAdminDeleteDoctor(request, env);
         if (path === '/api/admin/settings'       && method === 'GET' ) return handleAdminGetSettings(env);
         if (path === '/api/admin/settings'       && method === 'POST') return handleAdminSaveSettings(request, env);
+        if (path === '/api/admin/cron'           && method === 'POST') return handleAdminCron(env);
         return json({ error: 'Route admin inconnue' }, 404);
       }
 

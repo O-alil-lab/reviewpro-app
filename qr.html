@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code — ReviewPro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f1f5f9;font-family:'Segoe UI',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.page{max-width:480px;width:100%}
+.card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);margin-bottom:16px}
+.card-top{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:28px 24px 24px;text-align:center}
+.doctor-logo{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin:0 auto 12px;overflow:hidden}
+.doctor-logo img{width:100%;height:100%;object-fit:cover}
+.doctor-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:2px}
+.doctor-sub{font-size:13px;color:#94a3b8}
+.card-body{padding:28px 24px;text-align:center}
+.invite{font-size:15px;font-weight:600;color:#0f172a;margin-bottom:6px}
+.invite-sub{font-size:13px;color:#64748b;margin-bottom:20px}
+.qr-box{display:inline-block;padding:12px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.1);border:2px solid #e2e8f0;margin-bottom:16px}
+.qr-box img{display:block;width:220px;height:220px}
+.link{font-size:12px;color:#64748b;word-break:break-all;margin-bottom:20px;background:#f8fafc;padding:8px 12px;border-radius:8px;font-family:monospace}
+.stars-row{display:flex;justify-content:center;gap:4px;font-size:28px;margin-bottom:6px}
+.caption{font-size:12px;color:#94a3b8;margin-bottom:8px}
+
+/* Arabic */
+.ar{direction:rtl;font-size:14px;color:#374151;margin-top:6px}
+
+.print-btn{width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;transition:.2s}
+.print-btn:hover{opacity:.9}
+.back-btn{width:100%;padding:11px;background:#f1f5f9;border:1.5px solid #e2e8f0;color:#374151;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.back-btn:hover{background:#e2e8f0}
+
+@media print {
+  body{background:#fff;padding:0}
+  .page{max-width:100%}
+  .print-btn,.back-btn{display:none}
+  .card{box-shadow:none;border-radius:0}
+  @page{margin:1cm}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="card">
+    <div class="card-top">
+      <div class="doctor-logo" id="doctorLogo">D</div>
+      <div class="doctor-name" id="doctorName">Chargement…</div>
+      <div class="doctor-sub" id="doctorSub"></div>
+    </div>
+    <div class="card-body">
+      <div class="stars-row">⭐⭐⭐⭐⭐</div>
+      <div class="invite">Votre avis compte pour nous !</div>
+      <div class="invite-sub">Scannez le QR code pour partager votre expérience</div>
+      <div class="qr-box">
+        <img id="qrImg" src="" alt="QR Code">
+      </div>
+      <div class="link" id="formLink">—</div>
+      <div class="ar" id="arText">شكراً لزيارتكم — يسعدنا معرفة رأيكم</div>
+    </div>
+  </div>
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimer</button>
+  <button class="back-btn" onclick="history.back()">← Retour au dashboard</button>
+</div>
+
+<script>
+async function init() {
+  // Slug detection — prioritize query param (set by worker redirect AND by dashboard direct link)
+  const params = new URLSearchParams(location.search);
+  const qpSlug = params.get('slug');
+  // Also try last path segment (e.g. /qr/dr-karim-tazi-rabat accessed directly)
+  const pathParts = location.pathname.split('/').filter(p => p && p !== 'qr' && p !== 'qr.html');
+  const pathSlug = pathParts.length > 0 ? pathParts[pathParts.length - 1] : null;
+  const slug = qpSlug || pathSlug;
+
+  if (!slug) {
+    document.getElementById('doctorName').textContent = 'Lien invalide';
+    document.getElementById('doctorSub').textContent = 'Aucun identifiant médecin trouvé';
+    return;
+  }
+
+  try {
+    // Use dedicated endpoint — no quota check, purely public doctor info
+    const res = await fetch('/api/doctor-info?slug=' + encodeURIComponent(slug));
+    const data = await res.json();
+    if (!data.ok) {
+      document.getElementById('doctorName').textContent = 'Médecin introuvable';
+      document.getElementById('doctorSub').textContent = slug;
+      return;
+    }
+
+    const d = data;
+    const logo = document.getElementById('doctorLogo');
+    const initial = getInitial(d.nom);
+    if (d.logo_url) {
+      logo.innerHTML = `<img src="${d.logo_url}" alt="${initial}" onerror="this.parentElement.textContent='${initial}'">`;
+    } else {
+      logo.textContent = initial;
+    }
+    document.getElementById('doctorName').textContent = d.nom;
+    document.getElementById('doctorSub').textContent = d.specialite + ' · ' + d.ville;
+    document.title = 'QR Code — ' + d.nom;
+
+    // Always use the canonical form URL (not window.location.origin which could be a preview URL)
+    const formUrl = 'https://reviewpro-saas.pages.dev/form/' + encodeURIComponent(slug);
+    document.getElementById('formLink').textContent = formUrl;
+
+    // Load QR from goqr.me with fallback to qrserver.com
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=10&format=svg&data=${encodeURIComponent(formUrl)}`;
+    const img = document.getElementById('qrImg');
+    img.src = qrUrl;
+    img.onerror = function() {
+      // Fallback QR service
+      this.src = `https://chart.googleapis.com/chart?cht=qr&chs=440x440&chld=M%7C10&chl=${encodeURIComponent(formUrl)}`;
+    };
+
+  } catch(e) {
+    document.getElementById('doctorName').textContent = 'Erreur de chargement';
+    document.getElementById('doctorSub').textContent = 'Vérifiez votre connexion internet';
+  }
+}
+
+function getInitial(nom) {
+  return (nom || '').split(' ').filter(p => p.length > 1).map(p => p[0]).join('').substring(0,2).toUpperCase() || 'DR';
+}
+
+init();
+</script>
+</body>
+</html>

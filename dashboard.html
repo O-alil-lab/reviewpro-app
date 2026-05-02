@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ReviewPro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f1f5f9;font-family:'Segoe UI',system-ui,sans-serif;color:#0f172a;min-height:100vh}
+
+/* Sidebar */
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:#0f172a;display:flex;flex-direction:column;z-index:100}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid #1e293b;display:flex;align-items:center;gap:10px}
+.sidebar-logo .icon{width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sidebar-logo span{font-size:16px;font-weight:700;color:#fff}
+.plan-badge{margin:12px 16px 0;background:#1e293b;border-radius:8px;padding:8px 12px;font-size:11px}
+.plan-badge .plan-name{font-weight:700;color:#fbbf24;font-size:13px}
+.plan-badge .plan-detail{color:#94a3b8;margin-top:2px}
+.nav{flex:1;padding:16px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;font-size:13px;font-weight:500;color:#94a3b8;cursor:pointer;transition:all .2s;border-left:3px solid transparent}
+.nav-item:hover{background:#1e293b;color:#e2e8f0}
+.nav-item.active{background:#1e293b;color:#fff;border-left-color:#2563eb}
+.nav-item .icon{font-size:16px;width:20px;text-align:center}
+.nav-section{padding:16px 20px 6px;font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.08em}
+.sidebar-footer{padding:16px;border-top:1px solid #1e293b}
+.doctor-info{display:flex;align-items:center;gap:10px}
+.doctor-avatar{width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.doctor-name{font-size:12px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doctor-spec{font-size:10px;color:#64748b}
+.logout-btn{margin-top:10px;width:100%;padding:8px;background:transparent;border:1px solid #334155;border-radius:8px;color:#64748b;font-size:12px;cursor:pointer;transition:.2s}
+.logout-btn:hover{background:#1e293b;color:#94a3b8}
+
+/* Main */
+.main{margin-left:220px;padding:24px;min-height:100vh}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.page-header h1{font-size:22px;font-weight:700}
+.page-header p{font-size:13px;color:#64748b;margin-top:2px}
+
+/* Tabs */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.stat-value{font-size:32px;font-weight:800;color:#0f172a}
+.stat-label{font-size:12px;color:#64748b;margin-top:4px}
+.stat-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.stat-card.blue .stat-value{color:#2563eb}
+.stat-card.green .stat-value{color:#059669}
+.stat-card.orange .stat-value{color:#d97706}
+.stat-card.red .stat-value{color:#dc2626}
+
+/* Quota bar */
+.quota-bar-wrap{background:#fff;border-radius:14px;padding:20px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.quota-bar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.quota-bar-title{font-size:14px;font-weight:600}
+.quota-bar-count{font-size:14px;font-weight:700;color:#2563eb}
+.quota-bar{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.quota-fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:4px;transition:width .6s ease}
+.quota-fill.danger{background:linear-gradient(90deg,#dc2626,#f97316)}
+.upgrade-cta{margin-top:12px;padding:12px 16px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #fbbf24;border-radius:10px;font-size:13px;display:flex;align-items:center;justify-content:space-between;display:none}
+.upgrade-cta .cta-text{color:#92400e;font-weight:500}
+.upgrade-cta .cta-btn{padding:6px 14px;background:#d97706;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer}
+
+/* Link share */
+.link-card{background:#fff;border-radius:14px;padding:20px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.link-card .link-label{font-size:13px;font-weight:600;white-space:nowrap}
+.link-card .link-val{flex:1;font-size:13px;color:#2563eb;font-weight:500;word-break:break-all;min-width:0}
+.link-card-actions{display:flex;gap:8px;flex-shrink:0}
+.icon-btn{padding:7px 12px;border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#374151;transition:.2s;white-space:nowrap}
+.icon-btn:hover{background:#f1f5f9}
+.icon-btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+
+/* Table */
+.table-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:24px}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.table-title{font-size:15px;font-weight:700}
+.table-sub{font-size:12px;color:#64748b;margin-top:2px}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:2px solid #f1f5f9;text-align:left}
+td{font-size:13px;padding:10px 10px;border-bottom:1px solid #f1f5f9;color:#374151;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.badge.pos{background:#ecfdf5;color:#059669}
+.badge.neg{background:#fef2f2;color:#dc2626}
+.badge.neutral{background:#f1f5f9;color:#64748b}
+.stars{color:#f59e0b;font-size:13px;letter-spacing:1px}
+.premium-lock{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center}
+.premium-lock .lock-icon{font-size:48px;margin-bottom:12px}
+.premium-lock h3{font-size:17px;font-weight:700;color:#0f172a;margin-bottom:8px}
+.premium-lock p{font-size:13px;color:#64748b;max-width:380px;line-height:1.6}
+.premium-lock .upgrade-btn{margin-top:16px;padding:12px 24px;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+
+/* Config forms */
+.config-section{background:#fff;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.config-section h3{font-size:15px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none;transition:.2s;background:#fff}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-group .hint{font-size:11px;color:#94a3b8;margin-top:4px}
+.save-btn{padding:10px 24px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.save-btn:hover{opacity:.9}
+.save-btn:disabled{opacity:.6;cursor:not-allowed}
+.success-toast{display:none;align-items:center;gap:8px;padding:10px 16px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;color:#059669;font-size:13px;font-weight:500;margin-top:12px}
+
+/* Chip editor */
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px}
+.chip-tag{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:20px;padding:4px 10px;font-size:12px}
+.chip-tag .remove{cursor:pointer;color:#94a3b8;font-size:10px}
+.chip-tag .remove:hover{color:#dc2626}
+.chip-add{display:flex;gap:8px;margin-top:10px}
+.chip-add input{flex:1;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none}
+.chip-add input:focus{border-color:#2563eb}
+.chip-add button{padding:0 14px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+
+/* QR section */
+.qr-wrap{text-align:center;padding:20px}
+.qr-wrap img{width:180px;height:180px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.qr-wrap p{font-size:12px;color:#64748b;margin-top:10px}
+
+/* Mobile */
+@media(max-width:768px){
+  .sidebar{width:100%;height:auto;position:fixed;bottom:0;top:auto;flex-direction:row;padding:0;height:60px}
+  .sidebar-logo,.plan-badge,.nav-section,.sidebar-footer{display:none}
+  .nav{display:flex;flex-direction:row;padding:0;overflow-x:auto;align-items:stretch}
+  .nav-item{flex-direction:column;align-items:center;padding:8px 14px;font-size:9px;gap:3px;border-left:none;border-top:3px solid transparent;flex:1;min-width:60px}
+  .nav-item.active{border-top-color:#2563eb;border-left-color:transparent}
+  .nav-item .icon{font-size:18px;width:auto}
+  .main{margin-left:0;margin-bottom:60px;padding:16px}
+  .form-row{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.15);border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px 20px;color:#94a3b8;font-size:13px}
+.empty-state .empty-icon{font-size:36px;margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon">⭐</div>
+    <span>ReviewPro</span>
+  </div>
+  <div class="plan-badge">
+    <div class="plan-name" id="planName">Free</div>
+    <div class="plan-detail" id="planDetail">30 avis/mois</div>
+  </div>
+  <div class="nav">
+    <div class="nav-section">Tableau de bord</div>
+    <div class="nav-item active" onclick="showTab('stats')" id="tab-stats">
+      <span class="icon">📊</span> Statistiques
+    </div>
+    <div class="nav-item" onclick="showTab('feedbacks')" id="tab-feedbacks">
+      <span class="icon">💬</span> Avis
+    </div>
+    <div class="nav-item" onclick="showTab('patients')" id="tab-patients">
+      <span class="icon">👥</span> Patients
+    </div>
+    <div class="nav-section">Configuration</div>
+    <div class="nav-item" onclick="showTab('config')" id="tab-config">
+      <span class="icon">⚙️</span> Paramètres
+    </div>
+    <div class="nav-item" onclick="showTab('upgrade')" id="tab-upgrade">
+      <span class="icon">🚀</span> Premium
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="doctor-info">
+      <div class="doctor-avatar" id="doctorInitial">D</div>
+      <div>
+        <div class="doctor-name" id="doctorName">Chargement…</div>
+        <div class="doctor-spec" id="doctorSpec"></div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ===== STATS ===== -->
+  <div class="tab-content active" id="content-stats">
+    <div class="page-header">
+      <div>
+        <h1>Tableau de bord</h1>
+        <p id="headerSub">Chargement…</p>
+      </div>
+      <button class="icon-btn primary" onclick="showTab('config')">⚙️ Configurer</button>
+    </div>
+
+    <!-- Quota bar -->
+    <div class="quota-bar-wrap">
+      <div class="quota-bar-header">
+        <div>
+          <div class="quota-bar-title">Avis ce mois-ci</div>
+        </div>
+        <div class="quota-bar-count" id="quotaText">0 / 30</div>
+      </div>
+      <div class="quota-bar"><div class="quota-fill" id="quotaFill" style="width:0%"></div></div>
+      <div class="upgrade-cta" id="upgradeCta">
+        <span class="cta-text">⚠️ Quota bientôt atteint — passez Premium pour des avis illimités</span>
+        <button class="cta-btn" onclick="showTab('upgrade')">Passer Premium</button>
+      </div>
+    </div>
+
+    <!-- Stats cards -->
+    <div class="stats-grid">
+      <div class="stat-card blue"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Avis total</div></div>
+      <div class="stat-card green"><div class="stat-value" id="statPos">—</div><div class="stat-label">Positifs</div><div class="stat-sub">→ Google Maps</div></div>
+      <div class="stat-card red"><div class="stat-value" id="statNeg">—</div><div class="stat-label">Négatifs</div><div class="stat-sub">Traitement interne</div></div>
+      <div class="stat-card orange"><div class="stat-value" id="statGoogle">—</div><div class="stat-label">Clics Google</div><div class="stat-sub">Conversion</div></div>
+    </div>
+
+    <!-- Patient link -->
+    <div class="link-card">
+      <span class="link-label">🔗 Lien patients :</span>
+      <span class="link-val" id="patientLink">—</span>
+      <div class="link-card-actions">
+        <button class="icon-btn" onclick="copyLink()">📋 Copier</button>
+        <button class="icon-btn primary" onclick="openQR()">📷 QR Code</button>
+      </div>
+    </div>
+
+    <!-- Recent feedbacks -->
+    <div class="table-card">
+      <div class="table-header">
+        <div>
+          <div class="table-title">Derniers avis</div>
+          <div class="table-sub">5 plus récents</div>
+        </div>
+        <button class="icon-btn" onclick="showTab('feedbacks')">Voir tout →</button>
+      </div>
+      <div id="recentFeedbacks"><div class="empty-state"><div class="empty-icon">📭</div>Aucun avis pour l'instant</div></div>
+    </div>
+  </div>
+
+  <!-- ===== FEEDBACKS ===== -->
+  <div class="tab-content" id="content-feedbacks">
+    <div class="page-header">
+      <div><h1>Tous les avis</h1><p>Historique complet</p></div>
+      <select id="filterType" onchange="loadFeedbacks()" style="padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none">
+        <option value="">Tous</option>
+        <option value="POSITIF">Positifs</option>
+        <option value="NEGATIF">Négatifs</option>
+      </select>
+    </div>
+    <div class="table-card">
+      <div id="allFeedbacks"><div class="empty-state"><div class="empty-icon">⏳</div>Chargement…</div></div>
+    </div>
+  </div>
+
+  <!-- ===== PATIENTS ===== -->
+  <div class="tab-content" id="content-patients">
+    <div class="page-header">
+      <div><h1>Patients</h1><p>Liste et envoi de tokens WhatsApp</p></div>
+      <button class="icon-btn primary" onclick="showAddPatient()">+ Ajouter</button>
+    </div>
+    <div id="patientsContent">
+      <div class="table-card">
+        <div id="patientsList"><div class="empty-state"><div class="empty-icon">⏳</div>Chargement…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONFIG ===== -->
+  <div class="tab-content" id="content-config">
+    <div class="page-header">
+      <div><h1>Paramètres</h1><p>Profil, liens et personnalisation</p></div>
+    </div>
+
+    <!-- Profil -->
+    <div class="config-section">
+      <h3>👤 Profil cabinet</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom complet</label>
+          <input type="text" id="cfg_nom">
+        </div>
+        <div class="form-group">
+          <label>Spécialité</label>
+          <input type="text" id="cfg_specialite">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ville</label>
+          <input type="text" id="cfg_ville">
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" id="cfg_telephone">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Logo (URL image)</label>
+        <input type="url" id="cfg_logo_url" placeholder="https://…">
+      </div>
+      <button class="save-btn" onclick="saveConfig('profil')">💾 Sauvegarder</button>
+      <div class="success-toast" id="toast-profil">✅ Profil sauvegardé</div>
+    </div>
+
+    <!-- Liens -->
+    <div class="config-section">
+      <h3>🔗 Liens et notifications</h3>
+      <div class="form-group">
+        <label>Lien Google Maps (avis)</label>
+        <input type="url" id="cfg_google_maps_url" placeholder="https://g.page/r/…/review">
+        <div class="hint">Lien direct vers votre page d'avis Google.</div>
+      </div>
+      <div class="form-group">
+        <label>WhatsApp assistante</label>
+        <input type="tel" id="cfg_whatsapp_assistante" placeholder="+212600000000">
+        <div class="hint">Reçoit les notifications d'avis négatifs.</div>
+      </div>
+      <button class="save-btn" onclick="saveConfig('liens')">💾 Sauvegarder</button>
+      <div class="success-toast" id="toast-liens">✅ Liens sauvegardés</div>
+    </div>
+
+    <!-- Chips -->
+    <div class="config-section">
+      <h3>🏷️ Points forts (chips)</h3>
+      <div class="chip-grid" id="cfgChips"></div>
+      <div class="chip-add">
+        <input type="text" id="newCfgChip" placeholder="Nouveau point…" maxlength="30">
+        <button onclick="addCfgChip()">+ Ajouter</button>
+      </div>
+      <br>
+      <button class="save-btn" onclick="saveConfig('chips')">💾 Sauvegarder les chips</button>
+      <div class="success-toast" id="toast-chips">✅ Chips sauvegardées</div>
+    </div>
+
+    <!-- Template -->
+    <div class="config-section">
+      <h3>✏️ Modèle de suggestion</h3>
+      <div class="form-group">
+        <label>Phrase template</label>
+        <textarea id="cfg_template" rows="3" placeholder="Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}."></textarea>
+        <div class="hint">Variables : {nom}, {specialite}, {ville}</div>
+      </div>
+      <div class="form-group">
+        <label>Mots-clés SEO positifs</label>
+        <input type="text" id="cfg_vocabulaire" placeholder="professionnel, recommande, excellent">
+        <div class="hint">Séparés par des virgules.</div>
+      </div>
+      <div class="form-group">
+        <label>Langue du formulaire patient</label>
+        <select id="cfg_langue">
+          <option value="fr">Français</option>
+          <option value="ar">Arabe</option>
+          <option value="fr-ar">Bilingue</option>
+        </select>
+      </div>
+      <button class="save-btn" onclick="saveConfig('template')">💾 Sauvegarder</button>
+      <div class="success-toast" id="toast-template">✅ Template sauvegardé</div>
+    </div>
+
+    <!-- Password -->
+    <div class="config-section">
+      <h3>🔒 Changer le mot de passe</h3>
+      <div class="form-group">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="cfg_newpass" placeholder="8 caractères minimum">
+      </div>
+      <div class="form-group">
+        <label>Confirmer</label>
+        <input type="password" id="cfg_newpass2" placeholder="••••••••">
+      </div>
+      <div class="error" id="passError" style="display:none;margin-bottom:10px"></div>
+      <button class="save-btn" onclick="changePassword()">🔒 Changer le mot de passe</button>
+      <div class="success-toast" id="toast-password">✅ Mot de passe modifié</div>
+    </div>
+  </div>
+
+  <!-- ===== UPGRADE ===== -->
+  <div class="tab-content" id="content-upgrade">
+    <div class="page-header">
+      <div><h1>Passer Premium</h1><p>Débloquez toutes les fonctionnalités</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px">
+
+      <!-- Free plan -->
+      <div style="background:#fff;border-radius:16px;padding:28px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+        <div style="font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Gratuit</div>
+        <div style="font-size:36px;font-weight:800;color:#0f172a;margin-bottom:4px">0 <span style="font-size:16px;font-weight:400;color:#64748b">MAD/mois</span></div>
+        <ul style="list-style:none;margin-top:20px;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#374151">
+          <li>✅ 30 avis / mois</li>
+          <li>✅ Formulaire patient (QR + WhatsApp)</li>
+          <li>✅ Redirection Google Maps</li>
+          <li>✅ Dashboard stats</li>
+          <li>❌ <span style="color:#94a3b8">IA suggestion (enrichissement)</span></li>
+          <li>❌ <span style="color:#94a3b8">Liste patients + tokens</span></li>
+          <li>❌ <span style="color:#94a3b8">Avis illimités</span></li>
+        </ul>
+        <div style="margin-top:20px;padding:10px;background:#f1f5f9;border-radius:8px;text-align:center;font-size:13px;color:#64748b">Plan actuel</div>
+      </div>
+
+      <!-- Premium plan -->
+      <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(37,99,235,.3);position:relative;overflow:hidden">
+        <div style="position:absolute;top:16px;right:16px;background:#fbbf24;color:#92400e;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px">RECOMMANDÉ</div>
+        <div style="font-size:13px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Premium</div>
+        <div style="font-size:36px;font-weight:800;color:#fff;margin-bottom:4px">199 <span style="font-size:16px;font-weight:400;color:#94a3b8">MAD/mois</span></div>
+        <ul style="list-style:none;margin-top:20px;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#e2e8f0">
+          <li>✅ Avis <strong>illimités</strong></li>
+          <li>✅ IA enrichissement Llama 3</li>
+          <li>✅ Gestion patients + tokens WhatsApp</li>
+          <li>✅ Score SEO détaillé</li>
+          <li>✅ A/B test formulaire</li>
+          <li>✅ Analytics avancées</li>
+          <li>✅ Support prioritaire</li>
+        </ul>
+        <button id="upgradeBtn" onclick="requestUpgrade()" style="margin-top:20px;width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">
+          Passer Premium — 199 MAD/mois
+        </button>
+        <div style="margin-top:10px;text-align:center;font-size:11px;color:#64748b">Paiement via WhatsApp · Activation immédiate</div>
+      </div>
+    </div>
+
+    <div id="upgradeSuccess" style="display:none;margin-top:24px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:20px;max-width:800px">
+      <h3 style="color:#059669;margin-bottom:8px">✅ Demande envoyée !</h3>
+      <p style="font-size:13px;color:#374151">Notre équipe vous contactera sur WhatsApp dans les prochaines heures pour finaliser votre abonnement Premium.</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- Add Patient Modal -->
+<div id="addPatientModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:420px;margin:20px">
+    <h3 style="margin-bottom:20px;font-size:16px">Ajouter un patient</h3>
+    <div class="form-group"><label>Nom du patient</label><input type="text" id="apt_nom" placeholder="Mohamed Alami"></div>
+    <div class="form-group"><label>Téléphone (WhatsApp)</label><input type="tel" id="apt_tel" placeholder="+212600000000"></div>
+    <div id="apt_error" style="color:#dc2626;font-size:13px;margin-bottom:12px;display:none"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="hideAddPatient()" style="flex:1;padding:11px;background:#f1f5f9;border:none;border-radius:8px;cursor:pointer;font-size:14px">Annuler</button>
+      <button onclick="addPatient()" style="flex:2;padding:11px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Ajouter et envoyer token</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let doctorData = null;
+// Always use production URL — never window.location.origin (breaks on preview deployments)
+const CANONICAL = 'https://reviewpro-saas.pages.dev';
+let currentChips = [];
+let allFeedbacksData = [];
+
+/* ---- INIT ---- */
+async function init() {
+  try {
+    const res = await fetch('/api/dashboard');
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    const data = await res.json();
+    if (!data.ok) { window.location.href = '/login'; return; }
+    doctorData = data.doctor;
+    renderSidebar(doctorData);
+    renderStats(data);
+    currentChips = JSON.parse(doctorData.chips_positifs || '[]');
+    renderCfgChips();
+    fillConfigForm(doctorData);
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderSidebar(d) {
+  const initial = d.nom ? d.nom.split(' ').filter(p => p.length > 1).map(p => p[0]).join('').substring(0,2).toUpperCase() : 'D';
+  document.getElementById('doctorInitial').textContent = initial;
+  document.getElementById('doctorName').textContent = d.nom;
+  document.getElementById('doctorSpec').textContent = d.specialite + ' · ' + d.ville;
+  const isPremium = d.plan === 'premium';
+  document.getElementById('planName').textContent = isPremium ? '⭐ Premium' : 'Free';
+  document.getElementById('planDetail').textContent = isPremium ? 'Avis illimités' : '30 avis / mois';
+}
+
+function renderStats(data) {
+  const d = data.doctor;
+  const stats = data.stats || {};
+  document.getElementById('headerSub').textContent = d.nom + ' · ' + d.specialite + ', ' + d.ville;
+
+  // quota
+  const quota = d.plan === 'premium' ? '∞' : d.avis_ce_mois + ' / 30';
+  document.getElementById('quotaText').textContent = quota;
+  const pct = d.plan === 'premium' ? 100 : Math.min(100, (d.avis_ce_mois / 30) * 100);
+  document.getElementById('quotaFill').style.width = pct + '%';
+  if (d.avis_ce_mois >= 24 && d.plan !== 'premium') {
+    document.getElementById('upgradeCta').style.display = 'flex';
+    document.getElementById('quotaFill').classList.add('danger');
+  }
+
+  document.getElementById('statTotal').textContent = stats.total || 0;
+  document.getElementById('statPos').textContent = stats.positifs || 0;
+  document.getElementById('statNeg').textContent = stats.negatifs || 0;
+  document.getElementById('statGoogle').textContent = stats.vers_google || 0;
+
+  // Always use production canonical URL — never window.location.origin
+  const slug = d.slug;
+  const link = CANONICAL + '/form/' + encodeURIComponent(slug);
+  document.getElementById('patientLink').textContent = link;
+
+  // recent feedbacks
+  if (data.recent && data.recent.length > 0) {
+    renderFeedbackTable('recentFeedbacks', data.recent);
+  }
+}
+
+function renderFeedbackTable(containerId, feedbacks) {
+  if (!feedbacks || feedbacks.length === 0) {
+    document.getElementById(containerId).innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Aucun avis</div>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Date</th><th>Note</th><th>Commentaire</th><th>Sentiment</th><th>SEO</th><th>Google</th></tr></thead><tbody>`;
+  feedbacks.forEach(f => {
+    const stars = '★'.repeat(f.note) + '☆'.repeat(5 - f.note);
+    const date = new Date(f.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'short'});
+    const comment = (f.commentaire || '').substring(0, 60) + (f.commentaire && f.commentaire.length > 60 ? '…' : '');
+    const badge = f.type_final === 'POSITIF'
+      ? '<span class="badge pos">Positif</span>'
+      : f.type_final === 'NEGATIF'
+      ? '<span class="badge neg">Négatif</span>'
+      : '<span class="badge neutral">—</span>';
+    const google = f.vers_google ? '✅' : '';
+    const seo = f.seo_score !== null && f.seo_score !== undefined ? f.seo_score + '/70' : '—';
+    html += `<tr><td>${date}</td><td><span class="stars">${stars}</span></td><td>${comment || '<em style="color:#94a3b8">Sans commentaire</em>'}</td><td>${badge}</td><td>${seo}</td><td>${google}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById(containerId).innerHTML = html;
+}
+
+/* ---- TABS ---- */
+function showTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('content-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'feedbacks') loadFeedbacks();
+  if (tab === 'patients') loadPatients();
+}
+
+/* ---- FEEDBACKS ---- */
+async function loadFeedbacks() {
+  const type = document.getElementById('filterType').value;
+  const url = '/api/feedbacks' + (type ? '?type=' + type : '');
+  document.getElementById('allFeedbacks').innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Chargement…</div>';
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    renderFeedbackTable('allFeedbacks', data.feedbacks || []);
+  } catch(e) {
+    document.getElementById('allFeedbacks').innerHTML = '<div class="empty-state">Erreur de chargement</div>';
+  }
+}
+
+/* ---- PATIENTS ---- */
+async function loadPatients() {
+  if (!doctorData) return;
+  if (doctorData.plan !== 'premium') {
+    document.getElementById('patientsList').innerHTML = `
+      <div class="premium-lock">
+        <div class="lock-icon">🔒</div>
+        <h3>Fonctionnalité Premium</h3>
+        <p>La gestion des patients et l'envoi de tokens WhatsApp sont réservés aux abonnés Premium.</p>
+        <button class="upgrade-btn" onclick="showTab('upgrade')">Passer Premium — 199 MAD/mois</button>
+      </div>`;
+    return;
+  }
+  try {
+    const res = await fetch('/api/patients');
+    const data = await res.json();
+    if (!data.patients || data.patients.length === 0) {
+      document.getElementById('patientsList').innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>Aucun patient. Ajoutez votre premier patient.</div>';
+      return;
+    }
+    let html = `<table><thead><tr><th>Nom</th><th>Téléphone</th><th>Ajouté le</th><th>Action</th></tr></thead><tbody>`;
+    data.patients.forEach(p => {
+      const date = new Date(p.created_at).toLocaleDateString('fr-FR');
+      html += `<tr><td>${p.nom}</td><td>${p.telephone}</td><td>${date}</td><td><button class="icon-btn" onclick="sendToken('${p.id}','${p.telephone}')">📲 Envoyer lien</button></td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('patientsList').innerHTML = html;
+  } catch(e) {
+    document.getElementById('patientsList').innerHTML = '<div class="empty-state">Erreur de chargement</div>';
+  }
+}
+
+function showAddPatient() {
+  if (doctorData && doctorData.plan !== 'premium') { showTab('upgrade'); return; }
+  document.getElementById('addPatientModal').style.display = 'flex';
+}
+function hideAddPatient() {
+  document.getElementById('addPatientModal').style.display = 'none';
+  document.getElementById('apt_nom').value = '';
+  document.getElementById('apt_tel').value = '';
+  document.getElementById('apt_error').style.display = 'none';
+}
+
+async function addPatient() {
+  const nom = document.getElementById('apt_nom').value.trim();
+  const telephone = document.getElementById('apt_tel').value.trim();
+  const errEl = document.getElementById('apt_error');
+  if (!nom || !telephone) { errEl.textContent = 'Nom et téléphone requis.'; errEl.style.display = 'block'; return; }
+  try {
+    const res = await fetch('/api/patients', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nom, telephone })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      hideAddPatient();
+      loadPatients();
+    } else {
+      errEl.textContent = data.error || 'Erreur.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Erreur réseau.';
+    errEl.style.display = 'block';
+  }
+}
+
+async function sendToken(patientId, telephone) {
+  if (!confirm('Envoyer un lien d\'avis WhatsApp à ' + telephone + ' ?')) return;
+  try {
+    const res = await fetch('/api/tokens/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patient_id: patientId })
+    });
+    const data = await res.json();
+    if (data.ok && data.wa_url) {
+      window.open(data.wa_url, '_blank');
+    } else {
+      alert(data.error || 'Erreur lors de la génération du token.');
+    }
+  } catch(e) {
+    alert('Erreur réseau.');
+  }
+}
+
+/* ---- CONFIG ---- */
+function fillConfigForm(d) {
+  document.getElementById('cfg_nom').value = d.nom || '';
+  document.getElementById('cfg_specialite').value = d.specialite || '';
+  document.getElementById('cfg_ville').value = d.ville || '';
+  document.getElementById('cfg_telephone').value = d.telephone || '';
+  document.getElementById('cfg_logo_url').value = d.logo_url || '';
+  document.getElementById('cfg_google_maps_url').value = d.google_maps_url || '';
+  document.getElementById('cfg_whatsapp_assistante').value = d.whatsapp_assistante || '';
+  document.getElementById('cfg_template').value = d.template_suggestion || '';
+  const vocab = JSON.parse(d.vocabulaire_positif || '[]');
+  document.getElementById('cfg_vocabulaire').value = vocab.join(', ');
+  document.getElementById('cfg_langue').value = d.langue_defaut || 'fr';
+}
+
+function renderCfgChips() {
+  const wrap = document.getElementById('cfgChips');
+  wrap.innerHTML = '';
+  currentChips.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'chip-tag';
+    el.innerHTML = `${c} <span class="remove" onclick="removeCfgChip(${i})">✕</span>`;
+    wrap.appendChild(el);
+  });
+}
+function removeCfgChip(i) { currentChips.splice(i,1); renderCfgChips(); }
+function addCfgChip() {
+  const v = document.getElementById('newCfgChip').value.trim();
+  if (v && !currentChips.includes(v)) { currentChips.push(v); renderCfgChips(); document.getElementById('newCfgChip').value=''; }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('newCfgChip').addEventListener('keydown', function(e) {
+    if (e.key==='Enter') { e.preventDefault(); addCfgChip(); }
+  });
+});
+
+async function saveConfig(section) {
+  let payload = {};
+  if (section === 'profil') {
+    payload = {
+      nom: document.getElementById('cfg_nom').value.trim(),
+      specialite: document.getElementById('cfg_specialite').value.trim(),
+      ville: document.getElementById('cfg_ville').value.trim(),
+      telephone: document.getElementById('cfg_telephone').value.trim(),
+      logo_url: document.getElementById('cfg_logo_url').value.trim(),
+    };
+  } else if (section === 'liens') {
+    payload = {
+      google_maps_url: document.getElementById('cfg_google_maps_url').value.trim(),
+      whatsapp_assistante: document.getElementById('cfg_whatsapp_assistante').value.trim(),
+    };
+  } else if (section === 'chips') {
+    payload = { chips_positifs: currentChips };
+  } else if (section === 'template') {
+    const vocab = document.getElementById('cfg_vocabulaire').value.split(',').map(v=>v.trim()).filter(Boolean);
+    payload = {
+      template_suggestion: document.getElementById('cfg_template').value.trim(),
+      vocabulaire_positif: vocab,
+      langue_defaut: document.getElementById('cfg_langue').value,
+    };
+  }
+  try {
+    const res = await fetch('/api/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      const toast = document.getElementById('toast-' + section);
+      toast.style.display = 'flex';
+      setTimeout(() => toast.style.display='none', 3000);
+      if (data.doctor) { doctorData = data.doctor; renderSidebar(data.doctor); }
+    }
+  } catch(e) { alert('Erreur réseau.'); }
+}
+
+async function changePassword() {
+  const p1 = document.getElementById('cfg_newpass').value;
+  const p2 = document.getElementById('cfg_newpass2').value;
+  const errEl = document.getElementById('passError');
+  errEl.style.display = 'none';
+  if (!p1 || p1.length < 8) { errEl.textContent = 'Mot de passe trop court (8 car. minimum).'; errEl.style.display = 'block'; return; }
+  if (p1 !== p2) { errEl.textContent = 'Les mots de passe ne correspondent pas.'; errEl.style.display = 'block'; return; }
+  try {
+    const res = await fetch('/api/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ new_password: p1 })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('cfg_newpass').value = '';
+      document.getElementById('cfg_newpass2').value = '';
+      const toast = document.getElementById('toast-password');
+      toast.style.display = 'flex';
+      setTimeout(() => toast.style.display='none', 3000);
+    } else {
+      errEl.textContent = data.error || 'Erreur.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) { alert('Erreur réseau.'); }
+}
+
+/* ---- UPGRADE ---- */
+async function requestUpgrade() {
+  const btn = document.getElementById('upgradeBtn');
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
+  try {
+    const res = await fetch('/api/upgrade', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('upgradeSuccess').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '📲 Renvoyer sur WhatsApp';
+      // Always open WhatsApp — wa_url is always returned now
+      if (data.wa_url) window.open(data.wa_url, '_blank');
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Passer Premium — 199 MAD/mois';
+      alert(data.error || 'Erreur.');
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Passer Premium — 199 MAD/mois';
+  }
+}
+
+/* ---- UTILS ---- */
+function copyLink() {
+  const link = doctorData ? CANONICAL + '/form/' + encodeURIComponent(doctorData.slug) : document.getElementById('patientLink').textContent;
+  navigator.clipboard.writeText(link).then(() => {
+    const btn = event.target;
+    btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = '📋 Copier', 2000);
+  });
+}
+
+function openQR() {
+  if (doctorData && doctorData.slug) {
+    // Always open QR on production domain regardless of current deployment URL
+    window.open(CANONICAL + '/qr?slug=' + encodeURIComponent(doctorData.slug), '_blank');
+  } else {
+    alert('Impossible de générer le QR code : identifiant médecin introuvable.');
+  }
+}
+
+async function logout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login';
+}
+
+init();
+</script>
+</body>
+</html>

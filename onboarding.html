@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuration — ReviewPro</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif;padding:20px}
+  .card{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:520px;box-shadow:0 25px 60px rgba(0,0,0,.35)}
+  .header{text-align:center;margin-bottom:32px}
+  .logo-icon{width:52px;height:52px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px}
+  .header h1{font-size:20px;font-weight:700;color:#0f172a}
+  .header p{font-size:13px;color:#64748b;margin-top:4px}
+  /* Steps */
+  .steps{display:flex;justify-content:center;gap:0;margin-bottom:32px}
+  .step{display:flex;flex-direction:column;align-items:center;position:relative;flex:1}
+  .step:not(:last-child)::after{content:'';position:absolute;top:16px;left:50%;width:100%;height:2px;background:#e2e8f0;z-index:0}
+  .step.done::after{background:#2563eb}
+  .step-circle{width:32px;height:32px;border-radius:50%;background:#e2e8f0;color:#64748b;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;position:relative;z-index:1;transition:.3s}
+  .step.active .step-circle{background:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.2)}
+  .step.done .step-circle{background:#059669;color:#fff}
+  .step-label{font-size:10px;color:#94a3b8;margin-top:4px;text-align:center}
+  .step.active .step-label{color:#2563eb;font-weight:600}
+  /* Panels */
+  .panel{display:none}
+  .panel.active{display:block}
+  .form-group{margin-bottom:18px}
+  label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+  .hint{font-size:11px;color:#94a3b8;margin-top:4px}
+  input,select,textarea{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#0f172a;transition:border-color .2s;outline:none;background:#fff}
+  input:focus,select:focus,textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  textarea{resize:vertical;min-height:80px}
+  .chip-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;transition:.2s;user-select:none}
+  .chip.selected{background:#eff6ff;border-color:#2563eb;color:#1d4ed8;font-weight:600}
+  .chip .x{color:#94a3b8;font-size:11px}
+  .chip-input{display:flex;gap:8px;margin-top:8px}
+  .chip-input input{flex:1}
+  .chip-input button{padding:0 16px;background:#2563eb;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap}
+  .btns{display:flex;gap:10px;margin-top:8px}
+  .btn-prev{flex:1;padding:12px;background:#f1f5f9;color:#374151;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn-next{flex:2;padding:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
+  .btn-next:hover{opacity:.92}
+  .btn-next:disabled{opacity:.6;cursor:not-allowed}
+  .skip{text-align:center;margin-top:10px;font-size:12px;color:#94a3b8;cursor:pointer}
+  .skip a{color:#64748b;text-decoration:underline}
+  .error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .success-icon{font-size:56px;text-align:center;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="logo-icon">⭐</div>
+    <h1>Configuration de votre profil</h1>
+    <p>Quelques étapes pour lancer votre outil d'avis</p>
+  </div>
+
+  <!-- Steps indicator -->
+  <div class="steps">
+    <div class="step active" id="s1"><div class="step-circle">1</div><div class="step-label">Profil</div></div>
+    <div class="step" id="s2"><div class="step-circle">2</div><div class="step-label">Liens</div></div>
+    <div class="step" id="s3"><div class="step-circle">3</div><div class="step-label">Chips</div></div>
+    <div class="step" id="s4"><div class="step-circle">4</div><div class="step-label">Terminé</div></div>
+  </div>
+
+  <div class="error" id="errMsg"></div>
+
+  <!-- Panel 1: Logo + Langue -->
+  <div class="panel active" id="p1">
+    <div class="form-group">
+      <label>Logo du cabinet (URL image)</label>
+      <input type="url" id="logo_url" placeholder="https://… (optionnel)">
+      <div class="hint">Lien vers votre photo ou logo. Laissez vide pour utiliser l'initiale.</div>
+    </div>
+    <div class="form-group">
+      <label>Langue par défaut du formulaire patient</label>
+      <select id="langue_defaut">
+        <option value="fr">Français</option>
+        <option value="ar">Arabe</option>
+        <option value="fr-ar">Français + Arabe (bilingue)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Phrase modèle pour les avis IA</label>
+      <textarea id="template_suggestion" rows="3" placeholder="Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}. Je recommande vivement."></textarea>
+      <div class="hint">Utilisez {nom}, {specialite}, {ville} comme variables.</div>
+    </div>
+    <div class="btns">
+      <button class="btn-next" onclick="goNext(1)">Suivant →</button>
+    </div>
+    <div class="skip"><a href="/dashboard">Passer et configurer plus tard</a></div>
+  </div>
+
+  <!-- Panel 2: Google Maps + WhatsApp -->
+  <div class="panel" id="p2">
+    <div class="form-group">
+      <label>Lien Google Maps (avis)</label>
+      <input type="url" id="google_maps_url" placeholder="https://g.page/r/…/review">
+      <div class="hint">Votre lien direct vers la page d'avis Google. <a href="https://search.google.com/local/writereview" target="_blank" style="color:#2563eb">Comment le trouver ?</a></div>
+    </div>
+    <div class="form-group">
+      <label>WhatsApp assistante (notifications)</label>
+      <input type="tel" id="whatsapp_assistante" placeholder="+212600000000">
+      <div class="hint">Les nouveaux avis négatifs seront notifiés sur ce numéro.</div>
+    </div>
+    <div class="form-group">
+      <label>Téléphone cabinet</label>
+      <input type="tel" id="telephone" placeholder="0522000000">
+    </div>
+    <div class="btns">
+      <button class="btn-prev" onclick="goPanel(1)">← Retour</button>
+      <button class="btn-next" onclick="goNext(2)">Suivant →</button>
+    </div>
+    <div class="skip"><a href="/dashboard">Passer</a></div>
+  </div>
+
+  <!-- Panel 3: Chips positifs -->
+  <div class="panel" id="p3">
+    <div class="form-group">
+      <label>Points forts à afficher aux patients</label>
+      <div class="hint" style="margin-bottom:8px">Cliquez pour désélectionner. Ces points apparaissent dans le formulaire.</div>
+      <div class="chip-wrap" id="chipsWrap"></div>
+      <div class="chip-input">
+        <input type="text" id="newChip" placeholder="Ajouter un point…" maxlength="30">
+        <button onclick="addChip()">+ Ajouter</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Mots-clés SEO positifs</label>
+      <input type="text" id="vocabulaire_positif" placeholder="professionnel, recommande, excellent">
+      <div class="hint">Séparés par des virgules. L'IA les intègre dans les avis enrichis.</div>
+    </div>
+    <div class="btns">
+      <button class="btn-prev" onclick="goPanel(2)">← Retour</button>
+      <button class="btn-next" id="saveBtn" onclick="saveOnboarding()">Terminer →</button>
+    </div>
+  </div>
+
+  <!-- Panel 4: Success -->
+  <div class="panel" id="p4">
+    <div class="success-icon">🎉</div>
+    <h2 style="text-align:center;font-size:20px;color:#0f172a;margin-bottom:8px">Votre profil est prêt !</h2>
+    <p style="text-align:center;font-size:14px;color:#64748b;margin-bottom:24px">Partagez votre lien ou imprimez votre QR code pour collecter vos premiers avis.</p>
+    <div style="background:#f8fafc;border-radius:12px;padding:16px;text-align:center;margin-bottom:20px">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px">Votre lien patient</div>
+      <div style="font-size:14px;font-weight:600;color:#2563eb" id="patientLink">—</div>
+    </div>
+    <button class="btn-next" style="width:100%;padding:13px" onclick="window.location.href='/dashboard'">Accéder au tableau de bord →</button>
+  </div>
+</div>
+
+<script>
+const defaultChips = ['Accueil','Professionnalisme','Explications','Temps d\'attente','Propreté','Écoute'];
+let selectedChips = [...defaultChips];
+
+function renderChips() {
+  const wrap = document.getElementById('chipsWrap');
+  wrap.innerHTML = '';
+  selectedChips.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'chip selected';
+    el.innerHTML = `${c} <span class="x" onclick="removeChip(${i})">✕</span>`;
+    wrap.appendChild(el);
+  });
+}
+
+function removeChip(i) {
+  selectedChips.splice(i, 1);
+  renderChips();
+}
+
+function addChip() {
+  const val = document.getElementById('newChip').value.trim();
+  if (val && !selectedChips.includes(val)) {
+    selectedChips.push(val);
+    renderChips();
+    document.getElementById('newChip').value = '';
+  }
+}
+
+document.getElementById('newChip').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); addChip(); }
+});
+
+renderChips();
+
+function goPanel(n) {
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i === n-1));
+  document.querySelectorAll('.step').forEach((s,i) => {
+    s.classList.remove('active','done');
+    if (i < n-1) s.classList.add('done');
+    else if (i === n-1) s.classList.add('active');
+  });
+  document.getElementById('errMsg').style.display = 'none';
+}
+
+function goNext(current) {
+  if (current === 1) {
+    const tmpl = document.getElementById('template_suggestion').value.trim();
+    if (!tmpl) {
+      document.getElementById('template_suggestion').value = 'Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}. Je recommande vivement.';
+    }
+  }
+  goPanel(current + 1);
+}
+
+async function saveOnboarding() {
+  const btn = document.getElementById('saveBtn');
+  const errMsg = document.getElementById('errMsg');
+  errMsg.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enregistrement…';
+
+  const vocab = document.getElementById('vocabulaire_positif').value.trim()
+    .split(',').map(v => v.trim()).filter(Boolean);
+
+  const payload = {
+    logo_url: document.getElementById('logo_url').value.trim(),
+    langue_defaut: document.getElementById('langue_defaut').value,
+    template_suggestion: document.getElementById('template_suggestion').value.trim(),
+    google_maps_url: document.getElementById('google_maps_url').value.trim(),
+    whatsapp_assistante: document.getElementById('whatsapp_assistante').value.trim(),
+    telephone: document.getElementById('telephone').value.trim(),
+    chips_positifs: selectedChips,
+    vocabulaire_positif: vocab
+  };
+
+  try {
+    const res = await fetch('/api/onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      if (data.slug) {
+        document.getElementById('patientLink').textContent =
+          `${window.location.origin}/form/${data.slug}`;
+      }
+      goPanel(4);
+      document.querySelector('#s4 .step-circle').textContent = '✓';
+      document.getElementById('s4').classList.add('done');
+    } else {
+      errMsg.textContent = data.error || 'Erreur lors de la sauvegarde.';
+      errMsg.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = 'Terminer →';
+    }
+  } catch(err) {
+    errMsg.textContent = 'Erreur réseau. Réessayez.';
+    errMsg.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = 'Terminer →';
+  }
+}
+</script>
+</body>
+</html>

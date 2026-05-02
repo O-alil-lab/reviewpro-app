@@ -1,0 +1,39 @@
+{
+  "name": "reviewpro-saas",
+  "pages_build_output_dir": "./",
+  "compatibility_date": "2025-04-01",
+
+  // D1 — run: wrangler d1 create reviewpro-db
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "reviewpro-db",
+      "database_id": "497ff8af-f329-4cce-af1a-9f1ccd9071bf"
+    }
+  ],
+
+  // KV
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS_KV",
+      "id": "95e35348173a448e8293f4bcdff87d7d"
+    },
+    {
+      "binding": "TOKENS_KV",
+      "id": "531539a6363c4bcf9e9c4ef70be7bada"
+    }
+  ],
+
+  // Workers AI — Llama 3 8b (premium only)
+  "ai": {
+    "binding": "AI"
+  },
+
+  // Super-admin credentials
+  "vars": {
+    "ADMIN_EMAIL": "oussama-alilou@um5r.ac.ma",
+    "ADMIN_WA": "+212605932376",
+    "ADMIN_SECRET": "reviewpro-admin-2026",
+    "BASE_URL": "https://reviewpro-saas.pages.dev"
+  }
+}

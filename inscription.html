@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscription — ReviewPro</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif;padding:20px}
+  .card{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:480px;box-shadow:0 25px 60px rgba(0,0,0,.35)}
+  .logo{text-align:center;margin-bottom:28px}
+  .logo-icon{width:56px;height:56px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:10px}
+  .logo h1{font-size:22px;font-weight:700;color:#0f172a}
+  .logo p{font-size:13px;color:#64748b;margin-top:3px}
+  .plan-badge{display:inline-block;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;margin-top:8px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .form-group{margin-bottom:16px}
+  label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+  input,select{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#0f172a;transition:border-color .2s,box-shadow .2s;outline:none;background:#fff}
+  input:focus,select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .btn{width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:6px}
+  .btn:hover{opacity:.92}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
+  .info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px}
+  .links{text-align:center;margin-top:20px;font-size:13px;color:#64748b}
+  .links a{color:#2563eb;text-decoration:none;font-weight:600}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">⭐</div>
+    <h1>ReviewPro</h1>
+    <p>Créez votre compte médecin</p>
+    <span class="plan-badge">✓ Gratuit — 30 avis/mois offerts</span>
+  </div>
+
+  <div class="error" id="errMsg"></div>
+  <div class="info">📋 Après inscription, vous configurez votre profil (logo, Google Maps, WhatsApp) en 2 minutes.</div>
+
+  <form id="inscriptionForm">
+    <div class="row">
+      <div class="form-group">
+        <label for="nom">Nom complet *</label>
+        <input type="text" id="nom" placeholder="Dr. Ahmed Benali" required>
+      </div>
+      <div class="form-group">
+        <label for="specialite">Spécialité *</label>
+        <select id="specialite" required>
+          <option value="">Choisir…</option>
+          <option>Généraliste</option>
+          <option>Cardiologue</option>
+          <option>Dermatologue</option>
+          <option>Gastroentérologue</option>
+          <option>Gynécologue</option>
+          <option>Neurologue</option>
+          <option>Ophtalmologue</option>
+          <option>Orthopédiste</option>
+          <option>ORL</option>
+          <option>Pédiatre</option>
+          <option>Pneumologue</option>
+          <option>Psychiatre</option>
+          <option>Radiologue</option>
+          <option>Rhumatologue</option>
+          <option>Stomatologue</option>
+          <option>Urologue</option>
+          <option>Endocrinologue</option>
+          <option>Infectiologue</option>
+          <option>Kinésithérapeute</option>
+          <option>Dentiste</option>
+          <option>Autre</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="ville">Ville *</label>
+        <input type="text" id="ville" placeholder="Casablanca" required>
+      </div>
+      <div class="form-group">
+        <label for="telephone">Téléphone</label>
+        <input type="tel" id="telephone" placeholder="0600000000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="email">Adresse e-mail *</label>
+      <input type="email" id="email" placeholder="docteur@exemple.com" required autocomplete="email">
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="password">Mot de passe *</label>
+        <input type="password" id="password" placeholder="8 car. min." required autocomplete="new-password" minlength="8">
+      </div>
+      <div class="form-group">
+        <label for="password2">Confirmer *</label>
+        <input type="password" id="password2" placeholder="••••••••" required autocomplete="new-password">
+      </div>
+    </div>
+    <button type="submit" class="btn" id="submitBtn">Créer mon compte gratuit</button>
+  </form>
+
+  <div class="links" style="margin-top:16px">
+    Déjà un compte ? <a href="/login">Se connecter</a>
+  </div>
+</div>
+
+<script>
+document.getElementById('inscriptionForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const errMsg = document.getElementById('errMsg');
+  errMsg.style.display = 'none';
+
+  const nom = document.getElementById('nom').value.trim();
+  const specialite = document.getElementById('specialite').value;
+  const ville = document.getElementById('ville').value.trim();
+  const telephone = document.getElementById('telephone').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const password2 = document.getElementById('password2').value;
+
+  if (!nom || !specialite || !ville || !email || !password) {
+    errMsg.textContent = 'Merci de remplir tous les champs obligatoires.';
+    errMsg.style.display = 'block';
+    return;
+  }
+  if (password !== password2) {
+    errMsg.textContent = 'Les mots de passe ne correspondent pas.';
+    errMsg.style.display = 'block';
+    return;
+  }
+  if (password.length < 8) {
+    errMsg.textContent = 'Le mot de passe doit comporter au moins 8 caractères.';
+    errMsg.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Création du compte…';
+
+  try {
+    const res = await fetch('/api/auth/inscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nom, specialite, ville, telephone, email, password })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.href = '/onboarding';
+    } else {
+      errMsg.textContent = data.error || 'Erreur lors de la création du compte.';
+      errMsg.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = 'Créer mon compte gratuit';
+    }
+  } catch(err) {
+    errMsg.textContent = 'Erreur réseau. Réessayez.';
+    errMsg.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = 'Créer mon compte gratuit';
+  }
+});
+</script>
+</body>
+</html>

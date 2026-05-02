@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Donnez votre avis</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 60%,#312e81 100%);font-family:'Segoe UI',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:#fff;border-radius:24px;padding:0;width:100%;max-width:440px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.card-header{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:28px 28px 24px;text-align:center;position:relative}
+.doctor-logo{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin:0 auto 12px;overflow:hidden}
+.doctor-logo img{width:100%;height:100%;object-fit:cover}
+.doctor-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:2px}
+.doctor-sub{font-size:13px;color:#94a3b8}
+.card-body{padding:28px}
+
+/* Progress */
+.progress-wrap{margin-bottom:24px}
+.progress-steps{display:flex;gap:8px;margin-bottom:8px}
+.progress-step{height:4px;flex:1;background:#e2e8f0;border-radius:2px;transition:background .4s}
+.progress-step.done{background:#2563eb}
+.progress-step.active{background:linear-gradient(90deg,#2563eb,#7c3aed)}
+.progress-label{font-size:11px;color:#94a3b8;text-align:center}
+
+/* Panels */
+.panel{display:none;animation:fadeIn .3s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Stars */
+.stars-wrap{display:flex;justify-content:center;gap:10px;margin:20px 0}
+.star{font-size:44px;cursor:pointer;transition:transform .15s,filter .15s;filter:grayscale(100%);opacity:.4}
+.star.active{filter:none;opacity:1;transform:scale(1.1)}
+.star:hover{transform:scale(1.2)}
+.star-label{text-align:center;font-size:14px;color:#64748b;min-height:20px;margin-top:-8px;margin-bottom:16px;font-weight:500}
+.rating-title{text-align:center;font-size:17px;font-weight:700;color:#0f172a;margin-bottom:4px}
+.rating-sub{text-align:center;font-size:13px;color:#64748b;margin-bottom:20px}
+
+/* Chips */
+.chips-title{font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px}
+.chips-sub{font-size:13px;color:#64748b;margin-bottom:16px}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip{padding:8px 16px;border:2px solid #e2e8f0;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:#f8fafc;color:#374151;user-select:none}
+.chip.selected{background:#eff6ff;border-color:#2563eb;color:#1d4ed8;font-weight:600}
+.chip:hover{border-color:#bfdbfe}
+
+/* Comment */
+.comment-title{font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px}
+.comment-sub{font-size:13px;color:#64748b;margin-bottom:12px}
+.suggestion-box{background:#f1f5f9;border-radius:10px;padding:12px;font-size:13px;color:#475569;margin-bottom:12px;cursor:pointer;border:2px solid transparent;transition:.2s;line-height:1.5}
+.suggestion-box:hover{border-color:#bfdbfe;background:#eff6ff}
+.suggestion-label{font-size:11px;color:#94a3b8;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+textarea{width:100%;min-height:100px;padding:12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical;outline:none;transition:border-color .2s;color:#0f172a}
+textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.char-count{text-align:right;font-size:11px;color:#94a3b8;margin-top:4px}
+
+/* Buttons */
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px}
+.btn:hover{opacity:.92;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-skip{width:100%;padding:10px;background:transparent;border:none;color:#94a3b8;font-size:13px;cursor:pointer;margin-top:8px}
+.btn-skip:hover{color:#64748b}
+.btn-back{width:100%;padding:10px;background:#f1f5f9;border:none;color:#374151;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;margin-top:8px}
+
+/* Error */
+.error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px;font-size:13px;margin-bottom:14px}
+.quota-error{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:16px;text-align:center;font-size:14px;font-weight:500}
+.quota-error .icon{font-size:32px;display:block;margin-bottom:8px}
+
+/* Spinner */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header" id="cardHeader">
+    <div class="doctor-logo" id="doctorLogo">?</div>
+    <div class="doctor-name" id="doctorName">Chargement…</div>
+    <div class="doctor-sub" id="doctorSub"></div>
+  </div>
+  <div class="card-body">
+
+    <!-- Loading / Error -->
+    <div class="panel active" id="p-loading">
+      <div style="text-align:center;padding:30px 0;color:#64748b;font-size:14px">
+        <div class="spinner" style="border-top-color:#2563eb"></div> Chargement…
+      </div>
+    </div>
+
+    <div class="panel" id="p-error">
+      <div class="quota-error">
+        <span class="icon" id="errorIcon">⚠️</span>
+        <div id="errorMsg">Une erreur est survenue.</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Stars -->
+    <div class="panel" id="p-stars">
+      <div class="progress-wrap">
+        <div class="progress-steps">
+          <div class="progress-step active"></div>
+          <div class="progress-step"></div>
+          <div class="progress-step"></div>
+        </div>
+        <div class="progress-label">Étape 1 sur 3</div>
+      </div>
+      <div class="rating-title">Comment s'est passée votre visite ?</div>
+      <div class="rating-sub">Sélectionnez une note</div>
+      <div class="stars-wrap" id="starsWrap">
+        <span class="star" data-v="1">⭐</span>
+        <span class="star" data-v="2">⭐</span>
+        <span class="star" data-v="3">⭐</span>
+        <span class="star" data-v="4">⭐</span>
+        <span class="star" data-v="5">⭐</span>
+      </div>
+      <div class="star-label" id="starLabel">Touchez une étoile</div>
+    </div>
+
+    <!-- Step 2: Chips -->
+    <div class="panel" id="p-chips">
+      <div class="progress-wrap">
+        <div class="progress-steps">
+          <div class="progress-step done"></div>
+          <div class="progress-step active"></div>
+          <div class="progress-step"></div>
+        </div>
+        <div class="progress-label">Étape 2 sur 3</div>
+      </div>
+      <div class="chips-title">Qu'avez-vous apprécié ?</div>
+      <div class="chips-sub">Sélectionnez un ou plusieurs points</div>
+      <div class="chips-wrap" id="chipsWrap"></div>
+      <button class="btn" onclick="goStep(3)">Continuer →</button>
+      <button class="btn-back" onclick="goStep(1)">← Retour</button>
+    </div>
+
+    <!-- Step 3: Comment -->
+    <div class="panel" id="p-comment">
+      <div class="progress-wrap">
+        <div class="progress-steps">
+          <div class="progress-step done"></div>
+          <div class="progress-step done"></div>
+          <div class="progress-step active"></div>
+        </div>
+        <div class="progress-label">Étape 3 sur 3</div>
+      </div>
+      <div class="comment-title">Partagez votre expérience</div>
+      <div class="comment-sub">En quelques mots, décrivez votre visite</div>
+      <div id="suggestionWrap" style="display:none">
+        <div class="suggestion-label">✨ Suggestion (cliquez pour l'utiliser)</div>
+        <div class="suggestion-box" id="suggestionBox" onclick="useSuggestion()"></div>
+      </div>
+      <textarea id="commentInput" placeholder="Ex : Très bonne prise en charge, médecin à l'écoute…" maxlength="500" oninput="updateCharCount()"></textarea>
+      <div class="char-count"><span id="charCount">0</span>/500</div>
+      <button class="btn" id="submitBtn" onclick="submitFeedback()" style="margin-top:14px">Envoyer mon avis</button>
+      <button class="btn-skip" onclick="submitFeedback(true)">Passer (sans commentaire)</button>
+      <button class="btn-back" onclick="goStep(2)">← Retour</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let cfg = null;
+let selectedNote = 0;
+let selectedChips = [];
+let feedbackId = null;
+let abVariante = null;
+
+const starLabels = ['','😞 Mauvais','😐 Passable','😊 Bien','😃 Très bien','🤩 Excellent !'];
+
+/* ---- INIT ---- */
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  // Priority: ?slug= param first, then last path segment (if not a page name)
+  const pathSlug = location.pathname.split('/').filter(p => p && p !== 'form' && p !== 'result').pop();
+  const slug = params.get('slug') || pathSlug;
+
+  let url = '/api/form-config?';
+  if (token) url += 'token=' + encodeURIComponent(token);
+  else if (slug) url += 'slug=' + encodeURIComponent(slug);
+  else { showError('⚠️', 'Lien invalide ou expiré.'); return; }
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) {
+      showError(data.quota ? '🚫' : '⚠️', data.error || 'Lien invalide.');
+      return;
+    }
+    cfg = data;
+    abVariante = data.ab_variante || 'A';
+    renderHeader(data);
+    renderChips(data.chips_positifs || []);
+    if (data.template_suggestion) {
+      document.getElementById('suggestionBox').textContent = data.template_suggestion;
+      document.getElementById('suggestionWrap').style.display = 'block';
+    }
+    goStep(1);
+  } catch(e) {
+    showError('⚠️', 'Erreur réseau. Veuillez réessayer.');
+  }
+}
+
+function renderHeader(d) {
+  const logo = document.getElementById('doctorLogo');
+  if (d.logo_url) {
+    logo.innerHTML = `<img src="${d.logo_url}" alt="Logo" onerror="this.parentElement.textContent='${getInitial(d.nom)}'">`;
+  } else {
+    logo.textContent = getInitial(d.nom);
+  }
+  document.getElementById('doctorName').textContent = d.nom;
+  document.getElementById('doctorSub').textContent = d.specialite + ' · ' + d.ville;
+  document.title = 'Avis — ' + d.nom;
+}
+
+function getInitial(nom) {
+  return (nom || '').split(' ').filter(p => p.length > 1).map(p => p[0]).join('').substring(0,2).toUpperCase() || 'D';
+}
+
+function renderChips(chips) {
+  const wrap = document.getElementById('chipsWrap');
+  wrap.innerHTML = '';
+  chips.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'chip';
+    el.textContent = c;
+    el.addEventListener('click', () => {
+      el.classList.toggle('selected');
+      if (el.classList.contains('selected')) selectedChips.push(c);
+      else selectedChips = selectedChips.filter(x => x !== c);
+    });
+    wrap.appendChild(el);
+  });
+}
+
+/* ---- STARS ---- */
+document.getElementById('starsWrap').addEventListener('click', function(e) {
+  const star = e.target.closest('.star');
+  if (!star) return;
+  selectedNote = parseInt(star.dataset.v);
+  updateStars();
+  document.getElementById('starLabel').textContent = starLabels[selectedNote] || '';
+  setTimeout(() => goStep(2), 350);
+});
+
+function updateStars() {
+  document.querySelectorAll('.star').forEach((s, i) => {
+    s.classList.toggle('active', i < selectedNote);
+  });
+}
+
+function useSuggestion() {
+  const s = document.getElementById('suggestionBox').textContent;
+  document.getElementById('commentInput').value = s;
+  updateCharCount();
+}
+
+function updateCharCount() {
+  document.getElementById('charCount').textContent = document.getElementById('commentInput').value.length;
+}
+
+/* ---- NAVIGATION ---- */
+function goStep(n) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const panelId = n === 1 ? 'p-stars' : n === 2 ? 'p-chips' : 'p-comment';
+  document.getElementById(panelId).classList.add('active');
+}
+
+/* ---- SUBMIT ---- */
+async function submitFeedback(skip = false) {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Envoi…';
+
+  const comment = skip ? '' : document.getElementById('commentInput').value.trim();
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const pathSlug = location.pathname.split('/').filter(p => p && p !== 'form' && p !== 'result').pop();
+  const slug = params.get('slug') || pathSlug;
+
+  const payload = {
+    note: selectedNote,
+    commentaire: comment,
+    chips_selected: selectedChips,
+    ab_variante: abVariante,
+    canal: token ? 'whatsapp' : 'qr',
+  };
+  if (token) payload.token = token;
+  if (cfg && cfg.doctor_id) payload.doctor_id = cfg.doctor_id;
+  if (slug && !token) payload.slug = slug;
+
+  try {
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      // Store result data then redirect
+      const resultData = {
+        type: data.type,
+        google_url: data.google_url || '',
+        suggestion: data.suggestion || '',
+        wa_cabinet: data.wa_cabinet || '',
+        feedback_id: data.feedback_id || '',
+        doctor_nom: cfg ? cfg.nom : '',
+      };
+      sessionStorage.setItem('reviewResult', JSON.stringify(resultData));
+      window.location.href = '/result';
+    } else {
+      showError('⚠️', data.error || 'Erreur lors de l\'envoi.');
+    }
+  } catch(e) {
+    showError('⚠️', 'Erreur réseau. Veuillez réessayer.');
+    btn.disabled = false;
+    btn.innerHTML = 'Envoyer mon avis';
+  }
+}
+
+function showError(icon, msg) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('errorIcon').textContent = icon;
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('p-error').classList.add('active');
+}
+
+init();
+</script>
+</body>
+</html>

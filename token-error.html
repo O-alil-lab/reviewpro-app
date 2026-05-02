@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lien invalide — ReviewPro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:linear-gradient(160deg,#0f172a,#1e3a5f);display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif;padding:20px}
+.card{background:#fff;border-radius:24px;padding:40px 32px;width:100%;max-width:400px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.icon{font-size:64px;margin-bottom:16px}
+h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px}
+p{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:6px}
+.reason{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin:20px 0;font-size:13px;color:#dc2626}
+.hint{background:#f1f5f9;border-radius:10px;padding:14px;font-size:13px;color:#374151;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon" id="icon">⚠️</div>
+  <h1 id="title">Lien invalide</h1>
+  <p id="desc">Ce lien d'avis n'est pas valide ou a expiré.</p>
+  <div class="reason" id="reason" style="display:none"></div>
+  <div class="hint">
+    Pour recevoir un nouveau lien, contactez le cabinet médical ou demandez à l'assistante de vous renvoyer le lien WhatsApp.
+  </div>
+</div>
+<script>
+const params = new URLSearchParams(location.search);
+const reason = params.get('reason');
+if (reason === 'expired') {
+  document.getElementById('icon').textContent = '⏰';
+  document.getElementById('title').textContent = 'Lien expiré';
+  document.getElementById('desc').textContent = 'Ce lien d\'avis a expiré (valable 48h).';
+  document.getElementById('reason').textContent = 'Les liens sont valables 48 heures après leur envoi.';
+  document.getElementById('reason').style.display = 'block';
+} else if (reason === 'used') {
+  document.getElementById('icon').textContent = '✅';
+  document.getElementById('title').textContent = 'Déjà utilisé';
+  document.getElementById('desc').textContent = 'Vous avez déjà soumis votre avis avec ce lien. Merci !';
+  document.getElementById('reason').textContent = 'Chaque lien ne peut être utilisé qu\'une seule fois.';
+  document.getElementById('reason').style.display = 'block';
+} else if (reason === 'quota') {
+  document.getElementById('icon').textContent = '🚫';
+  document.getElementById('title').textContent = 'Limite atteinte';
+  document.getElementById('desc').textContent = 'Le cabinet a atteint sa limite d\'avis pour ce mois.';
+}
+</script>
+</body>
+</html>

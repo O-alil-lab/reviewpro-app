@@ -1,0 +1,4 @@
+# ReviewPro SaaS — Cloudflare Pages routing
+# Pretty URLs are handled automatically by Cloudflare Pages
+# Slug-based routes are handled by _worker.js
+# Do not add rules here — they conflict with Pages pretty URLs

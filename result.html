@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merci pour votre avis</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:16px}
+body.positive{background:linear-gradient(160deg,#0f172a 0%,#064e3b 60%,#065f46 100%)}
+body.negative{background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 60%,#312e81 100%)}
+body.loading{background:linear-gradient(160deg,#0f172a,#1e3a5f)}
+
+.card{background:#fff;border-radius:24px;padding:36px 32px;width:100%;max-width:420px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.big-icon{font-size:72px;margin-bottom:16px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.sub{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:24px}
+
+/* Suggestion */
+.suggestion-block{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:20px;text-align:left}
+.suggestion-label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.suggestion-text{font-size:14px;color:#374151;line-height:1.6;font-style:italic}
+.copy-btn{margin-top:10px;width:100%;padding:9px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;transition:.2s}
+.copy-btn:hover{background:#e2e8f0}
+.copy-btn.copied{background:#ecfdf5;border-color:#a7f3d0;color:#059669}
+
+/* Google button */
+.google-btn{width:100%;padding:16px;background:linear-gradient(135deg,#1a73e8,#1557b0);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;transition:all .2s;text-decoration:none}
+.google-btn:hover{opacity:.92;transform:translateY(-1px)}
+.google-btn .g-icon{width:22px;height:22px;background:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#1a73e8;flex-shrink:0}
+
+/* Negative */
+.neg-block{background:#fef2f2;border:1.5px solid #fecaca;border-radius:14px;padding:20px;margin-bottom:20px;text-align:left}
+.neg-block h3{font-size:15px;font-weight:700;color:#dc2626;margin-bottom:6px}
+.neg-block p{font-size:13px;color:#374151;line-height:1.5;margin-bottom:14px}
+.wa-btn{width:100%;padding:13px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:.2s}
+.wa-btn:hover{opacity:.92}
+
+.thanks-note{font-size:12px;color:#94a3b8;margin-top:16px}
+</style>
+</head>
+<body class="loading">
+<div class="card" id="card">
+  <div class="big-icon" id="mainIcon">⏳</div>
+  <h1 id="mainTitle">Chargement…</h1>
+  <div class="sub" id="mainSub"></div>
+  <div id="mainContent"></div>
+</div>
+
+<script>
+function trackGoogle(e) {
+  e.preventDefault();
+  const url = e.currentTarget.href;
+  // Open immediately (before async) to avoid popup blockers
+  window.open(url, '_blank');
+  const feedbackId = window.__feedbackId;
+  if (feedbackId) {
+    fetch('/api/track-google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback_id: feedbackId }),
+    }).catch(() => {});
+  }
+}
+
+function init() {
+  const raw = sessionStorage.getItem('reviewResult');
+  let data = null;
+  try { data = raw ? JSON.parse(raw) : null; } catch(e) {}
+
+  if (!data) {
+    // Fallback: try URL params
+    const params = new URLSearchParams(location.search);
+    data = {
+      type: params.get('type') || 'POSITIF',
+      google_url: params.get('google_url') || '',
+      suggestion: params.get('suggestion') || '',
+      doctor_nom: params.get('nom') || '',
+    };
+  }
+
+  window.__feedbackId = data.feedback_id || null;
+
+  if (data.type === 'POSITIF') {
+    renderPositive(data);
+  } else {
+    renderNegative(data);
+  }
+}
+
+function renderPositive(data) {
+  document.body.className = 'positive';
+  document.getElementById('mainIcon').textContent = '🎉';
+  document.getElementById('mainTitle').textContent = 'Merci beaucoup !';
+  document.getElementById('mainSub').textContent = 'Votre avis est précieux. Partagez-le sur Google pour aider d\'autres patients à trouver un bon médecin.';
+
+  let html = '';
+
+  if (data.suggestion) {
+    html += `
+    <div class="suggestion-block">
+      <div class="suggestion-label">✨ Votre avis enrichi — à copier :</div>
+      <div class="suggestion-text" id="suggText">${data.suggestion}</div>
+      <button class="copy-btn" id="copyBtn" onclick="copySuggestion()">📋 Copier mon avis</button>
+    </div>`;
+  }
+
+  if (data.google_url) {
+    html += `
+    <a class="google-btn" href="${data.google_url}" onclick="trackGoogle(event)">
+      <div class="g-icon">G</div>
+      Publier sur Google Maps
+    </a>`;
+  } else {
+    html += `<div style="background:#f1f5f9;border-radius:12px;padding:14px;font-size:13px;color:#64748b;margin-bottom:12px">Merci pour votre avis ! Il a bien été enregistré.</div>`;
+  }
+
+  html += `<div class="thanks-note">Votre avis aide d'autres patients à trouver un bon médecin. Merci pour votre confiance ! 🙏</div>`;
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function renderNegative(data) {
+  document.body.className = 'negative';
+  document.getElementById('mainIcon').textContent = '🙏';
+  document.getElementById('mainTitle').textContent = 'Merci pour votre retour';
+  document.getElementById('mainSub').textContent = 'Nous prenons votre avis très au sérieux. Notre équipe va l\'examiner pour améliorer votre prochaine expérience.';
+
+  let html = `
+  <div class="neg-block">
+    <h3>📞 Nous voulons arranger les choses</h3>
+    <p>Si vous souhaitez qu'on vous rappelle ou que quelqu'un s'occupe de votre situation personnellement, contactez-nous directement.</p>`;
+
+  if (data.wa_cabinet) {
+    html += `<a class="wa-btn" href="${data.wa_cabinet}" target="_blank" rel="noopener">
+      <span style="font-size:20px">💬</span> Contacter le cabinet sur WhatsApp
+    </a>`;
+  }
+
+  html += `</div>`;
+  html += `<div class="thanks-note">Votre confiance est importante pour nous. Merci de nous avoir aidés à nous améliorer. 🙏</div>`;
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function copySuggestion() {
+  const text = document.getElementById('suggText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Copié !';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copier mon avis';
+      btn.classList.remove('copied');
+    }, 2500);
+  });
+}
+
+init();
+</script>
+</body>
+</html>

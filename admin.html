@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Admin — ReviewPro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f172a;font-family:'Segoe UI',system-ui,sans-serif;color:#e2e8f0;min-height:100vh}
+.topbar{background:#1e293b;border-bottom:1px solid #334155;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.topbar-logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;color:#fff}
+.topbar-logo .icon{width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.admin-badge{background:#dc2626;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.admin-email{font-size:13px;color:#94a3b8}
+
+.main{padding:24px;max-width:1200px;margin:0 auto}
+.page-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:6px}
+.page-sub{font-size:14px;color:#64748b;margin-bottom:28px}
+
+.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px}
+.stat-chip{background:#1e293b;border-radius:12px;padding:16px 20px;border:1px solid #334155}
+.stat-chip .val{font-size:28px;font-weight:800;color:#fff}
+.stat-chip .lbl{font-size:11px;color:#64748b;margin-top:3px}
+.stat-chip.blue .val{color:#60a5fa}
+.stat-chip.green .val{color:#34d399}
+.stat-chip.yellow .val{color:#fbbf24}
+
+.section{background:#1e293b;border-radius:14px;border:1px solid #334155;margin-bottom:24px;overflow:hidden}
+.section-header{padding:16px 20px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:15px;font-weight:700;color:#fff}
+.section-sub{font-size:12px;color:#64748b;margin-top:2px}
+.search-input{padding:7px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;width:220px}
+.search-input:focus{border-color:#2563eb}
+
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;padding:10px 16px;border-bottom:1px solid #334155;text-align:left}
+td{font-size:13px;padding:12px 16px;border-bottom:1px solid #1e293b;color:#cbd5e1;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#0f172a}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge.free{background:#1e293b;color:#64748b;border:1px solid #334155}
+.badge.premium{background:#fef3c7;color:#92400e}
+.badge.actif{background:#064e3b;color:#34d399}
+.badge.inactif{background:#3b1515;color:#f87171}
+.badge.pending{background:#1c1917;color:#fbbf24}
+.badge.done{background:#064e3b;color:#34d399}
+
+.action-btn{padding:5px 10px;border-radius:6px;border:1px solid #334155;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;transition:.2s;margin-right:4px}
+.action-btn:hover{background:#334155;color:#e2e8f0}
+.action-btn.danger{border-color:#991b1b;color:#f87171}
+.action-btn.danger:hover{background:#991b1b}
+.action-btn.success{border-color:#065f46;color:#34d399}
+.action-btn.success:hover{background:#065f46}
+
+.empty{text-align:center;padding:40px;color:#475569;font-size:13px}
+.loading-row td{color:#475569;text-align:center}
+
+/* Auth gate */
+.auth-gate{max-width:420px;margin:80px auto;background:#1e293b;border-radius:16px;padding:32px;border:1px solid #334155;text-align:center}
+.auth-gate h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
+.auth-gate p{font-size:13px;color:#64748b;margin-bottom:20px}
+.auth-gate input{width:100%;padding:11px 14px;background:#0f172a;border:1.5px solid #334155;border-radius:10px;color:#e2e8f0;font-size:14px;outline:none;margin-bottom:12px}
+.auth-gate input:focus{border-color:#2563eb}
+.auth-gate .btn{width:100%;padding:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.auth-error{color:#f87171;font-size:13px;margin-top:8px;display:none}
+
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="icon">⭐</div>
+    ReviewPro
+    <span class="admin-badge">SUPER ADMIN</span>
+  </div>
+  <div class="topbar-right">
+    <span class="admin-email" id="adminEmail">—</span>
+    <button class="action-btn" onclick="logout()">Déconnexion</button>
+  </div>
+</div>
+
+<!-- AUTH GATE -->
+<div id="authGate" style="display:none">
+  <div class="auth-gate">
+    <div style="font-size:48px;margin-bottom:12px">🔐</div>
+    <h2>Accès Super Admin</h2>
+    <p>Entrez la clé d'administration pour accéder au panneau.</p>
+    <input type="password" id="adminKey" placeholder="Clé admin…" onkeydown="if(event.key==='Enter') doAdminLogin()">
+    <button class="btn" onclick="doAdminLogin()">Accéder</button>
+    <div class="auth-error" id="authError">Clé incorrecte.</div>
+  </div>
+</div>
+
+<!-- ADMIN CONTENT -->
+<div id="adminContent" style="display:none">
+  <div class="main">
+    <div class="page-title">🛡️ Super Admin Dashboard</div>
+    <div class="page-sub">Gestion complète de la plateforme ReviewPro</div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-chip blue"><div class="val" id="statDoctors">—</div><div class="lbl">Médecins</div></div>
+      <div class="stat-chip yellow"><div class="val" id="statPremium">—</div><div class="lbl">Premium</div></div>
+      <div class="stat-chip green"><div class="val" id="statFeedbacks">—</div><div class="lbl">Avis total</div></div>
+      <div class="stat-chip"><div class="val" id="statPending">—</div><div class="lbl">Upgrades en attente</div></div>
+    </div>
+
+    <!-- Upgrade requests -->
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🚀 Demandes Premium</div>
+          <div class="section-sub">Activer / refuser les abonnements</div>
+        </div>
+      </div>
+      <div id="upgradeTable"><div class="empty">Chargement…</div></div>
+    </div>
+
+    <!-- Admin Settings -->
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title">⚙️ Paramètres Plateforme</div>
+          <div class="section-sub">Numéro WhatsApp admin pour les demandes Premium</div>
+        </div>
+      </div>
+      <div style="padding:20px 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="adminWaInput" placeholder="Ex: 212605932376 ou 0605932376"
+          style="flex:1;min-width:220px;padding:10px 14px;background:#0f172a;border:1.5px solid #334155;border-radius:10px;color:#e2e8f0;font-size:14px;outline:none">
+        <button class="action-btn success" style="padding:10px 20px;font-size:13px" onclick="saveSettings()">💾 Enregistrer</button>
+        <span id="settingsSaved" style="color:#34d399;font-size:13px;display:none">✓ Enregistré</span>
+      </div>
+      <div style="padding:0 24px 16px;font-size:12px;color:#475569">
+        Entrez le numéro sans espaces ni tirets. Exemples : <code style="color:#94a3b8">212605932376</code> ou <code style="color:#94a3b8">0605932376</code>
+      </div>
+    </div>
+
+    <!-- Doctors -->
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title">👨‍⚕️ Médecins inscrits</div>
+          <div class="section-sub">Gérer les comptes</div>
+        </div>
+        <input class="search-input" type="text" placeholder="Rechercher…" id="doctorSearch" oninput="filterDoctors()">
+      </div>
+      <div id="doctorsTable"><div class="empty">Chargement…</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let adminKey = localStorage.getItem('adminKey') || '';
+let allDoctors = [];
+
+async function checkAuth() {
+  if (!adminKey) {
+    document.getElementById('authGate').style.display = 'block';
+    return;
+  }
+  try {
+    const res = await fetch('/api/admin/stats', {
+      headers: { 'X-Admin-Key': adminKey }
+    });
+    if (res.status === 401 || res.status === 403) {
+      localStorage.removeItem('adminKey');
+      adminKey = '';
+      document.getElementById('authGate').style.display = 'block';
+      return;
+    }
+    const data = await res.json();
+    document.getElementById('authGate').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    document.getElementById('adminEmail').textContent = data.admin_email || '';
+    renderStats(data);
+    loadDoctors();
+    loadUpgrades();
+    loadSettings();
+  } catch(e) {
+    document.getElementById('authGate').style.display = 'block';
+  }
+}
+
+async function doAdminLogin() {
+  const key = document.getElementById('adminKey').value.trim();
+  if (!key) return;
+  adminKey = key;
+  document.getElementById('authError').style.display = 'none';
+  try {
+    const res = await fetch('/api/admin/stats', { headers: { 'X-Admin-Key': key } });
+    if (!res.ok) {
+      document.getElementById('authError').style.display = 'block';
+      adminKey = '';
+      return;
+    }
+    localStorage.setItem('adminKey', key);
+    const data = await res.json();
+    document.getElementById('authGate').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    document.getElementById('adminEmail').textContent = data.admin_email || '';
+    renderStats(data);
+    loadDoctors();
+    loadUpgrades();
+    loadSettings();
+  } catch(e) {
+    document.getElementById('authError').textContent = 'Erreur réseau.';
+    document.getElementById('authError').style.display = 'block';
+  }
+}
+
+function renderStats(data) {
+  document.getElementById('statDoctors').textContent = data.total_doctors || 0;
+  document.getElementById('statPremium').textContent = data.premium_doctors || 0;
+  document.getElementById('statFeedbacks').textContent = data.total_feedbacks || 0;
+  document.getElementById('statPending').textContent = data.pending_upgrades || 0;
+}
+
+async function loadDoctors() {
+  try {
+    const res = await fetch('/api/admin/doctors', { headers: { 'X-Admin-Key': adminKey } });
+    const data = await res.json();
+    allDoctors = data.doctors || [];
+    renderDoctorsTable(allDoctors);
+  } catch(e) {
+    document.getElementById('doctorsTable').innerHTML = '<div class="empty">Erreur de chargement.</div>';
+  }
+}
+
+function renderDoctorsTable(doctors) {
+  if (!doctors.length) {
+    document.getElementById('doctorsTable').innerHTML = '<div class="empty">Aucun médecin inscrit.</div>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Nom</th><th>Email</th><th>Spécialité</th><th>Ville</th><th>Plan</th><th>Avis/mois</th><th>Statut</th><th>Inscription</th><th>Actions</th></tr></thead><tbody>`;
+  doctors.forEach(d => {
+    const date = d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : '—';
+    const planBadge = d.plan === 'premium' ? '<span class="badge premium">⭐ Premium</span>' : '<span class="badge free">Free</span>';
+    const actifBadge = d.actif ? '<span class="badge actif">Actif</span>' : '<span class="badge inactif">Inactif</span>';
+    html += `<tr>
+      <td><strong>${d.nom}</strong></td>
+      <td>${d.email}</td>
+      <td>${d.specialite}</td>
+      <td>${d.ville}</td>
+      <td>${planBadge}</td>
+      <td>${d.avis_ce_mois || 0}</td>
+      <td>${actifBadge}</td>
+      <td>${date}</td>
+      <td>
+        ${d.plan !== 'premium'
+          ? `<button class="action-btn success" onclick="setPlan('${d.id}','premium')">→ Premium</button>`
+          : `<button class="action-btn" onclick="setPlan('${d.id}','free')">→ Free</button>`
+        }
+        ${d.actif
+          ? `<button class="action-btn danger" onclick="toggleActif('${d.id}',0)">Désactiver</button>`
+          : `<button class="action-btn success" onclick="toggleActif('${d.id}',1)">Activer</button>`
+        }
+        <button class="action-btn" onclick="window.open('/qr?slug=${encodeURIComponent(d.slug)}','_blank')" title="Voir QR Code">📋 QR</button>
+        <button class="action-btn danger" onclick="deleteDoctor('${d.id}','${d.nom.replace(/'/g,"\\'")}')">🗑️ Supprimer</button>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('doctorsTable').innerHTML = html;
+}
+
+function filterDoctors() {
+  const q = document.getElementById('doctorSearch').value.toLowerCase();
+  const filtered = allDoctors.filter(d =>
+    d.nom.toLowerCase().includes(q) ||
+    d.email.toLowerCase().includes(q) ||
+    d.ville.toLowerCase().includes(q) ||
+    d.specialite.toLowerCase().includes(q)
+  );
+  renderDoctorsTable(filtered);
+}
+
+async function setPlan(doctorId, plan) {
+  const expires = plan === 'premium'
+    ? new Date(Date.now() + 30 * 86400000).toISOString()
+    : null;
+  try {
+    const res = await fetch('/api/admin/set-plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ doctor_id: doctorId, plan, plan_expires_at: expires })
+    });
+    const data = await res.json();
+    if (data.ok) { loadDoctors(); loadUpgrades(); }
+    else alert(data.error || 'Erreur.');
+  } catch(e) { alert('Erreur réseau.'); }
+}
+
+async function toggleActif(doctorId, actif) {
+  try {
+    const res = await fetch('/api/admin/toggle-actif', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ doctor_id: doctorId, actif })
+    });
+    const data = await res.json();
+    if (data.ok) loadDoctors();
+    else alert(data.error || 'Erreur.');
+  } catch(e) { alert('Erreur réseau.'); }
+}
+
+async function loadUpgrades() {
+  try {
+    const res = await fetch('/api/admin/upgrades', { headers: { 'X-Admin-Key': adminKey } });
+    const data = await res.json();
+    renderUpgradesTable(data.requests || []);
+  } catch(e) {
+    document.getElementById('upgradeTable').innerHTML = '<div class="empty">Erreur de chargement.</div>';
+  }
+}
+
+function renderUpgradesTable(requests) {
+  if (!requests.length) {
+    document.getElementById('upgradeTable').innerHTML = '<div class="empty">Aucune demande en attente. 🎉</div>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Médecin</th><th>Email</th><th>Ville</th><th>Date demande</th><th>Statut</th><th>Actions</th></tr></thead><tbody>`;
+  requests.forEach(r => {
+    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR') : '—';
+    const statusBadge = r.statut === 'en_attente'
+      ? '<span class="badge pending">En attente</span>'
+      : '<span class="badge done">Approuvé</span>';
+    html += `<tr>
+      <td><strong>${r.doctor_nom || '—'}</strong></td>
+      <td>${r.doctor_email || '—'}</td>
+      <td>${r.doctor_ville || '—'}</td>
+      <td>${date}</td>
+      <td>${statusBadge}</td>
+      <td>
+        ${r.statut === 'en_attente' ? `
+          <button class="action-btn success" onclick="approveUpgrade('${r.id}','${r.doctor_id}')">✓ Approuver</button>
+          <button class="action-btn danger" onclick="rejectUpgrade('${r.id}')">✕ Refuser</button>
+        ` : '—'}
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('upgradeTable').innerHTML = html;
+}
+
+async function approveUpgrade(requestId, doctorId) {
+  if (!confirm('Activer le plan Premium pour ce médecin ?')) return;
+  await setPlan(doctorId, 'premium');
+  try {
+    await fetch('/api/admin/upgrade-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ request_id: requestId, statut: 'approuve' })
+    });
+    loadUpgrades();
+  } catch(e) {}
+}
+
+async function rejectUpgrade(requestId) {
+  if (!confirm('Refuser cette demande ?')) return;
+  try {
+    await fetch('/api/admin/upgrade-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ request_id: requestId, statut: 'refuse' })
+    });
+    loadUpgrades();
+  } catch(e) {}
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch('/api/admin/settings', { headers: { 'X-Admin-Key': adminKey } });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.admin_wa) {
+      document.getElementById('adminWaInput').value = data.admin_wa;
+    }
+  } catch(e) {}
+}
+
+async function saveSettings() {
+  const wa = document.getElementById('adminWaInput').value.trim();
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ admin_wa: wa })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('adminWaInput').value = data.admin_wa;
+      const saved = document.getElementById('settingsSaved');
+      saved.style.display = 'inline';
+      setTimeout(() => saved.style.display = 'none', 2500);
+    } else {
+      alert(data.error || 'Erreur lors de la sauvegarde.');
+    }
+  } catch(e) { alert('Erreur réseau.'); }
+}
+
+async function deleteDoctor(doctorId, doctorNom) {
+  if (!confirm(`⚠️ Supprimer définitivement "${doctorNom}" ?\n\nCette action supprimera TOUS ses données : avis, patients, tokens, sessions.\nCette action est IRRÉVERSIBLE.`)) return;
+  try {
+    const res = await fetch('/api/admin/delete-doctor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ doctor_id: doctorId })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      loadDoctors();
+      loadUpgrades();
+      // Refresh stats
+      const statsRes = await fetch('/api/admin/stats', { headers: { 'X-Admin-Key': adminKey } });
+      if (statsRes.ok) renderStats(await statsRes.json());
+    } else {
+      alert(data.error || 'Erreur lors de la suppression.');
+    }
+  } catch(e) { alert('Erreur réseau.'); }
+}
+
+function logout() {
+  localStorage.removeItem('adminKey');
+  location.reload();
+}
+
+checkAuth();
+</script>
+</body>
+</html>

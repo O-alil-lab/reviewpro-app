@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReviewPro — Plus d'avis Google, automatiquement</title>
+<meta name="description" content="Plateforme SaaS de collecte d'avis patients pour médecins. QR code, WhatsApp, IA SEO. Essai gratuit — 30 avis/mois.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:#0f172a;background:#fff}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;background:rgba(15,23,42,.95);backdrop-filter:blur(10px);z-index:100;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;color:#fff;text-decoration:none}
+.nav-logo .icon{width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-link{color:#94a3b8;text-decoration:none;font-size:14px;padding:7px 14px;border-radius:8px;transition:.2s}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-cta{padding:8px 18px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:.2s}
+.nav-cta:hover{opacity:.9}
+
+/* HERO */
+.hero{min-height:100vh;background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 50%,#312e81 100%);display:flex;align-items:center;padding:80px 24px 60px}
+.hero-inner{max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero-left{}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.4);color:#93c5fd;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;margin-bottom:20px}
+.hero-title{font-size:48px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:16px}
+.hero-title .accent{background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:17px;color:#94a3b8;line-height:1.7;margin-bottom:32px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{padding:15px 28px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;transition:.2s}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{padding:15px 28px;background:rgba(255,255,255,.08);color:#e2e8f0;border:1px solid rgba(255,255,255,.15);border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:.2s}
+.btn-secondary:hover{background:rgba(255,255,255,.14)}
+.hero-trust{margin-top:24px;font-size:13px;color:#64748b;display:flex;align-items:center;gap:8px}
+.hero-trust .stars{color:#fbbf24}
+
+/* Hero right — mockup */
+.hero-right{}
+.phone-mockup{background:#1e293b;border-radius:28px;padding:16px;border:2px solid rgba(255,255,255,.1);box-shadow:0 40px 80px rgba(0,0,0,.5);max-width:280px;margin:0 auto}
+.phone-top{background:#0f172a;border-radius:16px 16px 0 0;padding:16px 16px 12px}
+.mock-header{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:12px;padding:16px;text-align:center;margin-bottom:-1px}
+.mock-logo{width:52px;height:52px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700}
+.mock-name{font-size:14px;font-weight:700;color:#fff}
+.mock-spec{font-size:11px;color:#64748b}
+.mock-body{background:#fff;border-radius:0 0 12px 12px;padding:16px;text-align:center}
+.mock-stars{font-size:28px;display:flex;justify-content:center;gap:4px;margin-bottom:8px}
+.mock-star{opacity:.3;transition:.2s}
+.mock-star.on{opacity:1;animation:starPop .3s ease forwards}
+@keyframes starPop{0%{transform:scale(.5)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.mock-chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0}
+.mock-chip{padding:4px 8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;font-size:10px;color:#1d4ed8;font-weight:600}
+.mock-btn{width:100%;padding:10px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;margin-top:10px;cursor:default}
+
+/* FEATURES */
+.features{padding:80px 24px;background:#f8fafc}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-badge{font-size:12px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.section-title{font-size:36px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.section-sub{font-size:16px;color:#64748b;max-width:600px;line-height:1.6}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+.feat-card{background:#fff;border-radius:16px;padding:28px;border:1px solid #e2e8f0;transition:.3s}
+.feat-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.08);transform:translateY(-2px)}
+.feat-icon{font-size:32px;margin-bottom:14px}
+.feat-title{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:8px}
+.feat-desc{font-size:14px;color:#64748b;line-height:1.6}
+
+/* PRICING */
+.pricing{padding:80px 24px;background:#fff}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px;max-width:700px;margin-left:auto;margin-right:auto}
+.price-card{border-radius:20px;padding:32px;border:2px solid #e2e8f0}
+.price-card.featured{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-color:#2563eb;position:relative}
+.price-tag{font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.price-tag.featured{color:#60a5fa}
+.price-amount{font-size:40px;font-weight:900;color:#0f172a;margin-bottom:4px}
+.price-amount.featured{color:#fff}
+.price-period{font-size:14px;font-weight:400;color:#64748b}
+.price-period.featured{color:#94a3b8}
+.price-features{list-style:none;margin:20px 0 24px;display:flex;flex-direction:column;gap:10px;font-size:14px;color:#374151}
+.price-features.featured li{color:#e2e8f0}
+.price-features li::before{content:'✓ ';color:#059669;font-weight:700}
+.price-features.featured li::before{color:#34d399}
+.price-features li.no::before{content:'✕ ';color:#94a3b8}
+.price-features.featured li.no::before{color:#475569}
+.price-btn{width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;text-align:center;text-decoration:none;display:block}
+.price-btn.outline{background:transparent;border:2px solid #e2e8f0;color:#374151}
+.price-btn.outline:hover{background:#f1f5f9}
+.price-btn.filled{background:linear-gradient(135deg,#2563eb,#7c3aed);border:none;color:#fff}
+.price-btn.filled:hover{opacity:.9}
+.popular-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#fbbf24;color:#92400e;font-size:11px;font-weight:700;padding:3px 14px;border-radius:12px;white-space:nowrap}
+
+/* HOW IT WORKS */
+.how{padding:80px 24px;background:#f8fafc}
+.steps-row{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px;position:relative}
+.steps-row::before{content:'';position:absolute;top:28px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,#2563eb,#7c3aed);z-index:0}
+.step-box{text-align:center;position:relative;z-index:1}
+.step-num{width:56px;height:56px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;margin:0 auto 14px;box-shadow:0 4px 16px rgba(37,99,235,.4)}
+.step-title{font-size:14px;font-weight:700;color:#0f172a;margin-bottom:6px}
+.step-desc{font-size:13px;color:#64748b;line-height:1.5}
+
+/* CTA */
+.cta-section{padding:80px 24px;background:linear-gradient(135deg,#0f172a,#1e3a5f)}
+.cta-inner{max-width:700px;margin:0 auto;text-align:center}
+.cta-inner h2{font-size:36px;font-weight:800;color:#fff;margin-bottom:12px}
+.cta-inner p{font-size:16px;color:#94a3b8;margin-bottom:32px;line-height:1.6}
+
+/* FOOTER */
+footer{background:#0f172a;padding:24px;text-align:center;font-size:13px;color:#475569;border-top:1px solid #1e293b}
+
+@media(max-width:768px){
+  .hero-inner{grid-template-columns:1fr;text-align:center}
+  .hero-right{display:none}
+  .hero-title{font-size:34px}
+  .features-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .steps-row{grid-template-columns:1fr 1fr}
+  .steps-row::before{display:none}
+  nav .nav-links .nav-link{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <div class="icon">⭐</div>
+      ReviewPro
+    </a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Fonctionnalités</a>
+      <a href="#pricing" class="nav-link">Tarifs</a>
+      <a href="#how" class="nav-link">Comment ça marche</a>
+      <a href="/login" class="nav-link">Connexion</a>
+      <a href="/inscription" class="nav-cta">Essai gratuit</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-badge">🇲🇦 Conçu pour les médecins marocains</div>
+      <h1 class="hero-title">Plus d'avis Google,<br><span class="accent">automatiquement.</span></h1>
+      <p class="hero-sub">ReviewPro collecte les avis de vos patients par QR code et WhatsApp. L'IA enrichit chaque avis pour maximiser votre référencement local sur Google Maps.</p>
+      <div class="hero-btns">
+        <a href="/inscription" class="btn-primary">Démarrer gratuitement →</a>
+        <a href="#how" class="btn-secondary">Comment ça marche</a>
+      </div>
+      <div class="hero-trust">
+        <span class="stars">⭐⭐⭐⭐⭐</span>
+        Gratuit jusqu'à 30 avis/mois · Aucune carte requise
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="phone-mockup">
+        <div class="mock-header">
+          <div class="mock-logo">D</div>
+          <div class="mock-name">Dr. Ahmed Benali</div>
+          <div class="mock-spec">Cardiologue · Casablanca</div>
+        </div>
+        <div class="mock-body">
+          <div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:10px">Comment s'est passée votre visite ?</div>
+          <div class="mock-stars">
+            <span class="mock-star on">⭐</span>
+            <span class="mock-star on">⭐</span>
+            <span class="mock-star on">⭐</span>
+            <span class="mock-star on">⭐</span>
+            <span class="mock-star on">⭐</span>
+          </div>
+          <div class="mock-chips">
+            <span class="mock-chip">Accueil ✓</span>
+            <span class="mock-chip">Écoute ✓</span>
+            <span class="mock-chip">Explications ✓</span>
+          </div>
+          <div class="mock-btn">Publier sur Google Maps →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-inner">
+    <div class="section-badge">Fonctionnalités</div>
+    <h2 class="section-title">Tout ce qu'il faut pour dominer Google Maps</h2>
+    <p class="section-sub">ReviewPro gère tout le processus de collecte d'avis, de l'envoi au patient jusqu'à la publication sur Google.</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">📱</div>
+        <div class="feat-title">QR Code & WhatsApp</div>
+        <div class="feat-desc">Générez un QR code à imprimer en salle d'attente, ou envoyez un lien personnalisé par WhatsApp à chaque patient.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-title">IA enrichissement SEO</div>
+        <div class="feat-desc">Notre IA (Llama 3) améliore discrètement chaque avis positif pour inclure votre spécialité et ville — sans que le patient le sache.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🛡️</div>
+        <div class="feat-title">Filtrage avis négatifs</div>
+        <div class="feat-desc">Les avis négatifs restent en interne. Vous êtes notifié par WhatsApp pour traiter le problème avant qu'il arrive sur Google.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Dashboard analytics</div>
+        <div class="feat-desc">Statistiques en temps réel : notes, sentiments, taux de conversion vers Google, score SEO de chaque avis.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🏷️</div>
+        <div class="feat-title">Chips personnalisables</div>
+        <div class="feat-desc">Définissez vos points forts (Accueil, Professionnalisme, Écoute…) pour guider les patients vers des avis structurés.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔒</div>
+        <div class="feat-title">Multi-tenant sécurisé</div>
+        <div class="feat-desc">Chaque cabinet a son espace isolé. Données chiffrées, sessions sécurisées, zéro accès croisé entre médecins.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="section-inner">
+    <div class="section-badge">Comment ça marche</div>
+    <h2 class="section-title">Opérationnel en 5 minutes</h2>
+    <p class="section-sub">Du compte à votre premier avis Google, tout prend moins de 5 minutes.</p>
+    <div class="steps-row">
+      <div class="step-box">
+        <div class="step-num">1</div>
+        <div class="step-title">Créez votre compte</div>
+        <div class="step-desc">Inscrivez-vous gratuitement avec votre email. 30 secondes.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">2</div>
+        <div class="step-title">Configurez votre profil</div>
+        <div class="step-desc">Ajoutez votre lien Google Maps, WhatsApp et vos points forts.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">3</div>
+        <div class="step-title">Partagez le QR code</div>
+        <div class="step-desc">Imprimez et posez le QR code en salle d'attente. Ou envoyez le lien par WhatsApp.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">4</div>
+        <div class="step-title">Récoltez des avis</div>
+        <div class="step-desc">Les patients positifs sont redirigés vers Google. Les négatifs restent internes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="section-inner">
+    <div class="section-badge">Tarifs</div>
+    <h2 class="section-title">Simple et transparent</h2>
+    <p class="section-sub">Commencez gratuitement. Passez Premium quand vous êtes convaincu.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tag">Gratuit</div>
+        <div class="price-amount">0 <span class="price-period">MAD/mois</span></div>
+        <ul class="price-features">
+          <li>30 avis / mois</li>
+          <li>QR code + formulaire patient</li>
+          <li>Redirection Google Maps</li>
+          <li>Dashboard statistiques</li>
+          <li class="no" style="color:#94a3b8">IA enrichissement</li>
+          <li class="no" style="color:#94a3b8">Gestion patients / tokens WhatsApp</li>
+        </ul>
+        <a href="/inscription" class="price-btn outline">Commencer gratuitement</a>
+      </div>
+      <div class="price-card featured">
+        <div class="popular-badge">⭐ LE PLUS POPULAIRE</div>
+        <div class="price-tag featured">Premium</div>
+        <div class="price-amount featured">199 <span class="price-period featured">MAD/mois</span></div>
+        <ul class="price-features featured">
+          <li>Avis illimités</li>
+          <li>IA Llama 3 — enrichissement automatique</li>
+          <li>Gestion patients + tokens WhatsApp</li>
+          <li>Score SEO détaillé par avis</li>
+          <li>A/B test formulaire</li>
+          <li>Support WhatsApp prioritaire</li>
+        </ul>
+        <a href="/inscription" class="price-btn filled">Passer Premium</a>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:#94a3b8;margin-top:20px">Paiement par virement ou cash · Activation dans les 24h · Sans engagement</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2>Prêt à dominer Google Maps ?</h2>
+    <p>Rejoignez les médecins marocains qui utilisent ReviewPro pour collecter plus d'avis et améliorer leur visibilité en ligne.</p>
+    <a href="/inscription" class="btn-primary" style="font-size:16px;padding:16px 36px">Créer mon compte gratuit →</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>© 2026 ReviewPro · Plateforme d'avis patients pour médecins · Maroc</div>
+  <div style="margin-top:6px"><a href="/login" style="color:#475569;text-decoration:none;margin:0 10px">Connexion</a><a href="/inscription" style="color:#475569;text-decoration:none;margin:0 10px">Inscription</a><a href="/admin" style="color:#475569;text-decoration:none;margin:0 10px">Admin</a></div>
+</footer>
+
+</body>
+</html>

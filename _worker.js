@@ -165,11 +165,13 @@ async function getDoctorSeoProfile(env, doctor) {
   let vocab = [];
   try { vocab = JSON.parse(doctor.vocabulaire_positif || '[]').slice(0, 5); } catch(e) {}
 
+  // Normalize doctor name (avoid "Dr Dr karim" in prompts)
+  const nomDisplay = (doctor.nom || '').replace(/^Dr\.?\s+/i, '');
   const profile = {
-    nom: doctor.nom,
+    nom: nomDisplay,
     specialite: doctor.specialite,
     ville: doctor.ville,
-    seo_context: `${doctor.nom} est ${doctor.specialite} à ${doctor.ville}.`,
+    seo_context: `Dr ${nomDisplay} est ${doctor.specialite} à ${doctor.ville}.`,
     target_keywords: [
       `${doctor.specialite} ${doctor.ville}`.toLowerCase(),
       doctor.specialite.toLowerCase(),
@@ -204,6 +206,7 @@ async function generateReviewWithAgent(env, doctor, chips, comment) {
     : "Le patient n'a pas laissé de commentaire détaillé.";
 
   // ── System prompt: SEO Expert per doctor ──
+  const nomDisplay = seoProfile.nom;
   const systemPrompt = `Tu es un expert SEO local spécialisé en référencement Google Maps pour les médecins marocains.
 Tu reformules et enrichis les avis patients pour maximiser la visibilité locale sur Google.
 
@@ -213,15 +216,17 @@ MOTS-CLÉS CIBLES : ${seoProfile.target_keywords.join(', ')}
 CRITÈRES D'UN EXCELLENT AVIS GOOGLE MAPS (tous obligatoires) :
 1. ✅ Mentionner naturellement "${doctor.specialite}" dans l'avis
 2. ✅ Mentionner "${doctor.ville}"
-3. ✅ Entre 80 et 160 mots
+3. ✅ Entre 80 et 150 mots
 4. ✅ Détail d'expérience concrète (accueil, attente, consultation, explications)
-5. ✅ Ton authentique, première personne — vocabulaire de patient, pas de médecin
-6. ✅ Commencer directement par l'avis (0 introduction, 0 préambule)
+5. ✅ Ton authentique, première personne — vocabulaire de patient ordinaire
+6. ✅ Commencer directement par l'avis (0 introduction, 0 préambule, 0 formule de politesse)
 
 RÈGLES ABSOLUES — jamais enfreintes :
-- N'utiliser QUE les informations données par le patient
-- INTERDIT d'inventer : actes médicaux, opérations, traitements, médicaments, diagnostics, durées, prix
-- Si le patient ne mentionne pas une procédure → ne pas l'écrire`;
+- N'utiliser QUE les informations données par le patient (chips + commentaire)
+- STRICTEMENT INTERDIT d'inventer : opérations, chirurgies, médicaments, prescriptions, scanners, injections, biopsies, greffes
+- Parler de la CONSULTATION et de l'ACCUEIL uniquement
+- NE PAS mentionner le prénom du médecin avec "Dr" au début (utilise directement son nom ou "le médecin")
+- Si le patient ne mentionne pas une procédure spécifique → NE PAS l'écrire`;
 
   const userPrompt = `${chipsCtx}
 ${commentCtx}
@@ -337,16 +342,27 @@ Version améliorée (commence directement) :`,
   }
 
   // ── STEP 5 : Anti-hallucination final gate ───────────────────────────────────
+  // Only block truly specific invented procedures — NOT generic medical words
+  // (traitement, diagnostic, examen are too common in doctor context)
   const inputWords = (comment + ' ' + chips.join(' ')).toLowerCase();
-  const medicalKeywords = [
-    'opération','chirurgie','intervention','anesthésie','traitement',
-    'médicament','diagnostic','prescription','ordonnance','examen','scanner',
-    'radio','biopsie','injection','greffe','hospitalisation','urgence',
+  const strictHallucinationKeywords = [
+    'opération','chirurgie','intervention','anesthésie',
+    'médicament','prescription','ordonnance','scanner',
+    'biopsie','injection','greffe','hospitalisation',
   ];
-  const hallucinationDetected = medicalKeywords.some(kw =>
+  const hallucinationDetected = strictHallucinationKeywords.some(kw =>
     generatedReview.toLowerCase().includes(kw) && !inputWords.includes(kw)
   );
-  if (hallucinationDetected) return null;
+  if (hallucinationDetected) {
+    // Instead of returning null, strip the hallucinated sentence and try salvage
+    const sentences = generatedReview.split(/(?<=[.!?])\s+/);
+    const clean = sentences
+      .filter(s => !strictHallucinationKeywords.some(kw => s.toLowerCase().includes(kw) && !inputWords.includes(kw)))
+      .join(' ')
+      .trim();
+    if (clean && clean.length > 40) return clean;
+    return null; // Nothing salvageable
+  }
 
   return generatedReview;
 }
@@ -634,17 +650,19 @@ async function handleFeedback(request, env) {
 
     // Fallback: template or basic construction
     if (!suggestion_ia) {
+      // Strip leading "Dr " / "Dr. " from nom to avoid "Dr Dr karim" in template
+      const nomClean = (doctor.nom || '').replace(/^Dr\.?\s+/i, '');
       const tmpl = (doctor.template_suggestion || '').trim();
       if (tmpl) {
         suggestion_ia = tmpl
-          .replace(/\{nom\}/g, doctor.nom)
+          .replace(/\{nom\}/g, nomClean)
           .replace(/\{specialite\}/g, doctor.specialite)
           .replace(/\{ville\}/g, doctor.ville);
       } else if (chips.length > 0 || comment) {
         const chipsStr = chips.length ? chips.slice(0, 3).join(', ') : '';
         const base = comment
           ? comment.charAt(0).toUpperCase() + comment.slice(1).replace(/\.?\s*$/, '') + '.'
-          : `Très bonne expérience chez ${doctor.nom} à ${doctor.ville}.`;
+          : `Très bonne expérience chez Dr ${nomClean} à ${doctor.ville}.`;
         suggestion_ia = chipsStr ? `${base} Je recommande particulièrement pour : ${chipsStr}.` : base;
       }
     }

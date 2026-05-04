@@ -328,6 +328,7 @@ async function submitFeedback(skip = false) {
         wa_cabinet: data.wa_cabinet || '',
         feedback_id: data.feedback_id || '',
         doctor_nom: cfg ? cfg.nom : '',
+        seo_score: data.seo_score || null,
       };
       sessionStorage.setItem('reviewResult', JSON.stringify(resultData));
       window.location.href = '/result';

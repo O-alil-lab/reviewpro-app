@@ -599,22 +599,44 @@ function renderFeedbackTable(containerId, feedbacks) {
     document.getElementById(containerId).innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Aucun avis</div>';
     return;
   }
-  let html = `<table><thead><tr><th>Date</th><th>Note</th><th>Commentaire</th><th>Sentiment</th><th>SEO</th><th>Google</th></tr></thead><tbody>`;
-  feedbacks.forEach(f => {
+  let html = `<table><thead><tr><th>Date</th><th>Note</th><th>Patient / Avis IA</th><th>Type</th><th>SEO</th><th>Google</th></tr></thead><tbody>`;
+  feedbacks.forEach((f, i) => {
     const stars = '★'.repeat(f.note) + '☆'.repeat(5 - f.note);
     const date = new Date(f.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'short'});
-    const comment = (f.commentaire || '').substring(0, 60) + (f.commentaire && f.commentaire.length > 60 ? '…' : '');
+    const rawComment = (f.commentaire || '').substring(0, 55) + (f.commentaire && f.commentaire.length > 55 ? '…' : '');
+    const aiPreview = f.suggestion_ia ? (f.suggestion_ia.substring(0, 60) + '…') : null;
     const badge = f.type_final === 'POSITIF'
-      ? '<span class="badge pos">Positif</span>'
+      ? '<span class="badge pos">✅ Positif</span>'
       : f.type_final === 'NEGATIF'
-      ? '<span class="badge neg">Négatif</span>'
+      ? '<span class="badge neg">⚠️ Négatif</span>'
       : '<span class="badge neutral">—</span>';
-    const google = f.vers_google ? '✅' : '';
-    const seo = f.seo_score !== null && f.seo_score !== undefined ? f.seo_score + '/70' : '—';
-    html += `<tr><td>${date}</td><td><span class="stars">${stars}</span></td><td>${comment || '<em style="color:#94a3b8">Sans commentaire</em>'}</td><td>${badge}</td><td>${seo}</td><td>${google}</td></tr>`;
+    const google = f.vers_google ? '✅ Publié' : '—';
+    const seoScore = f.seo_score != null ? f.seo_score : null;
+    const seoBadge = seoScore != null
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:${seoScore >= 80 ? '#059669' : seoScore >= 60 ? '#d97706' : '#64748b'}">${seoScore >= 80 ? '🏆' : seoScore >= 60 ? '⚡' : ''} ${seoScore}/100</span>`
+      : '<span style="color:#94a3b8;font-size:12px">—</span>';
+
+    const commentCell = `
+      <div style="font-size:12px;color:#374151;line-height:1.4">${rawComment || '<em style="color:#94a3b8">Sans commentaire</em>'}</div>
+      ${aiPreview ? `<div style="font-size:11px;color:#2563eb;margin-top:4px;cursor:pointer;line-height:1.4" onclick="toggleAiReview('ai-${i}')" title="Voir l'avis IA complet">✨ <em>${aiPreview}</em></div>
+      <div id="ai-${i}" style="display:none;margin-top:8px;padding:8px;background:#eff6ff;border-radius:6px;font-size:11px;color:#1e40af;line-height:1.6">${f.suggestion_ia || ''}</div>` : ''}`;
+
+    html += `<tr>
+      <td style="white-space:nowrap;font-size:12px">${date}</td>
+      <td><span class="stars" style="font-size:11px">${stars}</span></td>
+      <td>${commentCell}</td>
+      <td>${badge}</td>
+      <td>${seoBadge}</td>
+      <td style="font-size:12px;white-space:nowrap">${google}</td>
+    </tr>`;
   });
   html += '</tbody></table>';
   document.getElementById(containerId).innerHTML = html;
+}
+
+function toggleAiReview(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 /* ---- TABS ---- */
@@ -644,7 +666,9 @@ async function loadFeedbacks() {
 /* ---- PATIENTS ---- */
 async function loadPatients() {
   if (!doctorData) return;
-  if (doctorData.plan !== 'premium') {
+  // Trial users have full access — only 'expired' plan is blocked
+  const hasAccess = doctorData.plan === 'premium' || doctorData.plan === 'trial';
+  if (!hasAccess) {
     document.getElementById('patientsList').innerHTML = `
       <div class="premium-lock">
         <div class="lock-icon">🔒</div>
@@ -674,7 +698,8 @@ async function loadPatients() {
 }
 
 function showAddPatient() {
-  if (doctorData && doctorData.plan !== 'premium') { showTab('upgrade'); return; }
+  const hasAccess = doctorData && (doctorData.plan === 'premium' || doctorData.plan === 'trial');
+  if (!hasAccess) { showTab('upgrade'); return; }
   document.getElementById('addPatientModal').style.display = 'flex';
 }
 function hideAddPatient() {

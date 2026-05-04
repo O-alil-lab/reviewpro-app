@@ -25,6 +25,21 @@ h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px}
 .copy-btn:hover{background:#e2e8f0}
 .copy-btn.copied{background:#ecfdf5;border-color:#a7f3d0;color:#059669}
 
+/* Steps guide */
+.steps-guide{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;text-align:left}
+.step-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#f8fafc;border:1.5px solid #e2e8f0}
+.step-item.done{background:#ecfdf5;border-color:#a7f3d0}
+.step-item.active{background:#eff6ff;border-color:#bfdbfe}
+.step-num{width:26px;height:26px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-item.done .step-num{background:#059669;color:#fff}
+.step-item.active .step-num{background:#2563eb;color:#fff}
+.step-text{font-size:13px;color:#374151;font-weight:500;line-height:1.4}
+.step-text small{display:block;font-size:11px;color:#94a3b8;font-weight:400}
+
+/* Auto-copy toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:100;animation:slideUp .3s ease;white-space:nowrap}
+@keyframes slideUp{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
 /* Google button */
 .google-btn{width:100%;padding:16px;background:linear-gradient(135deg,#1a73e8,#1557b0);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;transition:all .2s;text-decoration:none}
 .google-btn:hover{opacity:.92;transform:translateY(-1px)}
@@ -89,35 +104,111 @@ function init() {
   }
 }
 
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function autoCopyAndOpen(suggestion, googleUrl, feedbackId) {
+  // Step 1: auto-copy text to clipboard
+  navigator.clipboard.writeText(suggestion).then(() => {
+    // Mark step 1 done, step 2 active
+    document.getElementById('step1').className = 'step-item done';
+    document.getElementById('step2').className = 'step-item active';
+    showToast('✅ Avis copié dans le presse-papiers !');
+
+    // Step 2: open Google Maps after short delay
+    setTimeout(() => {
+      document.getElementById('step2').className = 'step-item done';
+      document.getElementById('step3').className = 'step-item active';
+
+      // Track + open
+      window.open(googleUrl, '_blank');
+      if (feedbackId) {
+        fetch('/api/track-google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ feedback_id: feedbackId }),
+        }).catch(() => {});
+      }
+    }, 800);
+  }).catch(() => {
+    // Clipboard blocked (old browsers) — fallback: show copy button + open maps
+    showToast('📋 Copiez votre avis, puis collez-le sur Google Maps');
+    if (googleUrl) window.open(googleUrl, '_blank');
+  });
+}
+
 function renderPositive(data) {
   document.body.className = 'positive';
   document.getElementById('mainIcon').textContent = '🎉';
   document.getElementById('mainTitle').textContent = 'Merci beaucoup !';
-  document.getElementById('mainSub').textContent = 'Votre avis est précieux. Partagez-le sur Google pour aider d\'autres patients à trouver un bon médecin.';
+  document.getElementById('mainSub').textContent = 'Votre avis enrichi par l\'IA est prêt. Publiez-le sur Google Maps en un clic !';
 
   let html = '';
 
   if (data.suggestion) {
+    // Avis IA box (readonly, toujours visible)
     html += `
     <div class="suggestion-block">
-      <div class="suggestion-label">✨ Votre avis enrichi — à copier :</div>
+      <div class="suggestion-label">✨ Votre avis enrichi par l'IA :</div>
       <div class="suggestion-text" id="suggText">${data.suggestion}</div>
-      <button class="copy-btn" id="copyBtn" onclick="copySuggestion()">📋 Copier mon avis</button>
+      <button class="copy-btn" id="copyBtn" onclick="copySuggestion()">📋 Copier manuellement</button>
     </div>`;
   }
 
   if (data.google_url) {
+    // 3-step visual guide
     html += `
-    <a class="google-btn" href="${data.google_url}" onclick="trackGoogle(event)">
+    <div class="steps-guide">
+      <div class="step-item active" id="step1">
+        <div class="step-num">1</div>
+        <div class="step-text">Votre avis est copié automatiquement
+          <small>Prêt à coller dans Google Maps</small>
+        </div>
+      </div>
+      <div class="step-item" id="step2">
+        <div class="step-num">2</div>
+        <div class="step-text">Google Maps s'ouvre
+          <small>La page de review du médecin apparaît</small>
+        </div>
+      </div>
+      <div class="step-item" id="step3">
+        <div class="step-num">3</div>
+        <div class="step-text">Collez et publiez
+          <small>Appui long → Coller → Envoyer ⭐⭐⭐⭐⭐</small>
+        </div>
+      </div>
+    </div>
+
+    <a class="google-btn" href="${data.google_url}"
+       onclick="event.preventDefault(); autoCopyAndOpen('${(data.suggestion||'').replace(/'/g,"\\'")}', '${data.google_url}', '${data.feedback_id||''}')">
       <div class="g-icon">G</div>
-      Publier sur Google Maps
+      Copier &amp; Publier sur Google Maps
     </a>`;
   } else {
-    html += `<div style="background:#f1f5f9;border-radius:12px;padding:14px;font-size:13px;color:#64748b;margin-bottom:12px">Merci pour votre avis ! Il a bien été enregistré.</div>`;
+    html += `<div style="background:#f1f5f9;border-radius:12px;padding:14px;font-size:13px;color:#64748b;margin-bottom:12px">✅ Votre avis a bien été enregistré. Merci !</div>`;
   }
 
-  html += `<div class="thanks-note">Votre avis aide d'autres patients à trouver un bon médecin. Merci pour votre confiance ! 🙏</div>`;
+  html += `<div class="thanks-note">Votre avis aide d'autres patients à trouver un bon médecin. Merci 🙏</div>`;
   document.getElementById('mainContent').innerHTML = html;
+
+  // Auto-copy on page load if suggestion exists and Google URL is present
+  if (data.suggestion && data.google_url) {
+    setTimeout(() => {
+      navigator.clipboard.writeText(data.suggestion).then(() => {
+        if (document.getElementById('step1')) {
+          document.getElementById('step1').className = 'step-item done';
+          document.getElementById('step1').querySelector('.step-text').innerHTML =
+            '✅ Avis copié automatiquement<small>Prêt à coller sur Google Maps</small>';
+        }
+        showToast('✅ Avis copié — cliquez le bouton Google Maps !');
+      }).catch(() => {});
+    }, 600);
+  }
 }
 
 function renderNegative(data) {

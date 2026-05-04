@@ -542,13 +542,14 @@ async function handleFormConfig(request, env) {
       return json({ ok: false, blocked: true, blocked_reason: 'trial_expired', doctor_nom: doctor.nom }, 403);
     }
 
+    const nomCleanT = (doctor.nom || '').replace(/^Dr\.?\s+/i, '');
     return json({
       ok: true, doctor_id: doctor.id, slug: doctor.slug,
       nom: doctor.nom, specialite: doctor.specialite, ville: doctor.ville,
       logo_url: doctor.logo_url || '',
       chips_positifs: JSON.parse(doctor.chips_positifs || '[]'),
       template_suggestion: (doctor.template_suggestion || '')
-        .replace('{nom}', doctor.nom).replace('{specialite}', doctor.specialite).replace('{ville}', doctor.ville),
+        .replace('{nom}', nomCleanT).replace('{specialite}', doctor.specialite).replace('{ville}', doctor.ville),
       langue_defaut: doctor.langue_defaut,
       ab_variante: 'B', // Full access during trial/premium
       canal: 'WA',
@@ -565,13 +566,14 @@ async function handleFormConfig(request, env) {
       return json({ ok: false, blocked: true, blocked_reason: 'trial_expired', doctor_nom: doctor.nom }, 403);
     }
 
+    const nomCleanS = (doctor.nom || '').replace(/^Dr\.?\s+/i, '');
     return json({
       ok: true, doctor_id: doctor.id, slug: doctor.slug,
       nom: doctor.nom, specialite: doctor.specialite, ville: doctor.ville,
       logo_url: doctor.logo_url || '',
       chips_positifs: JSON.parse(doctor.chips_positifs || '[]'),
       template_suggestion: (doctor.template_suggestion || '')
-        .replace('{nom}', doctor.nom).replace('{specialite}', doctor.specialite).replace('{ville}', doctor.ville),
+        .replace('{nom}', nomCleanS).replace('{specialite}', doctor.specialite).replace('{ville}', doctor.ville),
       langue_defaut: doctor.langue_defaut,
       ab_variante: 'B',
       canal: 'QR',

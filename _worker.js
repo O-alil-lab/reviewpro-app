@@ -149,7 +149,7 @@ function cleanOutput(text) {
 // One profile per doctor — built once, reused for every patient review.
 // Cached in KV to avoid recomputing on every request.
 async function getDoctorSeoProfile(env, doctor) {
-  const cacheKey = `doctor_seo:${doctor.slug}`;
+  const cacheKey = `doctor_seo_v2:${doctor.slug}`;
   try {
     const cached = await env.SESSIONS_KV.get(cacheKey, 'json');
     if (cached && cached.cached_at) {
@@ -167,15 +167,22 @@ async function getDoctorSeoProfile(env, doctor) {
 
   // Normalize doctor name (avoid "Dr Dr karim" in prompts)
   const nomDisplay = (doctor.nom || '').replace(/^Dr\.?\s+/i, '');
+  // Extract surname (last word) for SEO keyword — e.g. "Sara Bennani" → "Bennani"
+  const nomParts = nomDisplay.trim().split(/\s+/);
+  const surname = nomParts.length > 1 ? nomParts[nomParts.length - 1] : nomDisplay;
+
   const profile = {
     nom: nomDisplay,
+    surname,
     specialite: doctor.specialite,
     ville: doctor.ville,
     seo_context: `Dr ${nomDisplay} est ${doctor.specialite} à ${doctor.ville}.`,
     target_keywords: [
       `${doctor.specialite} ${doctor.ville}`.toLowerCase(),
+      `Dr ${surname} ${doctor.specialite}`.toLowerCase(),
       doctor.specialite.toLowerCase(),
       doctor.ville.toLowerCase(),
+      surname.toLowerCase(),
     ].filter(Boolean),
     key_qualities: chips,
     vocab_positif: vocab,
@@ -207,25 +214,25 @@ async function generateReviewWithAgent(env, doctor, chips, comment) {
 
   // ── System prompt: SEO Expert per doctor ──
   const nomDisplay = seoProfile.nom;
+  const surname    = seoProfile.surname || nomDisplay;
   const systemPrompt = `Tu es un expert SEO local spécialisé en référencement Google Maps pour les médecins marocains.
 Tu reformules et enrichis les avis patients pour maximiser la visibilité locale sur Google.
 
 MÉDECIN : ${seoProfile.seo_context}
-MOTS-CLÉS CIBLES : ${seoProfile.target_keywords.join(', ')}
+MOTS-CLÉS CIBLES (à intégrer naturellement) : ${seoProfile.target_keywords.join(', ')}
 
 CRITÈRES D'UN EXCELLENT AVIS GOOGLE MAPS (tous obligatoires) :
-1. ✅ Mentionner naturellement "${doctor.specialite}" dans l'avis
+1. ✅ Mentionner "${doctor.specialite}" naturellement dans l'avis
 2. ✅ Mentionner "${doctor.ville}"
-3. ✅ Entre 80 et 150 mots
-4. ✅ Détail d'expérience concrète (accueil, attente, consultation, explications)
+3. ✅ Mentionner le nom du médecin "Dr ${surname}" ou juste "${surname}" au moins une fois
+4. ✅ Entre 80 et 150 mots, 2 à 3 phrases complètes
 5. ✅ Ton authentique, première personne — vocabulaire de patient ordinaire
-6. ✅ Commencer directement par l'avis (0 introduction, 0 préambule, 0 formule de politesse)
+6. ✅ Commencer directement par l'avis (0 introduction, 0 préambule, 0 "Bien sûr voici")
 
 RÈGLES ABSOLUES — jamais enfreintes :
-- N'utiliser QUE les informations données par le patient (chips + commentaire)
+- N'utiliser QUE les informations données par le patient (chips + commentaire ci-dessous)
 - STRICTEMENT INTERDIT d'inventer : opérations, chirurgies, médicaments, prescriptions, scanners, injections, biopsies, greffes
-- Parler de la CONSULTATION et de l'ACCUEIL uniquement
-- NE PAS mentionner le prénom du médecin avec "Dr" au début (utilise directement son nom ou "le médecin")
+- Parler uniquement de la CONSULTATION, de l'ACCUEIL, de l'ÉCOUTE et des EXPLICATIONS
 - Si le patient ne mentionne pas une procédure spécifique → NE PAS l'écrire`;
 
   const userPrompt = `${chipsCtx}
@@ -367,24 +374,30 @@ Version améliorée (commence directement) :`,
   return generatedReview;
 }
 
-// ─── SEO Score (local calc for dashboard display) ────────────────────────────
+// ─── SEO Score (local calc, max 100) ─────────────────────────────────────────
+// Criteria redesigned to sum to 100 for clear UX display
 function calcSeoScore(text, chips, doctor) {
-  const spec  = (doctor.specialite || '').toLowerCase();
-  const ville = (doctor.ville || '').toLowerCase();
-  const vocab = JSON.parse(doctor.vocabulaire_positif || '[]');
-  const t = text.toLowerCase();
-  const seo_specialite  = spec  && t.includes(spec)  ? 20 : 0;
-  const seo_ville       = ville && t.includes(ville)  ? 15 : 0;
-  const seo_longueur    = text.length > 100           ? 10 : 0;
-  const seo_chips       = chips && chips.length > 0   ?  5 : 0;
-  const seo_phrases     = (text.match(/[.!?]+/g) || []).length >= 2 ? 10 : 0;
-  const seo_vocabulaire = vocab.some(w => t.includes(w.toLowerCase())) ? 5 : 0;
-  const words = t.split(/\s+/).filter(w => w.length > 3);
-  const cnt = {}; for (const w of words) cnt[w] = (cnt[w] || 0) + 1;
-  const seo_repetition  = Object.values(cnt).every(c => c <= 3) ? 5 : 0;
+  const spec    = (doctor.specialite || '').toLowerCase();
+  const ville   = (doctor.ville || '').toLowerCase();
+  const nomRaw  = (doctor.nom || '').replace(/^Dr\.?\s+/i, '');
+  const parts   = nomRaw.trim().split(/\s+/);
+  const surname = (parts.length > 1 ? parts[parts.length - 1] : nomRaw).toLowerCase();
+  const vocab   = JSON.parse(doctor.vocabulaire_positif || '[]');
+  const t       = text.toLowerCase();
+
+  // Points (total = 100)
+  const seo_specialite  = spec   && t.includes(spec)    ? 25 : 0; // specialité mentionnée
+  const seo_ville       = ville  && t.includes(ville)   ? 20 : 0; // ville mentionnée
+  const seo_nom         = surname && t.includes(surname) ? 15 : 0; // nom du médecin mentionné
+  const seo_longueur    = text.length > 120             ? 15 : (text.length > 80 ? 8 : 0); // longueur
+  const seo_chips       = chips && chips.length > 0     ? 10 : 0; // chips qualité
+  const seo_phrases     = (text.match(/[.!?]+/g) || []).length >= 2 ? 10 : 0; // structure
+  const seo_vocabulaire = vocab.some(w => t.includes(w.toLowerCase())) ? 5 : 0; // vocab SEO
+
   return {
-    seo_score: seo_specialite + seo_ville + seo_longueur + seo_chips + seo_phrases + seo_vocabulaire + seo_repetition,
-    seo_specialite, seo_ville, seo_longueur, seo_chips, seo_phrases, seo_vocabulaire, seo_repetition,
+    seo_score: seo_specialite + seo_ville + seo_nom + seo_longueur + seo_chips + seo_phrases + seo_vocabulaire,
+    seo_specialite, seo_ville, seo_nom, seo_longueur, seo_chips, seo_phrases, seo_vocabulaire,
+    seo_repetition: 0, // kept for DB compat, folded into seo_longueur
   };
 }
 

@@ -508,8 +508,9 @@ async function handleOnboarding(request, env, doctor) {
     doctor.id,
   ).run();
 
-  // Invalidate SEO profile cache so it rebuilds with new chips/vocab
+  // Invalidate SEO profile cache (both v1 and v2 keys)
   try { await env.SESSIONS_KV.delete(`doctor_seo:${doctor.slug}`); } catch(e) {}
+  try { await env.SESSIONS_KV.delete(`doctor_seo_v2:${doctor.slug}`); } catch(e) {}
 
   return json({ ok: true, slug: doctor.slug, form_url: `/form/${doctor.slug}` });
 }
@@ -925,8 +926,9 @@ async function handleConfig(request, env, doctor) {
   vals.push(doctor.id);
   await env.DB.prepare(`UPDATE doctors SET ${updates.join(',')}, updated_at=datetime('now') WHERE id=?`)
     .bind(...vals).run();
-  // Invalidate SEO cache
+  // Invalidate SEO cache (both v1 and v2 keys)
   try { await env.SESSIONS_KV.delete(`doctor_seo:${doctor.slug}`); } catch(e) {}
+  try { await env.SESSIONS_KV.delete(`doctor_seo_v2:${doctor.slug}`); } catch(e) {}
   const updated = await env.DB.prepare('SELECT * FROM doctors WHERE id=?').bind(doctor.id).first();
   return json({ ok: true, doctor: updated });
 }

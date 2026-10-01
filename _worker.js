@@ -101,8 +101,9 @@ function sessionCookie(token) {
 function getTrialStatus(doctor) {
   const now = new Date();
 
-  // Paid premium: plan='premium' AND plan_expires_at in future
-  const isPaidPremium = doctor.plan === 'premium'
+  // Paid plans: essentiel | avance | premium (legacy) with valid expiry
+  const PAID_PLANS = new Set(['essentiel', 'avance', 'premium']);
+  const isPaidPremium = PAID_PLANS.has(doctor.plan)
     && doctor.plan_expires_at
     && now < new Date(doctor.plan_expires_at);
 
@@ -110,18 +111,21 @@ function getTrialStatus(doctor) {
   const trialEnd = doctor.trial_ends_at ? new Date(doctor.trial_ends_at) : null;
   const inTrial = trialEnd !== null && now < trialEnd;
 
+  // Legacy doctors (created before trial system): trial_ends_at is NULL → always has access
+  const isLegacy = trialEnd === null;
+
   // Expired: had trial, it's over, not paid
-  const trialExpired = trialEnd !== null && now >= trialEnd && !isPaidPremium;
+  const trialExpired = !isLegacy && trialEnd !== null && now >= trialEnd && !isPaidPremium;
 
-  // Full access = paid OR in trial
-  const hasFullAccess = isPaidPremium || inTrial;
+  // Full access = paid OR in trial OR legacy (no trial set)
+  const hasFullAccess = isPaidPremium || inTrial || isLegacy;
 
-  // Days left in trial (0 if expired/paid)
+  // Days left in trial (0 if expired/paid/legacy)
   const daysLeft = (inTrial && trialEnd)
     ? Math.max(0, Math.ceil((trialEnd - now) / 86400000))
     : 0;
 
-  return { isPaidPremium, inTrial, trialExpired, hasFullAccess, daysLeft };
+  return { isPaidPremium, inTrial, trialExpired, hasFullAccess, daysLeft, isLegacy };
 }
 
 // ─── AI Helpers ───────────────────────────────────────────────────────────────
@@ -216,29 +220,34 @@ async function generateReviewWithAgent(env, doctor, chips, comment) {
   const nomDisplay = seoProfile.nom;
   const surname    = seoProfile.surname || nomDisplay;
   const systemPrompt = `Tu es un expert SEO local spécialisé en référencement Google Maps pour les médecins marocains.
-Tu reformules et enrichis les avis patients pour maximiser la visibilité locale sur Google.
+Tu améliores légèrement les avis patients en gardant leur voix et leurs mots exacts — tu ne réécris PAS de zéro.
 
 MÉDECIN : ${seoProfile.seo_context}
 MOTS-CLÉS CIBLES (à intégrer naturellement) : ${seoProfile.target_keywords.join(', ')}
 
-CRITÈRES D'UN EXCELLENT AVIS GOOGLE MAPS (tous obligatoires) :
+CONSIGNE PRINCIPALE : Prends le commentaire du patient tel quel et améliore-le MINIMALEMENT pour qu'il soit optimisé Google Maps. Garde ses mots, son style, sa tournure. Tu peux :
+- Ajouter le nom du médecin, la spécialité et la ville s'ils sont absents
+- Corriger une faute d'orthographe évidente
+- Ajouter UNE phrase de conclusion si l'avis est trop court
+
+CRITÈRES D'UN BON AVIS GOOGLE MAPS :
 1. ✅ Mentionner "${doctor.specialite}" naturellement dans l'avis
 2. ✅ Mentionner "${doctor.ville}"
 3. ✅ Mentionner le nom du médecin "Dr ${surname}" ou juste "${surname}" au moins une fois
-4. ✅ Entre 80 et 150 mots, 2 à 3 phrases complètes
-5. ✅ Ton authentique, première personne — vocabulaire de patient ordinaire
+4. ✅ Entre 60 et 150 mots
+5. ✅ Ton authentique, première personne — garder les mots EXACTS du patient
 6. ✅ Commencer directement par l'avis (0 introduction, 0 préambule, 0 "Bien sûr voici")
 
 RÈGLES ABSOLUES — jamais enfreintes :
-- N'utiliser QUE les informations données par le patient (chips + commentaire ci-dessous)
-- STRICTEMENT INTERDIT d'inventer : opérations, chirurgies, médicaments, prescriptions, scanners, injections, biopsies, greffes
-- Parler uniquement de la CONSULTATION, de l'ACCUEIL, de l'ÉCOUTE et des EXPLICATIONS
-- Si le patient ne mentionne pas une procédure spécifique → NE PAS l'écrire`;
+- GARDER les mots et expressions du patient — ne pas les remplacer par d'autres
+- N'utiliser QUE les informations données par le patient (chips + commentaire)
+- STRICTEMENT INTERDIT d'inventer : opérations, chirurgies, médicaments, prescriptions
+- Si le patient ne mentionne pas une procédure → NE PAS l'écrire`;
 
   const userPrompt = `${chipsCtx}
 ${commentCtx}
 
-Génère un avis Google Maps enrichi et optimisé SEO (commence directement par l'avis) :`;
+Améliore MINIMALEMENT ce commentaire pour Google Maps en gardant les mots du patient (commence directement par l'avis) :`;
 
   // ── STEP 1 : Generate with 70B Fast ─────────────────────────────────────────
   let generatedReview = '';
@@ -423,8 +432,8 @@ async function handleInscription(request, env) {
   const trialEndsAt = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
 
   await env.DB.prepare(`
-    INSERT INTO doctors (id, slug, nom, specialite, ville, email, password_hash, telephone, trial_ends_at, actif)
-    VALUES (?,?,?,?,?,?,?,?,?,1)
+    INSERT INTO doctors (id, slug, nom, specialite, ville, email, password_hash, telephone, trial_ends_at, plan, actif)
+    VALUES (?,?,?,?,?,?,?,?,?,'starter',1)
   `).bind(id, slug, nom, specialite, ville, email.toLowerCase(), password_hash, telephone || '', trialEndsAt).run();
 
   const sessionToken = await createSession(env, id);
@@ -449,9 +458,11 @@ async function handleLogin(request, env) {
   return json({
     ok: true,
     onboarded: doctor.onboarded,
-    plan: trial.isPaidPremium ? 'premium' : (trial.inTrial ? 'trial' : 'expired'),
+    plan: doctor.plan || 'starter',
+    has_access: trial.hasFullAccess,
     slug: doctor.slug,
     trial_days_left: trial.daysLeft,
+    is_legacy: trial.isLegacy,
   }, 200, { 'Set-Cookie': sessionCookie(sessionToken) });
 }
 
@@ -794,9 +805,10 @@ async function handleDashboard(env, doctor) {
       template_suggestion: freshDoctor.template_suggestion,
       vocabulaire_positif: freshDoctor.vocabulaire_positif,
       langue_defaut: freshDoctor.langue_defaut,
-      plan: trial.isPaidPremium ? 'premium' : (trial.inTrial ? 'trial' : 'expired'),
+      plan: freshDoctor.plan || 'starter',
       plan_expires_at: freshDoctor.plan_expires_at,
       avis_ce_mois: freshDoctor.avis_ce_mois || 0,
+      quota: ({ starter: 10, essentiel: 100, avance: 9999 })[freshDoctor.plan] || 10,
       onboarded: freshDoctor.onboarded,
     },
     stats: {
@@ -815,19 +827,107 @@ async function handleFeedbacks(request, env, doctor) {
   const type   = params.get('type');
   const canal  = params.get('canal');
   const period = params.get('period');
+  const limit  = Math.min(parseInt(params.get('limit') || '100', 10), 500);
 
-  const conditions = [`doctor_id='${doctor.id}'`];
-  if (type)   conditions.push(`type_final='${type.toUpperCase()}'`);
-  if (canal)  conditions.push(`canal='${canal.toUpperCase()}'`);
-  if (period === 'week')  conditions.push("created_at>=datetime('now','-7 days')");
-  if (period === 'month') conditions.push("created_at>=datetime('now','-30 days')");
+  const conditions = ['f.doctor_id=?'];
+  const bindings = [doctor.id];
+
+  if (type)  { conditions.push('f.type_final=?');  bindings.push(type.toUpperCase()); }
+  if (canal) { conditions.push('f.canal=?');        bindings.push(canal.toUpperCase()); }
+  if (period === 'week')  conditions.push("f.created_at>=datetime('now','-7 days')");
+  if (period === 'month') conditions.push("f.created_at>=datetime('now','-30 days')");
 
   const { results } = await env.DB.prepare(`
     SELECT f.*, p.nom as patient_nom, p.telephone as patient_tel
     FROM feedbacks f LEFT JOIN patients p ON f.patient_id=p.id
-    WHERE ${conditions.join(' AND ')} ORDER BY f.created_at DESC LIMIT 100
-  `).all();
+    WHERE ${conditions.join(' AND ')} ORDER BY f.created_at DESC LIMIT ${limit}
+  `).bind(...bindings).all();
   return json({ ok: true, feedbacks: results });
+}
+
+// GET /api/me
+async function handleMe(env, doctor) {
+  const doc = await env.DB.prepare('SELECT * FROM doctors WHERE id=?').bind(doctor.id).first();
+  if (!doc) return json({ error: 'Médecin introuvable' }, 404);
+  const trial = getTrialStatus(doc);
+  const QUOTAS = { starter: 10, essentiel: 100, avance: 9999 };
+  const quota = QUOTAS[doc.plan] || 10;
+  let chips = []; let vocab = [];
+  try { chips = JSON.parse(doc.chips_positifs || '[]'); } catch {}
+  try { vocab = JSON.parse(doc.vocabulaire_positif || '[]'); } catch {}
+  return json({
+    ok: true,
+    doctor: {
+      id: doc.id, nom: doc.nom, specialite: doc.specialite, ville: doc.ville,
+      slug: doc.slug, email: doc.email, telephone: doc.telephone,
+      logo_url: doc.logo_url, google_maps_url: doc.google_maps_url,
+      whatsapp_assistante: doc.whatsapp_assistante,
+      chips_positifs: chips, template_suggestion: doc.template_suggestion,
+      vocabulaire_positif: vocab, langue_defaut: doc.langue_defaut || 'fr',
+      plan: doc.plan || 'starter',
+      plan_expires_at: doc.plan_expires_at,
+      avis_ce_mois: doc.avis_ce_mois || 0,
+      quota,
+      onboarded: doc.onboarded,
+      trial_status: {
+        in_trial: trial.inTrial, trial_expired: trial.trialExpired,
+        is_paid: trial.isPaidPremium, has_full_access: trial.hasFullAccess,
+        days_left: trial.daysLeft, is_legacy: trial.isLegacy,
+      },
+    },
+  });
+}
+
+// GET /api/config
+async function handleConfigGet(env, doctor) {
+  const doc = await env.DB.prepare('SELECT * FROM doctors WHERE id=?').bind(doctor.id).first();
+  if (!doc) return json({ error: 'Médecin introuvable' }, 404);
+  let chips = []; let vocab = [];
+  try { chips = JSON.parse(doc.chips_positifs || '[]'); } catch {}
+  try { vocab = JSON.parse(doc.vocabulaire_positif || '[]'); } catch {}
+  return json({
+    ok: true,
+    nom: doc.nom, specialite: doc.specialite, ville: doc.ville,
+    telephone: doc.telephone, email: doc.email,
+    logo_url: doc.logo_url || '', google_maps_url: doc.google_maps_url || '',
+    whatsapp_assistante: doc.whatsapp_assistante || '',
+    chips_positifs: chips,
+    template_suggestion: doc.template_suggestion || '',
+    vocabulaire_positif: vocab,
+    langue_defaut: doc.langue_defaut || 'fr',
+    slug: doc.slug, plan: doc.plan || 'starter',
+  });
+}
+
+// PATCH /api/feedbacks/:id/traite
+async function handleFeedbackTraite(request, env, doctor, feedbackId) {
+  const row = await env.DB.prepare('SELECT id FROM feedbacks WHERE id=? AND doctor_id=?').bind(feedbackId, doctor.id).first();
+  if (!row) return json({ error: 'Avis introuvable' }, 404);
+  const { traite } = await request.json().catch(() => ({ traite: true }));
+  if (traite) {
+    await env.DB.prepare("UPDATE feedbacks SET traite=1, traite_at=datetime('now') WHERE id=?").bind(feedbackId).run();
+  } else {
+    await env.DB.prepare('UPDATE feedbacks SET traite=0, traite_at=NULL WHERE id=?').bind(feedbackId).run();
+  }
+  return json({ ok: true });
+}
+
+// GET /api/notifications — unread negative feedbacks for doctor
+async function handleNotifications(env, doctor) {
+  const { results } = await env.DB.prepare(`
+    SELECT id, note, commentaire, type_final, created_at, canal
+    FROM feedbacks
+    WHERE doctor_id=? AND type_final='NEGATIF' AND (traite IS NULL OR traite=0)
+    ORDER BY created_at DESC LIMIT 20
+  `).bind(doctor.id).all();
+  return json({
+    ok: true,
+    count: results.length,
+    notifications: results.map(f => ({
+      id: f.id, type: 'negatif', note: f.note,
+      commentaire: f.commentaire, canal: f.canal, created_at: f.created_at,
+    })),
+  });
 }
 
 // GET|POST /api/patients
@@ -970,7 +1070,7 @@ async function handleAdminStats(env) {
       SELECT COUNT(*) as n FROM doctors
       WHERE trial_ends_at IS NOT NULL
         AND trial_ends_at < datetime('now')
-        AND (plan IS NULL OR plan='free' OR plan_expires_at < datetime('now'))
+        AND (plan IS NULL OR plan='free' OR plan='starter' OR plan_expires_at < datetime('now'))
         AND actif=1
     `).first(),
   ]);
@@ -1014,7 +1114,7 @@ async function handleAdminNotifications(env) {
     FROM doctors
     WHERE trial_ends_at IS NOT NULL
       AND trial_ends_at < datetime('now')
-      AND (plan IS NULL OR plan='free' OR plan_expires_at < datetime('now'))
+      AND (plan IS NULL OR plan='free' OR plan='starter' OR plan_expires_at < datetime('now'))
       AND actif=1
     ORDER BY trial_ends_at DESC
   `).all();
@@ -1070,7 +1170,7 @@ async function handleAdminCreate(request, env) {
   if (slugExists) slug = slug + '-' + id.slice(0, 4);
 
   const password_hash = await hashPassword(password);
-  const planFinal = plan || 'free';
+  const planFinal = plan || 'starter';
   const expires = planFinal === 'premium'
     ? new Date(Date.now() + (parseInt(months) || 1) * 30 * 24 * 3600 * 1000).toISOString()
     : null;
@@ -1249,6 +1349,12 @@ export default {
       if (path === '/api/track-google' && method === 'POST') return handleTrackGoogle(request, env);
 
       // ── Dashboard (auth required)
+      if (path === '/api/me' && method === 'GET') {
+        const doc = await getDoctor(env, request);
+        if (!doc) return json({ error: 'Non authentifié' }, 401);
+        return handleMe(env, doc);
+      }
+
       if (path === '/api/dashboard' && method === 'GET') {
         const doc = await getDoctor(env, request);
         if (!doc) return json({ error: 'Non authentifié' }, 401);
@@ -1259,6 +1365,20 @@ export default {
         const doc = await getDoctor(env, request);
         if (!doc) return json({ error: 'Non authentifié' }, 401);
         return handleFeedbacks(request, env, doc);
+      }
+
+      // PATCH /api/feedbacks/:id/traite
+      const traiteMatch = path.match(/^\/api\/feedbacks\/([^/]+)\/traite$/);
+      if (traiteMatch && method === 'PATCH') {
+        const doc = await getDoctor(env, request);
+        if (!doc) return json({ error: 'Non authentifié' }, 401);
+        return handleFeedbackTraite(request, env, doc, traiteMatch[1]);
+      }
+
+      if (path === '/api/notifications' && method === 'GET') {
+        const doc = await getDoctor(env, request);
+        if (!doc) return json({ error: 'Non authentifié' }, 401);
+        return handleNotifications(env, doc);
       }
 
       if (path === '/api/patients') {
@@ -1273,7 +1393,13 @@ export default {
         return handleGenerateToken(request, env, doc);
       }
 
-      if (path === '/api/config' && method === 'PUT') {
+      if (path === '/api/config' && method === 'GET') {
+        const doc = await getDoctor(env, request);
+        if (!doc) return json({ error: 'Non authentifié' }, 401);
+        return handleConfigGet(env, doc);
+      }
+
+      if (path === '/api/config' && (method === 'PUT' || method === 'POST')) {
         const doc = await getDoctor(env, request);
         if (!doc) return json({ error: 'Non authentifié' }, 401);
         return handleConfig(request, env, doc);

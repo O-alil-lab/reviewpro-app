@@ -4,509 +4,723 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Super Admin — ReviewPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0f172a;font-family:'Segoe UI',system-ui,sans-serif;color:#e2e8f0;min-height:100vh}
-.topbar{background:#1e293b;border-bottom:1px solid #334155;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
-.topbar-logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;color:#fff}
-.topbar-logo .icon{width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.admin-badge{background:#dc2626;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
+:root{
+  --bg:#F0FDFA;
+  --surface:#fff;
+  --surface2:#F8FAFC;
+  --border:#CCFBF1;
+  --border2:#E2E8F0;
+  --text:#134E4A;
+  --muted:#64748B;
+  --primary:#0D9488;
+  --primary-dark:#0f766e;
+  --success:#059669;
+  --warning:#D97706;
+  --error:#DC2626;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--bg);
+  font-family:'Noto Sans',system-ui,sans-serif;
+  color:var(--text);min-height:100vh;
+}
+
+/* ── Topbar ──────────────────────────────────────────────── */
+.topbar{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+.topbar-logo{
+  display:flex;align-items:center;gap:10px;
+  font-size:16px;font-weight:800;color:var(--text);
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.topbar-icon{
+  width:34px;height:34px;
+  background:linear-gradient(135deg,#0D9488,#22D3EE);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(13,148,136,.3);
+}
+.admin-tag{
+  background:var(--error);color:#fff;
+  font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;
+  letter-spacing:.06em;font-family:'Figtree',system-ui,sans-serif;
+}
 .topbar-right{display:flex;align-items:center;gap:12px}
-.admin-email{font-size:13px;color:#94a3b8}
+.topbar-email{font-size:12px;color:var(--muted)}
+.btn-logout{
+  padding:7px 14px;background:transparent;border:1.5px solid var(--border2);
+  border-radius:8px;color:var(--muted);font-size:12px;font-weight:600;
+  cursor:pointer;transition:.2s;font-family:'Figtree',system-ui,sans-serif;
+}
+.btn-logout:hover{border-color:#94A3B8;color:var(--text)}
 
-.main{padding:24px;max-width:1200px;margin:0 auto}
-.page-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:6px}
-.page-sub{font-size:14px;color:#64748b;margin-bottom:28px}
+/* ── Auth gate ───────────────────────────────────────────── */
+.auth-wrap{
+  min-height:calc(100vh - 60px);display:flex;
+  align-items:center;justify-content:center;padding:24px;
+}
+.auth-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:40px;width:100%;max-width:400px;text-align:center;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+.auth-icon{
+  width:64px;height:64px;border-radius:50%;margin:0 auto 16px;
+  background:#FEF3C7;border:1px solid #FDE68A;
+  display:flex;align-items:center;justify-content:center;
+}
+.auth-title{
+  font-size:20px;font-weight:700;color:var(--text);
+  margin-bottom:6px;font-family:'Figtree',system-ui,sans-serif;
+}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-input{
+  width:100%;padding:13px 14px;background:#fff;border:2px solid var(--border2);
+  border-radius:10px;color:var(--text);font-size:14px;outline:none;
+  margin-bottom:12px;font-family:'Noto Sans',system-ui,sans-serif;transition:.2s;
+}
+.auth-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px #0D948820}
+.auth-input::placeholder{color:#94A3B8}
+.auth-btn{
+  width:100%;padding:14px;background:var(--primary);color:#fff;
+  border:none;border-radius:10px;font-size:14px;font-weight:700;
+  cursor:pointer;transition:.2s;font-family:'Figtree',system-ui,sans-serif;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+.auth-btn:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.auth-error{color:var(--error);font-size:13px;margin-top:10px;display:none}
 
-.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px}
-.stat-chip{background:#1e293b;border-radius:12px;padding:16px 20px;border:1px solid #334155}
-.stat-chip .val{font-size:28px;font-weight:800;color:#fff}
-.stat-chip .lbl{font-size:11px;color:#64748b;margin-top:3px}
-.stat-chip.blue .val{color:#60a5fa}
-.stat-chip.green .val{color:#34d399}
-.stat-chip.yellow .val{color:#fbbf24}
+/* ── Main layout ─────────────────────────────────────────── */
+.main{padding:28px;max-width:1280px;margin:0 auto}
+.page-head{margin-bottom:24px}
+.page-title{
+  font-size:22px;font-weight:800;color:var(--text);
+  margin-bottom:4px;font-family:'Figtree',system-ui,sans-serif;
+}
+.page-sub{font-size:13px;color:var(--muted)}
 
-.section{background:#1e293b;border-radius:14px;border:1px solid #334155;margin-bottom:24px;overflow:hidden}
-.section-header{padding:16px 20px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between}
-.section-title{font-size:15px;font-weight:700;color:#fff}
-.section-sub{font-size:12px;color:#64748b;margin-top:2px}
-.search-input{padding:7px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;width:220px}
-.search-input:focus{border-color:#2563eb}
+/* ── Stats grid ──────────────────────────────────────────── */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;margin-bottom:24px;
+}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:20px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.stat-val{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px;font-family:'Figtree',system-ui,sans-serif}
+.stat-val.blue{color:#0891B2}
+.stat-val.green{color:#059669}
+.stat-val.amber{color:#D97706}
+.stat-val.red{color:#DC2626}
+.stat-lbl{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
 
-table{width:100%;border-collapse:collapse}
-th{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;padding:10px 16px;border-bottom:1px solid #334155;text-align:left}
-td{font-size:13px;padding:12px 16px;border-bottom:1px solid #1e293b;color:#cbd5e1;vertical-align:middle}
+/* ── Sections ────────────────────────────────────────────── */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;margin-bottom:20px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.card.warn{border-color:rgba(220,38,38,.3);box-shadow:0 0 0 1px rgba(220,38,38,.1)}
+.card-head{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;background:#FAFFFE;
+}
+.card-title{
+  font-size:14px;font-weight:700;color:var(--text);
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.card-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ── Search ──────────────────────────────────────────────── */
+.search-input{
+  padding:8px 12px;background:#fff;border:1.5px solid var(--border2);
+  border-radius:8px;color:var(--text);font-size:13px;outline:none;
+  width:220px;font-family:'Noto Sans',system-ui,sans-serif;transition:.2s;
+}
+.search-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px #0D948815}
+.search-input::placeholder{color:#94A3B8}
+
+/* ── Table ───────────────────────────────────────────────── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th{
+  font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;padding:10px 16px;border-bottom:1px solid var(--border);
+  text-align:left;white-space:nowrap;background:#F8FFFD;
+}
+td{
+  font-size:13px;padding:13px 16px;border-bottom:1px solid #F0FFF9;
+  color:#374151;vertical-align:middle;
+}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:#0f172a}
+tr:hover td{background:#FAFFFE}
+td strong{color:var(--text)}
+td small{color:var(--muted);font-size:11px}
 
-.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
-.badge.free{background:#1e293b;color:#64748b;border:1px solid #334155}
-.badge.premium{background:#fef3c7;color:#92400e}
-.badge.actif{background:#064e3b;color:#34d399}
-.badge.inactif{background:#3b1515;color:#f87171}
-.badge.pending{background:#1c1917;color:#fbbf24}
-.badge.done{background:#064e3b;color:#34d399}
+/* ── Badges ──────────────────────────────────────────────── */
+.badge{
+  display:inline-flex;align-items:center;gap:3px;padding:3px 10px;
+  border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.badge.plan-starter{background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0}
+.badge.plan-essentiel{background:#FFF7ED;color:#D97706;border:1px solid #FED7AA}
+.badge.plan-avance{background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE}
+.badge.trial{background:#F0FDF4;color:#059669;border:1px solid #A7F3D0}
+.badge.expired{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.badge.active{background:#F0FDF4;color:#059669;border:1px solid #A7F3D0}
+.badge.inactive{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.badge.pending{background:#FFF7ED;color:#D97706;border:1px solid #FED7AA}
+.badge.approved{background:#F0FDF4;color:#059669;border:1px solid #A7F3D0}
 
-.action-btn{padding:5px 10px;border-radius:6px;border:1px solid #334155;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;transition:.2s;margin-right:4px}
-.action-btn:hover{background:#334155;color:#e2e8f0}
-.action-btn.danger{border-color:#991b1b;color:#f87171}
-.action-btn.danger:hover{background:#991b1b}
-.action-btn.success{border-color:#065f46;color:#34d399}
-.action-btn.success:hover{background:#065f46}
+/* ── Action buttons ──────────────────────────────────────── */
+.act-btn{
+  padding:5px 11px;border-radius:7px;border:1.5px solid var(--border2);
+  background:#fff;color:var(--muted);font-size:11px;font-weight:600;
+  cursor:pointer;transition:.2s;white-space:nowrap;
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.act-btn:hover{background:#F1F5F9;color:var(--text)}
+.act-btn.success{border-color:rgba(5,150,105,.35);color:#059669;background:#F0FDF4}
+.act-btn.success:hover{background:#D1FAE5}
+.act-btn.danger{border-color:rgba(220,38,38,.3);color:#DC2626;background:#FEF2F2}
+.act-btn.danger:hover{background:#FEE2E2}
+.act-btn.primary{border-color:rgba(13,148,136,.35);color:#0D9488;background:#F0FDFA}
+.act-btn.primary:hover{background:#CCFBF1}
+.act-btns{display:flex;gap:6px;flex-wrap:wrap}
 
-.empty{text-align:center;padding:40px;color:#475569;font-size:13px}
-.loading-row td{color:#475569;text-align:center}
+/* ── Settings ────────────────────────────────────────────── */
+.settings-row{
+  padding:18px 20px;display:flex;align-items:center;gap:12px;
+  flex-wrap:wrap;border-bottom:1px solid var(--border);
+}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:13px;font-weight:600;color:var(--text);flex:0 0 200px}
+.settings-hint{font-size:11px;color:var(--muted);margin-top:2px}
+.settings-field{flex:1;display:flex;gap:10px;align-items:center;min-width:0}
+.settings-input{
+  flex:1;min-width:0;padding:10px 14px;background:#fff;
+  border:1.5px solid var(--border2);border-radius:8px;
+  color:var(--text);font-size:13px;outline:none;
+  font-family:'Noto Sans',system-ui,sans-serif;transition:.2s;
+}
+.settings-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px #0D948815}
+.settings-save{
+  padding:9px 18px;background:var(--primary);color:#fff;
+  border:none;border-radius:8px;font-size:12px;font-weight:700;
+  cursor:pointer;transition:.2s;white-space:nowrap;
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.settings-save:hover{background:var(--primary-dark)}
+.settings-ok{font-size:12px;color:#059669;display:none;font-weight:600}
 
-/* Auth gate */
-.auth-gate{max-width:420px;margin:80px auto;background:#1e293b;border-radius:16px;padding:32px;border:1px solid #334155;text-align:center}
-.auth-gate h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
-.auth-gate p{font-size:13px;color:#64748b;margin-bottom:20px}
-.auth-gate input{width:100%;padding:11px 14px;background:#0f172a;border:1.5px solid #334155;border-radius:10px;color:#e2e8f0;font-size:14px;outline:none;margin-bottom:12px}
-.auth-gate input:focus{border-color:#2563eb}
-.auth-gate .btn{width:100%;padding:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
-.auth-error{color:#f87171;font-size:13px;margin-top:8px;display:none}
+/* ── Refresh btn ─────────────────────────────────────────── */
+.act-btn.refresh{
+  border-color:var(--border2);color:var(--muted);background:#fff;
+}
+.act-btn.refresh:hover{background:#F1F5F9;color:var(--text)}
 
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+/* ── Empty / Loading ─────────────────────────────────────── */
+.empty{text-align:center;padding:36px;color:var(--muted);font-size:13px}
+.spinner{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid rgba(13,148,136,.2);border-top-color:#0D9488;
+  border-radius:50%;animation:spin .7s linear infinite;
+  vertical-align:middle;margin-right:6px;
+}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Toast ───────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:#134E4A;color:#fff;
+  border:1px solid #0D9488;
+  padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;
+  z-index:999;transition:.35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media(max-width:768px){
+  .main{padding:16px}
+  .topbar{padding:0 16px}
+  .card-head{gap:8px}
+  .search-input{width:100%}
+  .settings-label{flex:0 0 100%;margin-bottom:4px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
 
+<!-- Topbar -->
 <div class="topbar">
   <div class="topbar-logo">
-    <div class="icon">⭐</div>
+    <div class="topbar-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </div>
     ReviewPro
-    <span class="admin-badge">SUPER ADMIN</span>
+    <span class="admin-tag">SUPER ADMIN</span>
   </div>
   <div class="topbar-right">
-    <span class="admin-email" id="adminEmail">—</span>
-    <button class="action-btn" onclick="logout()">Déconnexion</button>
+    <span class="topbar-email" id="adminEmail"></span>
+    <button class="btn-logout" onclick="logout()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </button>
   </div>
 </div>
 
-<!-- AUTH GATE -->
+<!-- Auth gate -->
 <div id="authGate" style="display:none">
-  <div class="auth-gate">
-    <div style="font-size:48px;margin-bottom:12px">🔐</div>
-    <h2>Accès Super Admin</h2>
-    <p>Entrez la clé d'administration pour accéder au panneau.</p>
-    <input type="password" id="adminKey" placeholder="Clé admin…" onkeydown="if(event.key==='Enter') doAdminLogin()">
-    <button class="btn" onclick="doAdminLogin()">Accéder</button>
-    <div class="auth-error" id="authError">Clé incorrecte.</div>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="auth-title">Accès Super Admin</div>
+      <div class="auth-sub">Entrez la clé d'administration pour accéder au panneau de contrôle.</div>
+      <input type="password" class="auth-input" id="adminKey" placeholder="Clé admin…" onkeydown="if(event.key==='Enter') doLogin()">
+      <button class="auth-btn" onclick="doLogin()">Accéder →</button>
+      <div class="auth-error" id="authError">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Clé incorrecte ou erreur réseau.
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ADMIN CONTENT -->
+<!-- Admin content -->
 <div id="adminContent" style="display:none">
   <div class="main">
-    <div class="page-title">🛡️ Super Admin Dashboard</div>
-    <div class="page-sub">Gestion complète de la plateforme ReviewPro</div>
+    <div class="page-head">
+      <div class="page-title">Tableau de bord Super Admin</div>
+      <div class="page-sub">Gestion complète de la plateforme ReviewPro</div>
+    </div>
 
-    <!-- Stats bar -->
-    <div class="stats-bar">
-      <div class="stat-chip blue"><div class="val" id="statDoctors">—</div><div class="lbl">Médecins</div></div>
-      <div class="stat-chip yellow"><div class="val" id="statPremium">—</div><div class="lbl">Premium</div></div>
-      <div class="stat-chip green"><div class="val" id="statFeedbacks">—</div><div class="lbl">Avis total</div></div>
-      <div class="stat-chip"><div class="val" id="statPending">—</div><div class="lbl">Upgrades en attente</div></div>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val blue" id="sMedecins">—</div><div class="stat-lbl">Médecins</div></div>
+      <div class="stat-card"><div class="stat-val amber" id="sPremium">—</div><div class="stat-lbl">Upgrades en attente</div></div>
+      <div class="stat-card"><div class="stat-val green" id="sAvis">—</div><div class="stat-lbl">Avis total</div></div>
+      <div class="stat-card"><div class="stat-val red" id="sPending">—</div><div class="stat-lbl">Demandes en attente</div></div>
     </div>
 
     <!-- Upgrade requests -->
-    <div class="section">
-      <div class="section-header">
+    <div class="card">
+      <div class="card-head">
         <div>
-          <div class="section-title">🚀 Demandes Premium</div>
-          <div class="section-sub">Activer / refuser les abonnements</div>
+          <div class="card-title">Demandes de mise à niveau</div>
+          <div class="card-sub">Activer ou refuser les abonnements</div>
         </div>
+        <button class="act-btn refresh" onclick="loadUpgrades()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Rafraîchir
+        </button>
       </div>
-      <div id="upgradeTable"><div class="empty">Chargement…</div></div>
+      <div class="table-wrap" id="upgradeTable"><div class="empty">Chargement…</div></div>
     </div>
 
-    <!-- Expired Trials — À contacter -->
-    <div class="section" id="expiredTrialsSection" style="border:1.5px solid #f87171">
-      <div class="section-header">
+    <!-- Plan breakdown -->
+    <div class="card" id="planCard">
+      <div class="card-head">
         <div>
-          <div class="section-title">⏰ Essais expirés — À contacter</div>
-          <div class="section-sub" id="expiredTrialsBadge" style="color:#f87171;font-weight:600"></div>
+          <div class="card-title">Répartition des plans</div>
+          <div class="card-sub" id="planSub">Médecins actifs par plan</div>
         </div>
+        <button class="act-btn refresh" onclick="loadPlanBreakdown()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Rafraîchir
+        </button>
       </div>
-      <div id="expiredTrialsTable"><div class="empty">Chargement…</div></div>
+      <div class="table-wrap" id="planTable"><div class="empty">Chargement…</div></div>
     </div>
 
-    <!-- Admin Settings -->
-    <div class="section">
-      <div class="section-header">
+    <!-- Settings -->
+    <div class="card">
+      <div class="card-head">
         <div>
-          <div class="section-title">⚙️ Paramètres Plateforme</div>
-          <div class="section-sub">Numéro WhatsApp admin pour les demandes Premium</div>
+          <div class="card-title">Paramètres plateforme</div>
+          <div class="card-sub">Configuration globale ReviewPro</div>
         </div>
       </div>
-      <div style="padding:20px 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <input type="text" id="adminWaInput" placeholder="Ex: 212605932376 ou 0605932376"
-          style="flex:1;min-width:220px;padding:10px 14px;background:#0f172a;border:1.5px solid #334155;border-radius:10px;color:#e2e8f0;font-size:14px;outline:none">
-        <button class="action-btn success" style="padding:10px 20px;font-size:13px" onclick="saveSettings()">💾 Enregistrer</button>
-        <span id="settingsSaved" style="color:#34d399;font-size:13px;display:none">✓ Enregistré</span>
+      <div class="settings-row">
+        <div class="settings-label">
+          <div>WhatsApp admin</div>
+          <div class="settings-hint">Pour les demandes Premium</div>
+        </div>
+        <div class="settings-field">
+          <input type="text" class="settings-input" id="adminWaInput" placeholder="212605932376">
+          <button class="settings-save" onclick="saveSettings()">Enregistrer</button>
+          <span class="settings-ok" id="settingsOk">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polyline points="20 6 9 17 4 12"/></svg>
+            Enregistré
+          </span>
+        </div>
       </div>
-      <div style="padding:0 24px 16px;font-size:12px;color:#475569">
-        Entrez le numéro sans espaces ni tirets. Exemples : <code style="color:#94a3b8">212605932376</code> ou <code style="color:#94a3b8">0605932376</code>
+      <div style="padding:10px 20px 16px;font-size:11px;color:var(--muted)">
+        Format sans espaces ni tirets : <code style="background:#F0FDFA;border:1px solid #CCFBF1;border-radius:4px;padding:1px 5px;color:#0D9488;font-size:11px">212605932376</code> ou <code style="background:#F0FDFA;border:1px solid #CCFBF1;border-radius:4px;padding:1px 5px;color:#0D9488;font-size:11px">0605932376</code>
       </div>
     </div>
 
     <!-- Doctors -->
-    <div class="section">
-      <div class="section-header">
+    <div class="card">
+      <div class="card-head">
         <div>
-          <div class="section-title">👨‍⚕️ Médecins inscrits</div>
-          <div class="section-sub">Gérer les comptes</div>
+          <div class="card-title">Médecins inscrits</div>
+          <div class="card-sub" id="doctorCount">—</div>
         </div>
-        <input class="search-input" type="text" placeholder="Rechercher…" id="doctorSearch" oninput="filterDoctors()">
+        <input type="text" class="search-input" placeholder="Rechercher…" id="doctorSearch" oninput="filterDoctors()">
       </div>
-      <div id="doctorsTable"><div class="empty">Chargement…</div></div>
+      <div class="table-wrap" id="doctorsTable"><div class="empty">Chargement…</div></div>
     </div>
-
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-let adminKey = localStorage.getItem('adminKey') || '';
+// C5 — Clé admin en mémoire uniquement (jamais persistée en storage).
+// L'utilisateur doit ressaisir la clé à chaque chargement de page.
+// Cela évite qu'une extension ou un XSS puisse lire la clé depuis localStorage.
+let adminKey  = '';
 let allDoctors = [];
 
+// ── Auth ──────────────────────────────────────────────────────
 async function checkAuth() {
-  if (!adminKey) {
-    document.getElementById('authGate').style.display = 'block';
-    return;
-  }
+  if (!adminKey) { showGate(); return; }
   try {
-    const res = await fetch('/api/admin/stats', {
-      headers: { 'X-Admin-Key': adminKey }
-    });
-    if (res.status === 401 || res.status === 403) {
-      localStorage.removeItem('adminKey');
-      adminKey = '';
-      document.getElementById('authGate').style.display = 'block';
-      return;
-    }
+    const res = await fetch('/api/admin/stats', { headers: { 'X-Admin-Key': adminKey } });
+    if (!res.ok) { localStorage.removeItem('adminKey'); adminKey = ''; showGate(); return; }
     const data = await res.json();
-    document.getElementById('authGate').style.display = 'none';
-    document.getElementById('adminContent').style.display = 'block';
-    document.getElementById('adminEmail').textContent = data.admin_email || '';
-    renderStats(data);
-    loadDoctors();
-    loadUpgrades();
-    loadSettings();
-  } catch(e) {
-    document.getElementById('authGate').style.display = 'block';
-  }
+    showContent(data);
+  } catch { showGate(); }
 }
 
-async function doAdminLogin() {
+async function doLogin() {
   const key = document.getElementById('adminKey').value.trim();
   if (!key) return;
-  adminKey = key;
   document.getElementById('authError').style.display = 'none';
   try {
     const res = await fetch('/api/admin/stats', { headers: { 'X-Admin-Key': key } });
-    if (!res.ok) {
-      document.getElementById('authError').style.display = 'block';
-      adminKey = '';
-      return;
-    }
-    localStorage.setItem('adminKey', key);
-    const data = await res.json();
-    document.getElementById('authGate').style.display = 'none';
-    document.getElementById('adminContent').style.display = 'block';
-    document.getElementById('adminEmail').textContent = data.admin_email || '';
-    renderStats(data);
-    loadDoctors();
-    loadUpgrades();
-    loadSettings();
-  } catch(e) {
-    document.getElementById('authError').textContent = 'Erreur réseau.';
+    if (!res.ok) { document.getElementById('authError').style.display = 'block'; return; }
+    adminKey = key;
+    // C5 — On ne stocke pas la clé. Elle sera demandée à chaque session.
+    showContent(await res.json());
+  } catch {
+    document.getElementById('authError').textContent = 'Erreur réseau. Réessayez.';
     document.getElementById('authError').style.display = 'block';
   }
 }
 
-function renderStats(data) {
-  document.getElementById('statDoctors').textContent = data.total_doctors || 0;
-  document.getElementById('statPremium').textContent = data.premium_doctors || 0;
-  document.getElementById('statFeedbacks').textContent = data.total_feedbacks || 0;
-  document.getElementById('statPending').textContent = data.pending_upgrades || 0;
-  // Show expired trials badge if any
-  const expiredCount = data.expired_trials || 0;
-  const notifEl = document.getElementById('expiredTrialsBadge');
-  if (notifEl) {
-    notifEl.textContent = expiredCount > 0 ? `⚠️ ${expiredCount} essai(s) expiré(s) — à contacter` : '';
-    notifEl.style.display = expiredCount > 0 ? 'block' : 'none';
-  }
-  loadExpiredTrials();
+function showGate() {
+  document.getElementById('authGate').style.display = 'block';
+  document.getElementById('adminContent').style.display = 'none';
 }
 
+function showContent(data) {
+  document.getElementById('authGate').style.display = 'none';
+  document.getElementById('adminContent').style.display = 'block';
+  document.getElementById('adminEmail').textContent = data.admin_email || 'Admin';
+  renderStats(data);
+  loadDoctors();
+  loadUpgrades();
+  loadPlanBreakdown();
+  loadSettings();
+}
+
+function logout() {
+  adminKey = '';
+  document.getElementById('adminContent').style.display = 'none';
+  document.getElementById('authGate').style.display = 'block';
+  document.getElementById('adminKey').value = '';
+}
+
+// ── Stats ─────────────────────────────────────────────────────
+function renderStats(data) {
+  document.getElementById('sMedecins').textContent = data.total_doctors    || 0;
+  document.getElementById('sPremium').textContent  = data.pending_upgrades || 0;
+  document.getElementById('sAvis').textContent     = data.total_feedbacks  || 0;
+  document.getElementById('sPending').textContent  = data.pending_upgrades || 0;
+}
+
+// ── Doctors ───────────────────────────────────────────────────
 async function loadDoctors() {
+  document.getElementById('doctorsTable').innerHTML = '<div class="empty"><span class="spinner"></span>Chargement…</div>';
   try {
-    const res = await fetch('/api/admin/doctors', { headers: { 'X-Admin-Key': adminKey } });
+    const res  = await fetch('/api/admin/doctors', { headers: { 'X-Admin-Key': adminKey } });
     const data = await res.json();
     allDoctors = data.doctors || [];
-    renderDoctorsTable(allDoctors);
-  } catch(e) {
+    document.getElementById('doctorCount').textContent = `${allDoctors.length} médecin(s) inscrit(s)`;
+    renderDoctors(allDoctors);
+  } catch {
     document.getElementById('doctorsTable').innerHTML = '<div class="empty">Erreur de chargement.</div>';
   }
 }
 
-function renderDoctorsTable(doctors) {
-  if (!doctors.length) {
-    document.getElementById('doctorsTable').innerHTML = '<div class="empty">Aucun médecin inscrit.</div>';
-    return;
-  }
-  let html = `<table><thead><tr><th>Nom</th><th>Email</th><th>Spécialité</th><th>Ville</th><th>Plan</th><th>Essai</th><th>Avis/mois</th><th>Statut</th><th>Actions</th></tr></thead><tbody>`;
-  doctors.forEach(d => {
-    const now = new Date();
-    const trialEnd = d.trial_ends_at ? new Date(d.trial_ends_at) : null;
-    const inTrial = trialEnd && now < trialEnd;
-    const trialExpired = trialEnd && now >= trialEnd && d.plan !== 'premium';
-    const daysLeft = inTrial ? Math.max(0, Math.ceil((trialEnd - now) / 86400000)) : 0;
+function filterDoctors() {
+  const q = document.getElementById('doctorSearch').value.toLowerCase();
+  renderDoctors(allDoctors.filter(d =>
+    (d.nom||'').toLowerCase().includes(q) || (d.email||'').toLowerCase().includes(q) ||
+    (d.ville||'').toLowerCase().includes(q) || (d.specialite||'').toLowerCase().includes(q)
+  ));
+}
 
-    const planBadge = d.plan === 'premium'
-      ? '<span class="badge premium">⭐ Premium</span>'
-      : '<span class="badge free">Free</span>';
+// Normalize legacy plan names to the 3 canonical plans
+function normalizePlan(raw) {
+  const p = (raw || 'starter').toLowerCase();
+  if (p === 'free' || p === '' )  return 'starter';
+  if (p === 'premium')            return 'essentiel';
+  return p; // starter | essentiel | avance
+}
 
-    let trialBadge = '—';
-    if (trialExpired) {
-      trialBadge = '<span class="badge inactif">⏰ Expiré</span>';
-    } else if (inTrial) {
-      trialBadge = `<span class="badge actif">J-${daysLeft}</span>`;
-    }
+function renderDoctors(list) {
+  if (!list.length) { document.getElementById('doctorsTable').innerHTML = '<div class="empty">Aucun médecin trouvé.</div>'; return; }
+  const planBadges = {starter:'plan-starter', essentiel:'plan-essentiel', avance:'plan-avance'};
+  const planNames  = {starter:'Starter',      essentiel:'Essentiel',      avance:'Avancé'};
 
-    const actifBadge = d.actif ? '<span class="badge actif">Actif</span>' : '<span class="badge inactif">Inactif</span>';
-    html += `<tr>
-      <td><strong>${d.nom}</strong><br><small style="color:#94a3b8">${d.email}</small></td>
-      <td>${d.specialite}</td>
-      <td>${d.ville}</td>
-      <td>${planBadge}</td>
-      <td>${trialBadge}</td>
+  let h = `<table><thead><tr><th>Médecin</th><th>Spécialité / Ville</th><th>Plan</th><th>Avis/mois</th><th>Statut</th><th>Actions</th></tr></thead><tbody>`;
+  list.forEach(d => {
+    const plan    = normalizePlan(d.plan);
+    const planCls = planBadges[plan] || 'plan-starter';
+    const planLbl = planNames[plan]  || 'Starter';
+
+    h += `<tr>
+      <td><strong>${esc(formatDrName(d.nom))}</strong><br><small>${esc(d.email||'')}</small></td>
+      <td>${esc(d.specialite||'—')}<br><small>${esc(d.ville||'—')}</small></td>
+      <td><span class="badge ${planCls}">${planLbl}</span></td>
       <td>${d.avis_ce_mois || 0}</td>
-      <td>${actifBadge}</td>
+      <td><span class="badge ${d.actif ? 'active' : 'inactive'}">${d.actif ? 'Actif' : 'Inactif'}</span></td>
       <td>
-        ${d.plan !== 'premium'
-          ? `<button class="action-btn success" onclick="setPlan('${d.id}','premium')">✅ Premium</button>`
-          : `<button class="action-btn" onclick="setPlan('${d.id}','free')">→ Free</button>`
-        }
-        ${d.actif
-          ? `<button class="action-btn danger" onclick="toggleActif('${d.id}',0)">Désactiver</button>`
-          : `<button class="action-btn success" onclick="toggleActif('${d.id}',1)">Activer</button>`
-        }
-        <button class="action-btn" onclick="window.open('/qr?slug=${encodeURIComponent(d.slug)}','_blank')">📋 QR</button>
-        <button class="action-btn danger" onclick="deleteDoctor('${d.id}','${d.nom.replace(/'/g,"\\'")}')">🗑️</button>
+        <div class="act-btns">
+          ${plan === 'starter'
+            ? `<button class="act-btn success" onclick="setPlan('${d.id}','essentiel')">Essentiel</button>
+               <button class="act-btn success" onclick="setPlan('${d.id}','avance')">Avancé</button>`
+            : plan === 'essentiel'
+            ? `<button class="act-btn" onclick="setPlan('${d.id}','starter')">Starter</button>
+               <button class="act-btn success" onclick="setPlan('${d.id}','avance')">Avancé</button>`
+            : `<button class="act-btn" onclick="setPlan('${d.id}','starter')">Starter</button>
+               <button class="act-btn" onclick="setPlan('${d.id}','essentiel')">Essentiel</button>`}
+          ${d.actif
+            ? `<button class="act-btn danger" onclick="toggleActif('${d.id}',0)">Désactiver</button>`
+            : `<button class="act-btn success" onclick="toggleActif('${d.id}',1)">Activer</button>`}
+          <button class="act-btn primary" onclick="window.open('/qr?slug=${encodeURIComponent(d.slug||d.id)}','_blank')">QR</button>
+          <button class="act-btn danger" onclick="delDoctor('${d.id}','${esc(d.nom||'')}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
       </td>
     </tr>`;
   });
-  html += '</tbody></table>';
-  document.getElementById('doctorsTable').innerHTML = html;
+  h += '</tbody></table>';
+  document.getElementById('doctorsTable').innerHTML = h;
 }
 
-function filterDoctors() {
-  const q = document.getElementById('doctorSearch').value.toLowerCase();
-  const filtered = allDoctors.filter(d =>
-    d.nom.toLowerCase().includes(q) ||
-    d.email.toLowerCase().includes(q) ||
-    d.ville.toLowerCase().includes(q) ||
-    d.specialite.toLowerCase().includes(q)
-  );
-  renderDoctorsTable(filtered);
-}
-
-async function setPlan(doctorId, plan) {
-  const expires = plan === 'premium'
-    ? new Date(Date.now() + 30 * 86400000).toISOString()
-    : null;
-  try {
-    const res = await fetch('/api/admin/set-plan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
-      body: JSON.stringify({ doctor_id: doctorId, plan, plan_expires_at: expires })
-    });
-    const data = await res.json();
-    if (data.ok) { loadDoctors(); loadUpgrades(); }
-    else alert(data.error || 'Erreur.');
-  } catch(e) { alert('Erreur réseau.'); }
-}
-
-async function toggleActif(doctorId, actif) {
-  try {
-    const res = await fetch('/api/admin/toggle-actif', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
-      body: JSON.stringify({ doctor_id: doctorId, actif })
-    });
-    const data = await res.json();
-    if (data.ok) loadDoctors();
-    else alert(data.error || 'Erreur.');
-  } catch(e) { alert('Erreur réseau.'); }
-}
-
+// ── Upgrades ──────────────────────────────────────────────────
 async function loadUpgrades() {
+  document.getElementById('upgradeTable').innerHTML = '<div class="empty"><span class="spinner"></span>Chargement…</div>';
   try {
-    const res = await fetch('/api/admin/upgrades', { headers: { 'X-Admin-Key': adminKey } });
+    const res  = await fetch('/api/admin/upgrades', { headers: { 'X-Admin-Key': adminKey } });
     const data = await res.json();
-    renderUpgradesTable(data.requests || []);
-  } catch(e) {
+    renderUpgrades(data.requests || []);
+  } catch {
     document.getElementById('upgradeTable').innerHTML = '<div class="empty">Erreur de chargement.</div>';
   }
 }
 
-function renderUpgradesTable(requests) {
-  if (!requests.length) {
-    document.getElementById('upgradeTable').innerHTML = '<div class="empty">Aucune demande en attente. 🎉</div>';
+function renderUpgrades(list) {
+  if (!list.length) {
+    document.getElementById('upgradeTable').innerHTML = '<div class="empty">Aucune demande en attente.</div>';
     return;
   }
-  let html = `<table><thead><tr><th>Médecin</th><th>Email</th><th>Ville</th><th>Date demande</th><th>Statut</th><th>Actions</th></tr></thead><tbody>`;
-  requests.forEach(r => {
-    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR') : '—';
-    const statusBadge = r.statut === 'en_attente'
+  let h = `<table><thead><tr><th>Médecin</th><th>Email</th><th>Ville</th><th>Plan demandé</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead><tbody>`;
+  list.forEach(r => {
+    const date   = r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR') : '—';
+    const status = r.statut === 'en_attente'
       ? '<span class="badge pending">En attente</span>'
-      : '<span class="badge done">Approuvé</span>';
-    html += `<tr>
-      <td><strong>${r.doctor_nom || '—'}</strong></td>
-      <td>${r.doctor_email || '—'}</td>
-      <td>${r.doctor_ville || '—'}</td>
-      <td>${date}</td>
-      <td>${statusBadge}</td>
+      : '<span class="badge approved">Approuvé</span>';
+    h += `<tr>
+      <td><strong>${esc(formatDrName(r.doctor_nom))}</strong></td>
+      <td><small>${esc(r.doctor_email||'—')}</small></td>
+      <td>${esc(r.doctor_ville||'—')}</td>
+      <td><span class="badge plan-essentiel">${esc(normalizePlan(r.plan||'essentiel')).charAt(0).toUpperCase()+esc(normalizePlan(r.plan||'essentiel')).slice(1)}</span></td>
+      <td><small>${date}</small></td>
+      <td>${status}</td>
       <td>
-        ${r.statut === 'en_attente' ? `
-          <button class="action-btn success" onclick="approveUpgrade('${r.id}','${r.doctor_id}')">✓ Approuver</button>
-          <button class="action-btn danger" onclick="rejectUpgrade('${r.id}')">✕ Refuser</button>
-        ` : '—'}
+        <div class="act-btns">
+          ${r.statut === 'en_attente' ? `
+            <button class="act-btn success" onclick="approveUpgrade('${r.id}','${r.doctor_id}','${r.plan||'essentiel'}')">Approuver</button>
+            <button class="act-btn danger" onclick="rejectUpgrade('${r.id}')">Refuser</button>
+          ` : '<span style="color:var(--muted);font-size:12px">—</span>'}
+        </div>
       </td>
     </tr>`;
   });
-  html += '</tbody></table>';
-  document.getElementById('upgradeTable').innerHTML = html;
+  h += '</tbody></table>';
+  document.getElementById('upgradeTable').innerHTML = h;
 }
 
-async function approveUpgrade(requestId, doctorId) {
-  if (!confirm('Activer le plan Premium pour ce médecin ?')) return;
-  await setPlan(doctorId, 'premium');
+// ── Plan breakdown ────────────────────────────────────────────
+async function loadPlanBreakdown() {
+  document.getElementById('planTable').innerHTML = '<div class="empty"><span class="spinner"></span>Chargement…</div>';
+  try {
+    const res  = await fetch('/api/admin/stats', { headers: { 'X-Admin-Key': adminKey } });
+    const data = await res.json();
+    const breakdown = data.plan_breakdown || {};
+    const planNames  = {starter:'Starter (199 DH)', essentiel:'Essentiel (499 DH)', avance:'Avancé (999 DH)'};
+    const planBadges = {starter:'plan-starter',     essentiel:'plan-essentiel',     avance:'plan-avance'};
+    // Merge legacy plan names into canonical ones
+    const merged = {};
+    Object.entries(breakdown).forEach(([p, c]) => {
+      const key = normalizePlan(p);
+      merged[key] = (merged[key] || 0) + c;
+    });
+    // Always show the 3 plans in fixed order, even if count is 0
+    const orderedPlans = ['starter', 'essentiel', 'avance'];
+    if (!Object.keys(merged).length) { document.getElementById('planTable').innerHTML = '<div class="empty">Aucun médecin actif.</div>'; return; }
+    let h = `<table><thead><tr><th>Plan</th><th>Médecins actifs</th></tr></thead><tbody>`;
+    orderedPlans.forEach(plan => {
+      const count = merged[plan] || 0;
+      h += `<tr>
+        <td><span class="badge ${planBadges[plan]}">${planNames[plan]}</span></td>
+        <td><strong>${count}</strong></td>
+      </tr>`;
+    });
+    h += '</tbody></table>';
+    document.getElementById('planTable').innerHTML = h;
+  } catch {
+    document.getElementById('planTable').innerHTML = '<div class="empty">Erreur de chargement.</div>';
+  }
+}
+
+// ── Actions ───────────────────────────────────────────────────
+async function setPlan(doctorId, plan) {
+  const expires = ['essentiel','avance'].includes(plan)
+    ? new Date(Date.now() + 30 * 86400000).toISOString() : null;
+  try {
+    const res  = await fetch('/api/admin/set-plan', {
+      method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':adminKey},
+      body: JSON.stringify({ doctor_id:doctorId, plan, plan_expires_at:expires })
+    });
+    const data = await res.json();
+    if (data.ok) { showToast('Plan mis à jour'); loadDoctors(); loadUpgrades(); refreshStats(); }
+    else showToast((data.error||'Erreur'));
+  } catch { showToast('Erreur réseau'); }
+}
+
+async function toggleActif(doctorId, actif) {
+  try {
+    const res  = await fetch('/api/admin/toggle-actif', {
+      method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':adminKey},
+      body: JSON.stringify({ doctor_id:doctorId, actif })
+    });
+    const data = await res.json();
+    if (data.ok) { showToast(actif ? 'Compte activé' : 'Compte désactivé'); loadDoctors(); }
+    else showToast((data.error||'Erreur'));
+  } catch { showToast('Erreur réseau'); }
+}
+
+async function approveUpgrade(requestId, doctorId, plan) {
+  if (!confirm(`Activer le plan ${plan} pour ce médecin ?`)) return;
+  await setPlan(doctorId, plan);
   try {
     await fetch('/api/admin/upgrade-status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
-      body: JSON.stringify({ request_id: requestId, statut: 'approuve' })
+      method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':adminKey},
+      body: JSON.stringify({ request_id:requestId, statut:'approuve' })
     });
     loadUpgrades();
-  } catch(e) {}
+  } catch {}
 }
 
 async function rejectUpgrade(requestId) {
-  if (!confirm('Refuser cette demande ?')) return;
+  if (!confirm('Refuser cette demande de mise à niveau ?')) return;
   try {
     await fetch('/api/admin/upgrade-status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
-      body: JSON.stringify({ request_id: requestId, statut: 'refuse' })
+      method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':adminKey},
+      body: JSON.stringify({ request_id:requestId, statut:'refuse' })
     });
-    loadUpgrades();
-  } catch(e) {}
+    loadUpgrades(); showToast('Demande refusée');
+  } catch { showToast('Erreur réseau'); }
 }
 
-async function loadExpiredTrials() {
+async function delDoctor(doctorId, nom) {
+  if (!confirm(`Supprimer définitivement "${nom}" ?\n\nTous ses avis, patients, tokens et sessions seront supprimés.\n\nCette action est IRRÉVERSIBLE.`)) return;
   try {
-    const res = await fetch('/api/admin/notifications', { headers: { 'X-Admin-Key': adminKey } });
-    const data = await res.json();
-    const container = document.getElementById('expiredTrialsTable');
-    if (!container) return;
-    const list = data.expired_trials || [];
-    if (!list.length) {
-      container.innerHTML = '<div class="empty">Aucun essai expiré pour l\'instant.</div>';
-      return;
-    }
-    // Get admin WA for pre-filled messages
-    const kvRes = await fetch('/api/admin/settings', { headers: { 'X-Admin-Key': adminKey } });
-    const kvData = await kvRes.json();
-    const adminWa = kvData.admin_wa || '';
-
-    let html = `<table><thead><tr><th>Médecin</th><th>Spécialité</th><th>Ville</th><th>Téléphone</th><th>Email</th><th>Expiré le</th><th>Action</th></tr></thead><tbody>`;
-    list.forEach(d => {
-      const expDate = d.trial_ends_at ? new Date(d.trial_ends_at).toLocaleDateString('fr-FR') : '—';
-      const msg = `Bonjour Dr. ${d.nom} 👋\n\nVotre essai ReviewPro a expiré. Pour continuer à collecter des avis Google et profiter de l'IA SEO, activez votre compte Premium (199 MAD/mois).\n\nRépondez à ce message pour activer.`;
-      const phone = d.telephone ? d.telephone.replace(/\D/g,'') : '';
-      let phoneIntl = phone;
-      if (phone.startsWith('0') && phone.length >= 9) phoneIntl = '212' + phone.slice(1);
-      const waUrl = phoneIntl ? `https://wa.me/${phoneIntl}?text=${encodeURIComponent(msg)}` : '';
-      html += `<tr>
-        <td><strong>${d.nom}</strong></td>
-        <td>${d.specialite}</td>
-        <td>${d.ville}</td>
-        <td>${d.telephone || '—'}</td>
-        <td>${d.email}</td>
-        <td>${expDate}</td>
-        <td>
-          ${waUrl ? `<a href="${waUrl}" target="_blank" class="action-btn success" style="text-decoration:none">💬 Contacter WA</a>` : '—'}
-          <button class="action-btn success" onclick="setPlan('${d.id}','premium')">✅ Activer Premium</button>
-        </td>
-      </tr>`;
+    const res  = await fetch('/api/admin/delete-doctor', {
+      method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':adminKey},
+      body: JSON.stringify({ doctor_id:doctorId })
     });
-    html += '</tbody></table>';
-    container.innerHTML = html;
-  } catch(e) {
-    console.error('loadExpiredTrials', e);
-  }
+    const data = await res.json();
+    if (data.ok) { showToast('Médecin supprimé'); loadDoctors(); refreshStats(); }
+    else showToast((data.error||'Erreur'));
+  } catch { showToast('Erreur réseau'); }
 }
 
 async function loadSettings() {
   try {
-    const res = await fetch('/api/admin/settings', { headers: { 'X-Admin-Key': adminKey } });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.admin_wa) {
-      document.getElementById('adminWaInput').value = data.admin_wa;
-    }
-  } catch(e) {}
+    const res  = await fetch('/api/admin/settings', { headers: { 'X-Admin-Key': adminKey } });
+    if (res.ok) { const d = await res.json(); if(d.admin_wa) document.getElementById('adminWaInput').value = d.admin_wa; }
+  } catch {}
 }
 
 async function saveSettings() {
   const wa = document.getElementById('adminWaInput').value.trim();
   try {
-    const res = await fetch('/api/admin/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
-      body: JSON.stringify({ admin_wa: wa })
+    const res  = await fetch('/api/admin/settings', {
+      method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':adminKey},
+      body: JSON.stringify({ admin_wa:wa })
     });
     const data = await res.json();
     if (data.ok) {
-      document.getElementById('adminWaInput').value = data.admin_wa;
-      const saved = document.getElementById('settingsSaved');
-      saved.style.display = 'inline';
-      setTimeout(() => saved.style.display = 'none', 2500);
-    } else {
-      alert(data.error || 'Erreur lors de la sauvegarde.');
-    }
-  } catch(e) { alert('Erreur réseau.'); }
+      if(data.admin_wa) document.getElementById('adminWaInput').value = data.admin_wa;
+      const ok = document.getElementById('settingsOk');
+      ok.style.display = 'inline';
+      setTimeout(() => ok.style.display = 'none', 2500);
+      showToast('Paramètres enregistrés');
+    } else showToast((data.error||'Erreur'));
+  } catch { showToast('Erreur réseau'); }
 }
 
-async function deleteDoctor(doctorId, doctorNom) {
-  if (!confirm(`⚠️ Supprimer définitivement "${doctorNom}" ?\n\nCette action supprimera TOUS ses données : avis, patients, tokens, sessions.\nCette action est IRRÉVERSIBLE.`)) return;
+async function refreshStats() {
   try {
-    const res = await fetch('/api/admin/delete-doctor', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
-      body: JSON.stringify({ doctor_id: doctorId })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      loadDoctors();
-      loadUpgrades();
-      // Refresh stats
-      const statsRes = await fetch('/api/admin/stats', { headers: { 'X-Admin-Key': adminKey } });
-      if (statsRes.ok) renderStats(await statsRes.json());
-    } else {
-      alert(data.error || 'Erreur lors de la suppression.');
-    }
-  } catch(e) { alert('Erreur réseau.'); }
+    const res  = await fetch('/api/admin/stats', { headers: { 'X-Admin-Key': adminKey } });
+    if (res.ok) renderStats(await res.json());
+  } catch {}
 }
 
-function logout() {
-  localStorage.removeItem('adminKey');
-  location.reload();
+// ── Toast ─────────────────────────────────────────────────────
+let _tt;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+// ── Utils ─────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cleanDrName(nom) {
+  return (nom || '').replace(/^\s*(Dr\.?\s+|Docteur\s+|Dre\.?\s+|Pr\.?\s+|Prof\.?\s+|الدكتور\s+|دكتور\s+)/i, '').trim();
+}
+function formatDrName(nom) {
+  const clean = cleanDrName(nom);
+  return clean ? 'Dr ' + clean : 'Dr';
+}
+
+// ── Start ─────────────────────────────────────────────────────
 checkAuth();
 </script>
 </body>

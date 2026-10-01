@@ -4,138 +4,282 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inscription — ReviewPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif;padding:20px}
-  .card{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:480px;box-shadow:0 25px 60px rgba(0,0,0,.35)}
-  .logo{text-align:center;margin-bottom:28px}
-  .logo-icon{width:56px;height:56px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:10px}
-  .logo h1{font-size:22px;font-weight:700;color:#0f172a}
-  .logo p{font-size:13px;color:#64748b;margin-top:3px}
-  .plan-badge{display:inline-block;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;margin-top:8px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .form-group{margin-bottom:16px}
-  label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
-  input,select{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#0f172a;transition:border-color .2s,box-shadow .2s;outline:none;background:#fff}
-  input:focus,select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-  .btn{width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:6px}
-  .btn:hover{opacity:.92}
-  .btn:disabled{opacity:.6;cursor:not-allowed}
-  .error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
-  .info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px}
-  .links{text-align:center;margin-top:20px;font-size:13px;color:#64748b}
-  .links a{color:#2563eb;text-decoration:none;font-weight:600}
-  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
-  @keyframes spin{to{transform:rotate(360deg)}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;
+  background:#F0FDFA;
+  font-family:'Noto Sans',system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.container{width:100%;max-width:500px}
+
+/* Brand */
+.brand{text-align:center;margin-bottom:28px}
+.brand-logo{
+  width:60px;height:60px;border-radius:16px;margin:0 auto 14px;
+  background:linear-gradient(135deg,#0D9488,#22D3EE);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+.brand h1{font-size:26px;font-weight:800;color:#134E4A;letter-spacing:-.5px;font-family:'Figtree',system-ui,sans-serif}
+.brand p{font-size:14px;color:#64748B;margin-top:4px}
+
+/* Trial badge */
+.trial-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#22C55E15;border:1px solid #22C55E30;
+  color:#16A34A;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;
+  margin-top:10px;
+}
+
+/* Card */
+.card{
+  background:#fff;border-radius:20px;padding:36px 32px;
+  border:1px solid #CCFBF1;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+.card-title{font-size:20px;font-weight:700;color:#134E4A;margin-bottom:6px;font-family:'Figtree',system-ui,sans-serif}
+.card-sub{font-size:13px;color:#64748B;margin-bottom:6px}
+
+/* Info banner */
+.info-banner{
+  background:#F0FDFA;border:1px solid #CCFBF1;border-radius:8px;
+  padding:11px 14px;font-size:12px;color:#134E4A;margin-bottom:22px;
+  display:flex;align-items:flex-start;gap:8px;line-height:1.5;
+}
+
+/* Grid */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+label .req{color:#EF4444;margin-left:2px}
+
+input,select{
+  width:100%;padding:12px 14px;border:2px solid #E2E8F0;border-radius:8px;
+  font-size:14px;color:#134E4A;transition:border-color 200ms ease,box-shadow 200ms ease;
+  outline:none;font-family:inherit;background:#fff;appearance:none;
+}
+input:focus,select:focus{border-color:#0D9488;box-shadow:0 0 0 3px #0D948820}
+input::placeholder{color:#94a3b8}
+.select-wrap{position:relative}
+.select-wrap::after{
+  content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:#64748B;pointer-events:none;font-size:14px;
+}
+.input-wrap{position:relative}
+.toggle-pw{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:4px;
+}
+
+/* Password strength */
+.pw-strength{margin-top:6px;display:none}
+.pw-bars{display:flex;gap:4px;margin-bottom:4px}
+.pw-bar{height:3px;flex:1;border-radius:2px;background:#E2E8F0;transition:background .3s}
+.pw-bar.weak{background:#EF4444}
+.pw-bar.medium{background:#F59E0B}
+.pw-bar.strong{background:#22C55E}
+.pw-label{font-size:11px;color:#64748B}
+
+/* Alert */
+.alert{
+  border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:18px;
+  display:none;align-items:center;gap:8px;
+}
+.alert.error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626}
+
+/* Button */
+.btn{
+  width:100%;padding:14px;border-radius:8px;border:none;cursor:pointer;
+  font-size:15px;font-weight:700;transition:all 200ms ease;
+  background:#22C55E;color:#fff;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);margin-top:4px;
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.btn:hover{background:#16a34a;transform:translateY(-1px)}
+.btn:active{transform:translateY(0);box-shadow:none}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Terms */
+.terms{font-size:12px;color:#94a3b8;text-align:center;margin-top:16px;line-height:1.6}
+.terms a{color:#64748B;text-decoration:underline}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#E2E8F0}
+.divider span{font-size:12px;color:#94a3b8}
+
+.links{text-align:center;font-size:13px;color:#64748B}
+.links a{color:#0D9488;text-decoration:none;font-weight:600}
+.links a:hover{text-decoration:underline}
+.footer-links{text-align:center;margin-top:24px}
+.footer-links a{font-size:12px;color:#64748B;text-decoration:none}
+.footer-links a:hover{color:#134E4A}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo">
-    <div class="logo-icon">⭐</div>
+<div class="container">
+  <div class="brand">
+    <div class="brand-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
     <h1>ReviewPro</h1>
     <p>Créez votre compte médecin</p>
-    <span class="plan-badge">🎁 Essai Premium 7 jours — Sans carte bancaire</span>
+    <div class="trial-badge">Plan Starter 199 DH/mois · Accès immédiat</div>
   </div>
 
-  <div class="error" id="errMsg"></div>
-  <div class="info">✨ 7 jours d'accès Premium complet offerts : IA Llama 70B, avis illimités, QR code, dashboard. Configurez votre profil en 2 minutes après inscription.</div>
+  <div class="card">
+    <div class="card-title">Créer mon compte</div>
+    <div class="card-sub">Configurez votre profil en 2 minutes après inscription.</div>
 
-  <form id="inscriptionForm">
-    <div class="row">
-      <div class="form-group">
-        <label for="nom">Nom complet *</label>
-        <input type="text" id="nom" placeholder="Dr. Ahmed Benali" required>
-      </div>
-      <div class="form-group">
-        <label for="specialite">Spécialité *</label>
-        <select id="specialite" required>
-          <option value="">Choisir…</option>
-          <option>Généraliste</option>
-          <option>Cardiologue</option>
-          <option>Dermatologue</option>
-          <option>Gastroentérologue</option>
-          <option>Gynécologue</option>
-          <option>Neurologue</option>
-          <option>Ophtalmologue</option>
-          <option>Orthopédiste</option>
-          <option>ORL</option>
-          <option>Pédiatre</option>
-          <option>Pneumologue</option>
-          <option>Psychiatre</option>
-          <option>Radiologue</option>
-          <option>Rhumatologue</option>
-          <option>Stomatologue</option>
-          <option>Urologue</option>
-          <option>Endocrinologue</option>
-          <option>Infectiologue</option>
-          <option>Kinésithérapeute</option>
-          <option>Dentiste</option>
-          <option>Autre</option>
-        </select>
-      </div>
+    <div class="info-banner">
+      Après inscription, vous configurez votre logo, lien Google Maps et WhatsApp pour commencer à recevoir des avis dès aujourd'hui.
     </div>
-    <div class="row">
-      <div class="form-group">
-        <label for="ville">Ville *</label>
-        <input type="text" id="ville" placeholder="Casablanca" required>
-      </div>
-      <div class="form-group">
-        <label for="telephone">Téléphone</label>
-        <input type="tel" id="telephone" placeholder="0600000000">
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="email">Adresse e-mail *</label>
-      <input type="email" id="email" placeholder="docteur@exemple.com" required autocomplete="email">
-    </div>
-    <div class="row">
-      <div class="form-group">
-        <label for="password">Mot de passe *</label>
-        <input type="password" id="password" placeholder="8 car. min." required autocomplete="new-password" minlength="8">
-      </div>
-      <div class="form-group">
-        <label for="password2">Confirmer *</label>
-        <input type="password" id="password2" placeholder="••••••••" required autocomplete="new-password">
-      </div>
-    </div>
-    <button type="submit" class="btn" id="submitBtn">Créer mon compte gratuit</button>
-  </form>
 
-  <div class="links" style="margin-top:16px">
-    Déjà un compte ? <a href="/login">Se connecter</a>
+    <div class="alert error" id="alertError"><span id="alertMsg"></span></div>
+
+    <form id="inscriptionForm" autocomplete="on">
+      <div class="row">
+        <div class="form-group">
+          <label for="nom">Nom complet <span class="req">*</span></label>
+          <input type="text" id="nom" placeholder="Dr. Ahmed Benali" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="specialite">Spécialité <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="specialite" required>
+              <option value="">Choisir…</option>
+              <option>Généraliste</option><option>Cardiologue</option>
+              <option>Dermatologue</option><option>Gastroentérologue</option>
+              <option>Gynécologue</option><option>Neurologue</option>
+              <option>Ophtalmologue</option><option>Orthopédiste</option>
+              <option>ORL</option><option>Pédiatre</option>
+              <option>Pneumologue</option><option>Psychiatre</option>
+              <option>Radiologue</option><option>Rhumatologue</option>
+              <option>Stomatologue</option><option>Urologue</option>
+              <option>Endocrinologue</option><option>Infectiologue</option>
+              <option>Kinésithérapeute</option><option>Dentiste</option>
+              <option>Autre</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="ville">Ville <span class="req">*</span></label>
+          <input type="text" id="ville" placeholder="Casablanca" required autocomplete="address-level2">
+        </div>
+        <div class="form-group">
+          <label for="telephone">Téléphone</label>
+          <input type="tel" id="telephone" placeholder="+212 6XX XXX XXX" autocomplete="tel">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Adresse e-mail <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="docteur@exemple.com" required autocomplete="email">
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="password">Mot de passe <span class="req">*</span></label>
+          <div class="input-wrap">
+            <input type="password" id="password" placeholder="8 caractères min." required autocomplete="new-password" minlength="8" oninput="checkStrength()">
+            <button type="button" class="toggle-pw" onclick="togglePw('password',this)" style="cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+          <div class="pw-strength" id="pwStrength">
+            <div class="pw-bars">
+              <div class="pw-bar" id="b1"></div>
+              <div class="pw-bar" id="b2"></div>
+              <div class="pw-bar" id="b3"></div>
+            </div>
+            <div class="pw-label" id="pwLabel"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password2">Confirmer <span class="req">*</span></label>
+          <div class="input-wrap">
+            <input type="password" id="password2" placeholder="••••••••" required autocomplete="new-password">
+            <button type="button" class="toggle-pw" onclick="togglePw('password2',this)" style="cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">Créer mon compte →</button>
+    </form>
+
+    <div class="terms">
+      En créant un compte, vous acceptez nos <a href="#">Conditions d'utilisation</a> et notre <a href="#">Politique de confidentialité</a>.
+    </div>
+
+    <div class="divider"><span>ou</span></div>
+    <div class="links">Déjà un compte ? <a href="/login">Se connecter</a></div>
   </div>
+
+  <div class="footer-links"><a href="/">← Retour à l'accueil</a></div>
 </div>
 
 <script>
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  } else {
+    inp.type = 'password';
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  }
+}
+
+function checkStrength() {
+  const pw = document.getElementById('password').value;
+  const wrap = document.getElementById('pwStrength');
+  if (!pw) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (/[A-Z]/.test(pw) || /[0-9]/.test(pw)) score++;
+  if (/[^a-zA-Z0-9]/.test(pw) || pw.length >= 12) score++;
+  const bars = ['b1','b2','b3'];
+  const cls = score === 1 ? 'weak' : score === 2 ? 'medium' : 'strong';
+  const labels = {weak:'Faible',medium:'Moyen',strong:'Fort'};
+  bars.forEach((id,i) => {
+    const b = document.getElementById(id);
+    b.className = 'pw-bar' + (i < score ? ' ' + cls : '');
+  });
+  document.getElementById('pwLabel').textContent = labels[cls] || '';
+}
+
 document.getElementById('inscriptionForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
-  const errMsg = document.getElementById('errMsg');
-  errMsg.style.display = 'none';
+  const alertEl = document.getElementById('alertError');
+  alertEl.style.display = 'none';
 
-  const nom = document.getElementById('nom').value.trim();
-  const specialite = document.getElementById('specialite').value;
-  const ville = document.getElementById('ville').value.trim();
+  const nom       = document.getElementById('nom').value.trim();
+  const specialite= document.getElementById('specialite').value;
+  const ville     = document.getElementById('ville').value.trim();
   const telephone = document.getElementById('telephone').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+  const email     = document.getElementById('email').value.trim();
+  const password  = document.getElementById('password').value;
   const password2 = document.getElementById('password2').value;
 
   if (!nom || !specialite || !ville || !email || !password) {
-    errMsg.textContent = 'Merci de remplir tous les champs obligatoires.';
-    errMsg.style.display = 'block';
-    return;
+    document.getElementById('alertMsg').textContent = 'Merci de remplir tous les champs obligatoires.';
+    alertEl.style.display = 'flex'; return;
   }
   if (password !== password2) {
-    errMsg.textContent = 'Les mots de passe ne correspondent pas.';
-    errMsg.style.display = 'block';
-    return;
+    document.getElementById('alertMsg').textContent = 'Les mots de passe ne correspondent pas.';
+    alertEl.style.display = 'flex'; return;
   }
   if (password.length < 8) {
-    errMsg.textContent = 'Le mot de passe doit comporter au moins 8 caractères.';
-    errMsg.style.display = 'block';
-    return;
+    document.getElementById('alertMsg').textContent = 'Le mot de passe doit comporter au moins 8 caractères.';
+    alertEl.style.display = 'flex'; return;
   }
 
   btn.disabled = true;
@@ -143,24 +287,23 @@ document.getElementById('inscriptionForm').addEventListener('submit', async func
 
   try {
     const res = await fetch('/api/auth/inscription', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ nom, specialite, ville, telephone, email, password })
     });
     const data = await res.json();
     if (data.ok) {
       window.location.href = '/onboarding';
     } else {
-      errMsg.textContent = data.error || 'Erreur lors de la création du compte.';
-      errMsg.style.display = 'block';
+      document.getElementById('alertMsg').textContent = data.error || 'Erreur lors de la création du compte.';
+      alertEl.style.display = 'flex';
       btn.disabled = false;
-      btn.innerHTML = 'Créer mon compte gratuit';
+      btn.innerHTML = 'Créer mon compte →';
     }
-  } catch(err) {
-    errMsg.textContent = 'Erreur réseau. Réessayez.';
-    errMsg.style.display = 'block';
+  } catch {
+    document.getElementById('alertMsg').textContent = 'Erreur réseau. Réessayez.';
+    alertEl.style.display = 'flex';
     btn.disabled = false;
-    btn.innerHTML = 'Créer mon compte gratuit';
+    btn.innerHTML = 'Créer mon compte →';
   }
 });
 </script>

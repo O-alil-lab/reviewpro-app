@@ -4,44 +4,116 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lien invalide — ReviewPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{min-height:100vh;background:linear-gradient(160deg,#0f172a,#1e3a5f);display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif;padding:20px}
-.card{background:#fff;border-radius:24px;padding:40px 32px;width:100%;max-width:400px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.4)}
-.icon{font-size:64px;margin-bottom:16px}
-h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px}
-p{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:6px}
-.reason{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin:20px 0;font-size:13px;color:#dc2626}
-.hint{background:#f1f5f9;border-radius:10px;padding:14px;font-size:13px;color:#374151;line-height:1.5}
+body{
+  min-height:100vh;
+  background:#F0FDFA;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Sans',system-ui,sans-serif;
+  padding:20px;
+}
+
+/* Brand */
+.brand{text-align:center;margin-bottom:28px}
+.brand-logo{
+  width:56px;height:56px;border-radius:16px;margin:0 auto 12px;
+  background:linear-gradient(135deg,#0D9488,#22D3EE);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+.brand h1{font-size:22px;font-weight:800;color:#134E4A;letter-spacing:-.5px;font-family:'Figtree',system-ui,sans-serif}
+
+/* Card */
+.card{
+  background:#fff;border-radius:20px;padding:40px 32px;
+  width:100%;max-width:420px;text-align:center;
+  border:1px solid #CCFBF1;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+
+/* Icon circle */
+.icon-wrap{
+  width:72px;height:72px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;
+}
+.icon-wrap.warning{background:#FEF3C7;border:1px solid #FDE68A}
+.icon-wrap.expired{background:#DBEAFE;border:1px solid #BFDBFE}
+.icon-wrap.used{background:#D1FAE5;border:1px solid #A7F3D0}
+.icon-wrap.quota{background:#FEE2E2;border:1px solid #FECACA}
+
+h1{font-size:22px;font-weight:800;color:#134E4A;margin-bottom:8px;font-family:'Figtree',system-ui,sans-serif}
+p{font-size:14px;color:#64748B;line-height:1.6;margin-bottom:6px}
+
+.reason{
+  background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;
+  padding:14px;margin:20px 0;font-size:13px;color:#DC2626;
+  display:flex;align-items:center;gap:8px;
+  text-align:left;
+}
+.hint{
+  background:#F0FDFA;border:1px solid #CCFBF1;border-radius:10px;
+  padding:14px;font-size:13px;color:#374151;line-height:1.5;
+  text-align:left;margin-top:16px;
+}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="icon" id="icon">⚠️</div>
-  <h1 id="title">Lien invalide</h1>
-  <p id="desc">Ce lien d'avis n'est pas valide ou a expiré.</p>
-  <div class="reason" id="reason" style="display:none"></div>
-  <div class="hint">
-    Pour recevoir un nouveau lien, contactez le cabinet médical ou demandez à l'assistante de vous renvoyer le lien WhatsApp.
+
+<div style="width:100%;max-width:420px">
+  <!-- Brand -->
+  <div class="brand">
+    <div class="brand-logo">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </div>
+    <h1>ReviewPro</h1>
+  </div>
+
+  <div class="card">
+    <div class="icon-wrap warning" id="iconWrap">
+      <svg id="iconSvg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h1 id="title">Lien invalide</h1>
+    <p id="desc">Ce lien d'avis n'est pas valide ou a expiré.</p>
+    <div class="reason" id="reason" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="reasonText"></span>
+    </div>
+    <div class="hint">
+      <strong>Que faire ?</strong><br>
+      Pour recevoir un nouveau lien, contactez le cabinet médical ou demandez à l'assistante de vous renvoyer le lien WhatsApp.
+    </div>
   </div>
 </div>
+
 <script>
 const params = new URLSearchParams(location.search);
 const reason = params.get('reason');
+
 if (reason === 'expired') {
-  document.getElementById('icon').textContent = '⏰';
+  document.getElementById('iconWrap').className = 'icon-wrap expired';
+  document.getElementById('iconSvg').innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
+  document.getElementById('iconSvg').setAttribute('stroke','#2563EB');
   document.getElementById('title').textContent = 'Lien expiré';
   document.getElementById('desc').textContent = 'Ce lien d\'avis a expiré (valable 48h).';
-  document.getElementById('reason').textContent = 'Les liens sont valables 48 heures après leur envoi.';
-  document.getElementById('reason').style.display = 'block';
+  document.getElementById('reasonText').textContent = 'Les liens sont valables 48 heures après leur envoi.';
+  document.getElementById('reason').style.display = 'flex';
 } else if (reason === 'used') {
-  document.getElementById('icon').textContent = '✅';
+  document.getElementById('iconWrap').className = 'icon-wrap used';
+  document.getElementById('iconSvg').innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+  document.getElementById('iconSvg').setAttribute('stroke','#059669');
   document.getElementById('title').textContent = 'Déjà utilisé';
   document.getElementById('desc').textContent = 'Vous avez déjà soumis votre avis avec ce lien. Merci !';
-  document.getElementById('reason').textContent = 'Chaque lien ne peut être utilisé qu\'une seule fois.';
-  document.getElementById('reason').style.display = 'block';
+  document.getElementById('reasonText').textContent = 'Chaque lien ne peut être utilisé qu\'une seule fois.';
+  document.getElementById('reason').style.display = 'flex';
 } else if (reason === 'quota') {
-  document.getElementById('icon').textContent = '🚫';
+  document.getElementById('iconWrap').className = 'icon-wrap quota';
+  document.getElementById('iconSvg').innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>';
+  document.getElementById('iconSvg').setAttribute('stroke','#DC2626');
   document.getElementById('title').textContent = 'Limite atteinte';
   document.getElementById('desc').textContent = 'Le cabinet a atteint sa limite d\'avis pour ce mois.';
 }

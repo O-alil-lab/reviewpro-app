@@ -4,124 +4,513 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Code — ReviewPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f1f5f9;font-family:'Segoe UI',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+:root{
+  --primary:#0D9488;--primary-dark:#0f766e;--primary-light:#F0FDFA;
+  --border:#E2E8F0;--border-teal:#CCFBF1;--muted:#64748B;
+}
+body{
+  background:#F0FDFA;
+  font-family:'Noto Sans',system-ui,sans-serif;
+  min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 20px;
+}
 .page{max-width:480px;width:100%}
-.card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);margin-bottom:16px}
-.card-top{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:28px 24px 24px;text-align:center}
-.doctor-logo{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin:0 auto 12px;overflow:hidden}
-.doctor-logo img{width:100%;height:100%;object-fit:cover}
-.doctor-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:2px}
-.doctor-sub{font-size:13px;color:#94a3b8}
-.card-body{padding:28px 24px;text-align:center}
-.invite{font-size:15px;font-weight:600;color:#0f172a;margin-bottom:6px}
-.invite-sub{font-size:13px;color:#64748b;margin-bottom:20px}
-.qr-box{display:inline-block;padding:12px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.1);border:2px solid #e2e8f0;margin-bottom:16px}
-.qr-box img{display:block;width:220px;height:220px}
-.link{font-size:12px;color:#64748b;word-break:break-all;margin-bottom:20px;background:#f8fafc;padding:8px 12px;border-radius:8px;font-family:monospace}
-.stars-row{display:flex;justify-content:center;gap:4px;font-size:28px;margin-bottom:6px}
-.caption{font-size:12px;color:#94a3b8;margin-bottom:8px}
 
-/* Arabic */
-.ar{direction:rtl;font-size:14px;color:#374151;margin-top:6px}
+/* ── Controls Panel ──────────────────────────────────── */
+.controls-panel{
+  background:#fff;border-radius:18px;padding:20px 22px;
+  margin-bottom:14px;
+  box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.07);
+  border:1px solid var(--border);
+}
+.controls-panel-title{
+  font-size:12px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.09em;
+  margin-bottom:16px;display:flex;align-items:center;gap:7px;
+}
+.ctrl-divider{height:1px;background:#F1F5F9;margin:14px 0}
 
-.print-btn{width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;transition:.2s}
-.print-btn:hover{opacity:.9}
-.back-btn{width:100%;padding:11px;background:#f1f5f9;border:1.5px solid #e2e8f0;color:#374151;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
-.back-btn:hover{background:#e2e8f0}
+/* Fit buttons */
+.ctrl-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.fit-btns{display:flex;gap:6px}
+.fit-btn{
+  flex:1;padding:8px 0;font-size:12px;font-weight:600;border-radius:8px;
+  border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;
+  transition:all 150ms ease;font-family:'Noto Sans',system-ui,sans-serif;
+}
+.fit-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.fit-btn:hover:not(.active){background:var(--primary-light);border-color:var(--border-teal);color:var(--primary)}
 
+/* Size slider */
+.size-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.size-row .size-lbl{font-size:11px;color:var(--muted);white-space:nowrap;min-width:44px}
+.size-row input[type=range]{
+  flex:1;height:4px;-webkit-appearance:none;appearance:none;
+  background:linear-gradient(to right,var(--primary) 0%,var(--primary) 100%,#E2E8F0 100%);
+  border-radius:4px;outline:none;cursor:pointer;
+}
+.size-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer;
+}
+.size-val{font-size:11px;font-weight:700;color:var(--primary);min-width:34px;text-align:right}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.toggle-row .tgl-lbl{font-size:12px;color:#334155;font-weight:500}
+.tgl{position:relative;width:38px;height:22px;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0}
+.tgl-track{
+  position:absolute;inset:0;border-radius:22px;background:#CBD5E1;
+  transition:background .2s;cursor:pointer;
+}
+.tgl input:checked + .tgl-track{background:var(--primary)}
+.tgl-track::after{
+  content:'';position:absolute;height:18px;width:18px;border-radius:50%;
+  background:#fff;top:2px;left:2px;transition:left .18s;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);
+}
+.tgl input:checked + .tgl-track::after{left:18px}
+
+/* Color swatches */
+.swatches-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.swatch-item{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer}
+.swatch{
+  width:48px;height:48px;border-radius:12px;
+  border:2.5px solid transparent;cursor:pointer;
+  transition:transform 150ms ease,box-shadow 150ms ease,border-color 150ms ease;
+  box-shadow:0 1px 4px rgba(0,0,0,.14);position:relative;overflow:hidden;
+}
+.swatch:hover{transform:scale(1.08)}
+.swatch.active{
+  border-color:var(--primary) !important;
+  box-shadow:0 0 0 3px rgba(13,148,136,.22),0 2px 6px rgba(0,0,0,.14);
+}
+.swatch.active::after{
+  content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:800;
+}
+.swatch-blanc  {background:#FFFFFF; border-color:#CBD5E1}
+.swatch-blanc.active::after  {color:#0D9488}
+.swatch-perle  {background:#F1F5F9; border-color:#CBD5E1}
+.swatch-perle.active::after  {color:#0D9488}
+.swatch-teal   {background:#083344}
+.swatch-teal.active::after   {color:#5eead4}
+.swatch-encre  {background:#0F172A}
+.swatch-encre.active::after  {color:#5eead4}
+.swatch-label{font-size:10px;font-weight:600;color:var(--muted);text-align:center;line-height:1.2}
+
+/* ── Printable card ──────────────────────────────────── */
+.print-card{
+  background:#fff;border-radius:28px;overflow:hidden;
+  box-shadow:0 4px 6px rgba(0,0,0,.07),0 10px 30px rgba(0,0,0,.09);
+  margin-bottom:14px;
+}
+
+/* Card header — always teal */
+.card-header{
+  background:linear-gradient(135deg,#0D9488 0%,#0f766e 100%);
+  padding:32px 28px 28px;text-align:center;position:relative;overflow:hidden;
+}
+.card-header::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,.12),transparent 60%);
+  pointer-events:none;
+}
+.brand-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px;opacity:.85}
+.brand-logo-sm{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#22D3EE,#fff);display:flex;align-items:center;justify-content:center}
+.brand-label{font-size:12px;font-weight:700;color:#fff;letter-spacing:.05em;font-family:'Figtree',system-ui,sans-serif}
+
+.doctor-avatar{
+  width:88px;height:88px;border-radius:50%;margin:0 auto 14px;
+  background:linear-gradient(135deg,#22D3EE,rgba(255,255,255,.3));
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:800;color:#fff;
+  border:3px solid rgba(255,255,255,.35);
+  overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.25);
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  transition:background-size .25s ease;
+}
+.doctor-name{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.3px;font-family:'Figtree',system-ui,sans-serif}
+.doctor-meta{font-size:13px;color:rgba(255,255,255,.82);display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.meta-sep{opacity:.5}
+
+/* Card body — background controlled by JS */
+.card-body{
+  padding:28px;text-align:center;
+  transition:background .3s ease;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+
+.stars-row{
+  display:flex;justify-content:center;gap:4px;font-size:26px;
+  margin-bottom:20px;animation:starPulse 3s ease-in-out infinite;
+}
+@keyframes starPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15) drop-shadow(0 0 6px rgba(251,191,36,.5))}}
+
+.invite-fr{font-size:17px;font-weight:700;color:#134E4A;margin-bottom:4px;font-family:'Figtree',system-ui,sans-serif;transition:color .3s}
+.invite-sub{font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;transition:color .3s}
+.invite-ar{font-size:14px;color:#374151;direction:rtl;margin-bottom:20px;font-weight:500;transition:color .3s}
+
+.qr-container{
+  display:inline-block;padding:14px;
+  background:#fff;
+  border-radius:20px;border:2px solid #E2E8F0;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+  margin-bottom:16px;position:relative;
+  transition:border-color .3s;
+}
+.qr-corner{position:absolute;width:16px;height:16px;border-color:#0D9488;border-style:solid;border-radius:2px}
+.qr-corner.tl{top:8px;left:8px;border-width:2px 0 0 2px}
+.qr-corner.tr{top:8px;right:8px;border-width:2px 2px 0 0}
+.qr-corner.bl{bottom:8px;left:8px;border-width:0 0 2px 2px}
+.qr-corner.br{bottom:8px;right:8px;border-width:0 2px 2px 0}
+.qr-container img{display:block;width:220px;height:220px;border-radius:8px}
+
+.scan-hint{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;color:#0D9488;
+  background:#F0FDFA;border-radius:20px;padding:5px 14px;
+  margin:0 auto 16px;border:1px solid #CCFBF1;
+  transition:background .3s,border-color .3s,color .3s;
+}
+.link-box{
+  background:#F0FDFA;border:1px solid #CCFBF1;border-radius:12px;
+  padding:10px 14px;font-size:11px;font-family:monospace;
+  color:#64748B;word-break:break-all;
+  transition:background .3s,border-color .3s,color .3s;
+}
+
+/* ── Action buttons ──────────────────────────────────── */
+.actions{display:flex;flex-direction:column;gap:10px}
+.btn-print{
+  width:100%;padding:14px;background:#0D9488;color:#fff;border:none;
+  border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;
+  transition:all 200ms ease;box-shadow:0 4px 6px rgba(0,0,0,.07);
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.btn-print:hover{background:#0f766e;transform:translateY(-1px)}
+.btn-back{
+  width:100%;padding:12px;background:rgba(13,148,136,.1);
+  color:#0D9488;border:1.5px solid rgba(13,148,136,.3);
+  border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;
+  transition:200ms ease;font-family:'Figtree',system-ui,sans-serif;
+}
+.btn-back:hover{background:rgba(13,148,136,.18)}
+
+/* ── Spinner / Error ─────────────────────────────────── */
+.spinner-box{width:220px;height:220px;display:flex;align-items:center;justify-content:center;background:#F0FDFA;border-radius:8px}
+.spinner{width:32px;height:32px;border:3px solid #CCFBF1;border-top-color:#0D9488;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-state{text-align:center;padding:20px}
+.error-icon{font-size:40px;margin-bottom:10px}
+.error-msg{font-size:14px;color:#dc2626}
+
+/* ── Print ───────────────────────────────────────────── */
 @media print {
-  body{background:#fff;padding:0}
+  body{background:#fff!important;padding:0;display:block}
   .page{max-width:100%}
-  .print-btn,.back-btn{display:none}
-  .card{box-shadow:none;border-radius:0}
-  @page{margin:1cm}
+  .controls-panel,.actions{display:none!important}
+  .print-card{box-shadow:none;border-radius:0;margin:0}
+  .card-body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card-header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .stars-row{animation:none}
+  @page{margin:1.5cm}
 }
 </style>
 </head>
 <body>
 <div class="page">
-  <div class="card">
-    <div class="card-top">
-      <div class="doctor-logo" id="doctorLogo">D</div>
-      <div class="doctor-name" id="doctorName">Chargement…</div>
-      <div class="doctor-sub" id="doctorSub"></div>
+
+  <!-- ── Customization Panel ─────────────────────────── -->
+  <div class="controls-panel" id="controlsPanel">
+    <div class="controls-panel-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Personnaliser l'affichage
     </div>
-    <div class="card-body">
-      <div class="stars-row">⭐⭐⭐⭐⭐</div>
-      <div class="invite">Votre avis compte pour nous !</div>
-      <div class="invite-sub">Scannez le QR code pour partager votre expérience</div>
-      <div class="qr-box">
-        <img id="qrImg" src="" alt="QR Code">
+
+    <!-- Logo controls (visible only if doctor has a logo) -->
+    <div id="logoSection" style="display:none">
+      <div class="ctrl-label">📸 Logo dans le badge</div>
+      <div class="fit-btns">
+        <button class="fit-btn active" id="btn-cover"   onclick="setLogoFit('cover')">Remplir</button>
+        <button class="fit-btn"        id="btn-contain" onclick="setLogoFit('contain')">Ajuster</button>
+        <button class="fit-btn"        id="btn-center"  onclick="setLogoFit('center')">Centré</button>
       </div>
-      <div class="link" id="formLink">—</div>
-      <div class="ar" id="arText">شكراً لزيارتكم — يسعدنا معرفة رأيكم</div>
+      <div class="size-row">
+        <span class="size-lbl">Taille</span>
+        <input type="range" id="logoSizeRange" min="40" max="115" value="100" step="5" oninput="setLogoSize(this.value)">
+        <span class="size-val" id="logoSizeVal">100%</span>
+      </div>
+      <div class="toggle-row">
+        <span class="tgl-lbl">Fond dégradé sur le badge</span>
+        <label class="tgl">
+          <input type="checkbox" id="toggleGradient" checked onchange="setAvatarGradient(this.checked)">
+          <span class="tgl-track"></span>
+        </label>
+      </div>
+      <div class="ctrl-divider"></div>
+    </div>
+
+    <!-- Background color -->
+    <div class="ctrl-label">🎨 Fond du poster</div>
+    <div class="swatches-row">
+      <div class="swatch-item" onclick="setBg(this,'#FFFFFF')">
+        <div class="swatch swatch-blanc active"></div>
+        <span class="swatch-label">Blanc<br>pur</span>
+      </div>
+      <div class="swatch-item" onclick="setBg(this,'#F1F5F9')">
+        <div class="swatch swatch-perle"></div>
+        <span class="swatch-label">Perle<br>douce</span>
+      </div>
+      <div class="swatch-item" onclick="setBg(this,'#083344')">
+        <div class="swatch swatch-teal"></div>
+        <span class="swatch-label">Teal<br>nuit</span>
+      </div>
+      <div class="swatch-item" onclick="setBg(this,'#0F172A')">
+        <div class="swatch swatch-encre"></div>
+        <span class="swatch-label">Encre<br>nuit</span>
+      </div>
     </div>
   </div>
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimer</button>
-  <button class="back-btn" onclick="history.back()">← Retour au dashboard</button>
-</div>
 
+  <!-- ── Printable Card ──────────────────────────────── -->
+  <div class="print-card">
+    <div class="card-header">
+      <div class="brand-row">
+        <div class="brand-logo-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="brand-label">ReviewPro</div>
+      </div>
+      <div class="doctor-avatar" id="doctorAvatar">D</div>
+      <div class="doctor-name" id="doctorName">Chargement…</div>
+      <div class="doctor-meta" id="doctorMeta"></div>
+    </div>
+
+    <div class="card-body" id="cardBody">
+      <div class="stars-row">⭐⭐⭐⭐⭐</div>
+      <div class="invite-fr" id="inviteFr">Votre avis compte pour nous !</div>
+      <div class="invite-sub" id="inviteSub">Scannez le QR code pour partager votre expérience en quelques secondes.</div>
+      <div class="invite-ar" id="arText">رأيكم يهمنا — يسعدنا معرفة تجربتكم</div>
+
+      <div class="qr-container" id="qrContainer">
+        <div class="qr-corner tl"></div>
+        <div class="qr-corner tr"></div>
+        <div class="qr-corner bl"></div>
+        <div class="qr-corner br"></div>
+        <div id="qrWrap"><div class="spinner-box"><div class="spinner"></div></div></div>
+      </div>
+
+      <div><span class="scan-hint" id="scanHint">📱 Scanner avec votre téléphone</span></div>
+      <div class="link-box" id="formLink">—</div>
+    </div>
+  </div>
+
+  <!-- Actions (hors impression) -->
+  <div class="actions">
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimer ce QR Code</button>
+    <button class="btn-back" onclick="history.back()">← Retour au tableau de bord</button>
+  </div>
+
+</div>
 <script>
+// ── Doctor name helpers ────────────────────────────────
+// Strips any existing title prefix (Dr, Docteur, Pr, etc.)
+function cleanDrName(nom) {
+  return (nom || '').replace(/^\s*(Dr\.?\s+|Docteur\s+|Dre\.?\s+|Pr\.?\s+|Prof\.?\s+|الدكتور\s+|دكتور\s+)/i, '').trim();
+}
+// Returns "Dr [name]" — never duplicates the title
+function formatDrName(nom) {
+  const clean = cleanDrName(nom);
+  return clean ? 'Dr ' + clean : 'Dr';
+}
+
+// ── State ──────────────────────────────────────────────
+let logoFit      = 'cover';
+let logoSizePct  = 100;
+let hasGradient  = true;
+let currentBg    = '#FFFFFF';
+const DARK_BG    = ['#083344','#0F172A'];
+
+// ── Logo Controls ──────────────────────────────────────
+function setLogoFit(fit) {
+  logoFit = fit;
+  applyAvatarStyle();
+  document.querySelectorAll('.fit-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + fit).classList.add('active');
+}
+
+function setLogoSize(val) {
+  logoSizePct = parseInt(val);
+  document.getElementById('logoSizeVal').textContent = val + '%';
+  // Update range gradient fill
+  const range = document.getElementById('logoSizeRange');
+  const pct   = ((val - 40) / (115 - 40)) * 100;
+  range.style.background = `linear-gradient(to right,var(--primary) ${pct}%,#E2E8F0 ${pct}%)`;
+  applyAvatarStyle();
+}
+
+function setAvatarGradient(checked) {
+  hasGradient = checked;
+  applyAvatarStyle();
+}
+
+function applyAvatarStyle() {
+  const av = document.getElementById('doctorAvatar');
+  if (!av._logoUrl) return;
+  const grad = hasGradient
+    ? 'linear-gradient(135deg,#22D3EE,rgba(255,255,255,.3))'
+    : (DARK_BG.includes(currentBg) ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.06)');
+
+  if (logoFit === 'cover') {
+    av.style.background         = grad;
+    av.style.backgroundImage    = `url(${av._logoUrl})`;
+    av.style.backgroundSize     = 'cover';
+    av.style.backgroundPosition = 'center';
+    av.style.backgroundRepeat   = 'no-repeat';
+  } else {
+    // contain or center — show logo at chosen size with gradient/neutral bg
+    const sz = logoSizePct + '%';
+    av.style.background         = grad;
+    av.style.backgroundImage    = `url(${av._logoUrl})`;
+    av.style.backgroundSize     = sz;
+    av.style.backgroundPosition = 'center';
+    av.style.backgroundRepeat   = 'no-repeat';
+  }
+}
+
+// ── Background color ───────────────────────────────────
+function setBg(item, color) {
+  currentBg = color;
+  const isDark = DARK_BG.includes(color);
+
+  // Activate swatch
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  item.querySelector('.swatch').classList.add('active');
+
+  // Apply card body bg
+  const body = document.getElementById('cardBody');
+  body.style.background = color;
+
+  if (isDark) {
+    document.getElementById('inviteFr').style.color    = '#f1f5f9';
+    document.getElementById('inviteSub').style.color   = 'rgba(255,255,255,.65)';
+    document.getElementById('arText').style.color      = 'rgba(255,255,255,.78)';
+    setElStyle('link-box',  {background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.12)', color:'rgba(255,255,255,.5)'});
+    setElStyle('scanHint',  {background:'rgba(13,148,136,.22)',  border:'1px solid rgba(13,148,136,.38)', color:'#5eead4'});
+    setElStyle('qrContainer',{background:'#fff', borderColor:'rgba(255,255,255,.12)'});
+  } else {
+    document.getElementById('inviteFr').style.color    = '#134E4A';
+    document.getElementById('inviteSub').style.color   = '#64748B';
+    document.getElementById('arText').style.color      = '#374151';
+    setElStyle('link-box',  {background:'#F0FDFA', border:'1px solid #CCFBF1', color:'#64748B'});
+    setElStyle('scanHint',  {background:'#F0FDFA', border:'1px solid #CCFBF1', color:'#0D9488'});
+    setElStyle('qrContainer',{background:'#fff',  borderColor:'#E2E8F0'});
+  }
+
+  // Re-apply avatar gradient with new bg context
+  if (document.getElementById('doctorAvatar')._logoUrl) applyAvatarStyle();
+}
+
+function setElStyle(id, styles) {
+  const el = document.getElementById(id) || document.querySelector('.' + id);
+  if (!el) return;
+  Object.assign(el.style, styles);
+}
+
+// ── Init ───────────────────────────────────────────────
 async function init() {
-  // Slug detection — prioritize query param (set by worker redirect AND by dashboard direct link)
-  const params = new URLSearchParams(location.search);
-  const qpSlug = params.get('slug');
-  // Also try last path segment (e.g. /qr/dr-karim-tazi-rabat accessed directly)
-  const pathParts = location.pathname.split('/').filter(p => p && p !== 'qr' && p !== 'qr.html');
-  const pathSlug = pathParts.length > 0 ? pathParts[pathParts.length - 1] : null;
-  const slug = qpSlug || pathSlug;
+  const params   = new URLSearchParams(location.search);
+  const qpSlug   = params.get('slug');
+  const pathParts= location.pathname.split('/').filter(p => p && p !== 'qr' && p !== 'qr.html');
+  const pathSlug = pathParts.length ? pathParts[pathParts.length - 1] : null;
+  const slug     = qpSlug || pathSlug;
 
   if (!slug) {
-    document.getElementById('doctorName').textContent = 'Lien invalide';
-    document.getElementById('doctorSub').textContent = 'Aucun identifiant médecin trouvé';
+    try {
+      const me = await fetch('/api/me');
+      if (me.ok) {
+        const md = await me.json();
+        if (md.ok && md.doctor?.slug) return initWithSlug(md.doctor.slug, md.doctor);
+      }
+    } catch {}
+    showError('Identifiant médecin manquant.');
     return;
   }
 
   try {
-    // Use dedicated endpoint — no quota check, purely public doctor info
-    const res = await fetch('/api/doctor-info?slug=' + encodeURIComponent(slug));
+    const res  = await fetch('/api/doctor-info?slug=' + encodeURIComponent(slug));
     const data = await res.json();
-    if (!data.ok) {
-      document.getElementById('doctorName').textContent = 'Médecin introuvable';
-      document.getElementById('doctorSub').textContent = slug;
-      return;
-    }
+    if (!data.ok) { showError('Médecin introuvable.'); return; }
+    initWithSlug(slug, data);
+  } catch { showError('Erreur de connexion.'); }
+}
 
-    const d = data;
-    const logo = document.getElementById('doctorLogo');
-    const initial = getInitial(d.nom);
-    if (d.logo_url) {
-      logo.innerHTML = `<img src="${d.logo_url}" alt="${initial}" onerror="this.parentElement.textContent='${initial}'">`;
-    } else {
-      logo.textContent = initial;
-    }
-    document.getElementById('doctorName').textContent = d.nom;
-    document.getElementById('doctorSub').textContent = d.specialite + ' · ' + d.ville;
-    document.title = 'QR Code — ' + d.nom;
-
-    // Always use the canonical form URL (not window.location.origin which could be a preview URL)
-    const formUrl = 'https://reviewpro-saas.pages.dev/form/' + encodeURIComponent(slug);
-    document.getElementById('formLink').textContent = formUrl;
-
-    // Load QR from goqr.me with fallback to qrserver.com
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=10&format=svg&data=${encodeURIComponent(formUrl)}`;
-    const img = document.getElementById('qrImg');
-    img.src = qrUrl;
-    img.onerror = function() {
-      // Fallback QR service
-      this.src = `https://chart.googleapis.com/chart?cht=qr&chs=440x440&chld=M%7C10&chl=${encodeURIComponent(formUrl)}`;
-    };
-
-  } catch(e) {
-    document.getElementById('doctorName').textContent = 'Erreur de chargement';
-    document.getElementById('doctorSub').textContent = 'Vérifiez votre connexion internet';
+function initWithSlug(slug, d) {
+  // ── Avatar / Logo ──────────────────────────────────
+  const av = document.getElementById('doctorAvatar');
+  if (d.logo_url) {
+    av._logoUrl = d.logo_url;
+    applyAvatarStyle();
+    av.textContent = '';
+    document.getElementById('logoSection').style.display = 'block';
+  } else {
+    av.textContent = getInitial(d.nom);
   }
+
+  // ── Doctor info ────────────────────────────────────
+  document.getElementById('doctorName').textContent = formatDrName(d.nom);
+  document.getElementById('doctorMeta').innerHTML =
+    `<span>${d.specialite || ''}</span><span class="meta-sep">·</span><span>${d.ville || ''}</span>`;
+  document.title = 'QR Code — ' + formatDrName(d.nom);
+
+  // ── Patient link ───────────────────────────────────
+  const formUrl = `${location.origin}/form/${encodeURIComponent(slug)}`;
+  document.getElementById('formLink').textContent = formUrl;
+
+  // ── Arabic personalisation ─────────────────────────
+  if (d.nom) {
+    document.getElementById('arText').textContent =
+      `رأيكم يهمنا — يسعدنا معرفة تجربتكم مع ${formatDrName(d.nom)}`;
+  }
+
+  // ── Language ───────────────────────────────────────
+  if (d.langue_defaut === 'ar') {
+    document.getElementById('inviteFr').style.display  = 'none';
+    document.getElementById('inviteSub').style.display = 'none';
+    document.getElementById('arText').style.fontSize   = '16px';
+    document.getElementById('arText').style.fontWeight = '700';
+    document.getElementById('arText').style.marginBottom = '20px';
+  }
+
+  // ── QR code ────────────────────────────────────────
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=10&format=svg&data=${encodeURIComponent(formUrl)}`;
+  const img   = new Image();
+  img.alt     = 'QR Code';
+  img.style.cssText = 'display:block;width:220px;height:220px;border-radius:8px';
+  img.onload  = () => {
+    document.getElementById('qrWrap').innerHTML = '';
+    document.getElementById('qrWrap').appendChild(img);
+  };
+  img.onerror = () => {
+    img.src = `https://chart.googleapis.com/chart?cht=qr&chs=440x440&chld=M%7C10&chl=${encodeURIComponent(formUrl)}`;
+  };
+  img.src = qrUrl;
+}
+
+function showError(msg) {
+  document.getElementById('doctorName').textContent = 'Erreur';
+  document.getElementById('doctorMeta').textContent = msg;
+  document.getElementById('qrWrap').innerHTML =
+    `<div class="spinner-box error-state"><div><div class="error-icon">⚠️</div><div class="error-msg">${msg}</div></div></div>`;
 }
 
 function getInitial(nom) {
-  return (nom || '').split(' ').filter(p => p.length > 1).map(p => p[0]).join('').substring(0,2).toUpperCase() || 'DR';
+  const n = cleanDrName(nom);
+  return (n || '').split(' ').filter(p => p.length > 1).map(p => p[0]).join('').substring(0, 2).toUpperCase() || 'DR';
 }
 
 init();

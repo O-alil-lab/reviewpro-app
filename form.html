@@ -2,242 +2,765 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Donnez votre avis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{min-height:100vh;background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 60%,#312e81 100%);font-family:'Segoe UI',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:16px}
-.card{background:#fff;border-radius:24px;padding:0;width:100%;max-width:440px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)}
-.card-header{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:28px 28px 24px;text-align:center;position:relative}
-.doctor-logo{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin:0 auto 12px;overflow:hidden}
-.doctor-logo img{width:100%;height:100%;object-fit:cover}
-.doctor-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:2px}
-.doctor-sub{font-size:13px;color:#94a3b8}
-.card-body{padding:28px}
+/* ── Design System ─────────────────────────────────────────── */
+:root{
+  --primary:#0D9488;--primary-dark:#0f766e;--accent:#22D3EE;
+  --success:#22C55E;--error:#EF4444;--warning:#F59E0B;
+  --dark:#134E4A;--text:#1e293b;--muted:#64748B;--border:#E2E8F0;
+  --border-teal:#CCFBF1;
+  --bg-card:#ffffff;--radius:20px;--transition:200ms ease;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{
+  min-height:100vh;min-height:100dvh;
+  background:#fff;
+  font-family:'Noto Sans',system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+  font-size:16px;
+}
 
-/* Progress */
-.progress-wrap{margin-bottom:24px}
-.progress-steps{display:flex;gap:8px;margin-bottom:8px}
-.progress-step{height:4px;flex:1;background:#e2e8f0;border-radius:2px;transition:background .4s}
-.progress-step.done{background:#2563eb}
-.progress-step.active{background:linear-gradient(90deg,#2563eb,#7c3aed)}
-.progress-label{font-size:11px;color:#94a3b8;text-align:center}
+/* ── Card ───────────────────────────────────────────────────── */
+.card{
+  background:var(--bg-card);border-radius:var(--radius);
+  width:100%;max-width:420px;overflow:hidden;
+  box-shadow:0 4px 6px rgba(0,0,0,.07),0 10px 30px rgba(0,0,0,.08);
+}
 
-/* Panels */
-.panel{display:none;animation:fadeIn .3s ease}
+/* ── Header ─────────────────────────────────────────────────── */
+.card-header{
+  background:#0D9488;
+  padding:24px 24px 20px;
+  display:flex;align-items:center;gap:14px;position:relative;
+}
+.doctor-avatar{
+  width:56px;height:56px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,#0f766e,var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:700;color:#fff;overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
+}
+.doctor-avatar img{width:100%;height:100%;object-fit:cover}
+.doctor-info{flex:1;min-width:0}
+.doctor-name{font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Figtree',system-ui,sans-serif}
+.doctor-sub{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px}
+.lang-btn{
+  background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+  color:#fff;font-size:12px;font-weight:600;border-radius:20px;
+  padding:5px 12px;cursor:pointer;transition:var(--transition);flex-shrink:0;
+}
+.lang-btn:hover{background:rgba(255,255,255,.3)}
+
+/* ── Body ───────────────────────────────────────────────────── */
+.card-body{padding:28px 24px}
+
+/* ── Progress — Step Circles (U4) ──────────────────────────── */
+.progress{margin-bottom:24px;text-align:center}
+.step-circles{display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.step-dot{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;flex-shrink:0;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  border:2px solid #E2E8F0;background:#f8fafc;color:#94a3b8;
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.step-dot.active{
+  background:var(--primary);border-color:var(--primary);
+  color:#fff;box-shadow:0 0 0 4px #0D948820;transform:scale(1.1);
+}
+.step-dot.done{background:var(--primary);border-color:var(--primary);color:#fff}
+.step-connector{
+  flex:1;height:2px;background:#E2E8F0;
+  min-width:28px;transition:background .35s ease;
+}
+.step-connector.done{background:var(--primary)}
+.progress-label{font-size:11px;color:var(--muted);font-weight:500}
+
+/* ── Panels ─────────────────────────────────────────────────── */
+.panel{display:none;animation:fadeUp .3s ease}
 .panel.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* Stars */
-.stars-wrap{display:flex;justify-content:center;gap:10px;margin:20px 0}
-.star{font-size:44px;cursor:pointer;transition:transform .15s,filter .15s;filter:grayscale(100%);opacity:.4}
-.star.active{filter:none;opacity:1;transform:scale(1.1)}
-.star:hover{transform:scale(1.2)}
-.star-label{text-align:center;font-size:14px;color:#64748b;min-height:20px;margin-top:-8px;margin-bottom:16px;font-weight:500}
-.rating-title{text-align:center;font-size:17px;font-weight:700;color:#0f172a;margin-bottom:4px}
-.rating-sub{text-align:center;font-size:13px;color:#64748b;margin-bottom:20px}
-
-/* Chips */
-.chips-title{font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px}
-.chips-sub{font-size:13px;color:#64748b;margin-bottom:16px}
-.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-.chip{padding:8px 16px;border:2px solid #e2e8f0;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:#f8fafc;color:#374151;user-select:none}
-.chip.selected{background:#eff6ff;border-color:#2563eb;color:#1d4ed8;font-weight:600}
-.chip:hover{border-color:#bfdbfe}
-
-/* Comment */
-.comment-title{font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px}
-.comment-sub{font-size:13px;color:#64748b;margin-bottom:12px}
-.suggestion-box{background:#f1f5f9;border-radius:10px;padding:12px;font-size:13px;color:#475569;margin-bottom:12px;cursor:pointer;border:2px solid transparent;transition:.2s;line-height:1.5}
-.suggestion-box:hover{border-color:#bfdbfe;background:#eff6ff}
-.suggestion-label{font-size:11px;color:#94a3b8;margin-bottom:6px;display:flex;align-items:center;gap:4px}
-textarea{width:100%;min-height:100px;padding:12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical;outline:none;transition:border-color .2s;color:#0f172a}
-textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.char-count{text-align:right;font-size:11px;color:#94a3b8;margin-top:4px}
-
-/* Buttons */
-.btn{width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px}
-.btn:hover{opacity:.92;transform:translateY(-1px)}
-.btn:active{transform:translateY(0)}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-skip{width:100%;padding:10px;background:transparent;border:none;color:#94a3b8;font-size:13px;cursor:pointer;margin-top:8px}
-.btn-skip:hover{color:#64748b}
-.btn-back{width:100%;padding:10px;background:#f1f5f9;border:none;color:#374151;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;margin-top:8px}
-
-/* Error */
-.error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px;font-size:13px;margin-bottom:14px}
-.quota-error{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:16px;text-align:center;font-size:14px;font-weight:500}
-.quota-error .icon{font-size:32px;display:block;margin-bottom:8px}
-
-/* Blocked (trial expired) */
-.blocked-card{text-align:center;padding:10px 0}
-.blocked-icon{font-size:64px;margin-bottom:16px;display:block}
-.blocked-title{font-size:18px;font-weight:800;color:#0f172a;margin-bottom:8px}
-.blocked-sub{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:0}
-
-/* Spinner */
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+/* ── Loading P0 ─────────────────────────────────────────────── */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;padding:40px 0;gap:16px}
+.loader{width:48px;height:48px;border:3px solid #E2E8F0;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--muted);font-weight:500}
+
+/* ── Error States P1a-P1e ───────────────────────────────────── */
+.error-state{text-align:center;padding:32px 8px}
+.error-icon{font-size:56px;margin-bottom:16px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+.error-title{font-size:20px;font-weight:800;color:var(--dark);margin-bottom:8px;font-family:'Figtree',system-ui,sans-serif}
+.error-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px}
+.btn-contact{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#25d366,#128c7e);
+  color:#fff;font-size:15px;font-weight:700;transition:var(--transition);
+  text-decoration:none;
+}
+.btn-contact:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ── Welcome P2 ─────────────────────────────────────────────── */
+.welcome-icon{font-size:48px;text-align:center;margin-bottom:16px;animation:wave 1s ease}
+@keyframes wave{0%,100%{transform:rotate(0)}25%{transform:rotate(15deg)}75%{transform:rotate(-15deg)}}
+.welcome-title{font-size:22px;font-weight:800;color:var(--dark);text-align:center;margin-bottom:8px;line-height:1.3;font-family:'Figtree',system-ui,sans-serif}
+.welcome-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:24px}
+.confidential-badge{
+  display:flex;align-items:flex-start;gap:10px;
+  background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;
+  padding:12px 14px;margin-bottom:24px;
+}
+.confidential-badge .icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.confidential-badge p{font-size:12px;color:#166534;line-height:1.5}
+.btn-primary{
+  width:100%;padding:16px;border-radius:12px;border:none;cursor:pointer;
+  background:#22C55E;
+  color:#fff;font-size:16px;font-weight:700;transition:var(--transition);
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.btn-primary:hover{background:#16a34a;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0);box-shadow:none}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ── Stars P3 ───────────────────────────────────────────────── */
+.stars-title{font-size:18px;font-weight:700;color:var(--dark);text-align:center;margin-bottom:4px;font-family:'Figtree',system-ui,sans-serif}
+.stars-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px}
+.stars-row{display:flex;justify-content:center;gap:8px;margin-bottom:10px}
+.star{
+  font-size:42px;cursor:pointer;transition:transform .15s,filter .15s;
+  filter:grayscale(1) opacity(.35);user-select:none;
+}
+.star.lit{filter:none;opacity:1}
+.star:hover{transform:scale(1.2)}
+.star.active{transform:scale(1.15)}
+.star-label{
+  text-align:center;font-size:14px;font-weight:600;color:var(--primary);
+  min-height:22px;margin-bottom:20px;transition:var(--transition);
+}
+
+/* ── Chips ───────────────────────────────────────────────────── */
+.chips-section{display:none;margin-bottom:20px;animation:fadeUp .25s ease}
+.chips-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.chips-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  padding:8px 16px;border:2px solid var(--border);border-radius:20px;
+  font-size:13px;font-weight:500;cursor:pointer;transition:all 200ms ease;
+  background:#f8fafc;color:var(--text);user-select:none;
+}
+.chip.selected{background:#0D948815;border-color:var(--primary);color:var(--primary);font-weight:600}
+.chip:hover:not(.selected){border-color:var(--border-teal)}
+
+/* ── Comment P4 ─────────────────────────────────────────────── */
+.comment-title{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:4px;font-family:'Figtree',system-ui,sans-serif}
+.comment-sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+.suggestion-block{
+  background:#F0FDFA;border:1.5px solid var(--border-teal);border-radius:12px;
+  padding:12px 14px;margin-bottom:12px;cursor:pointer;transition:var(--transition);
+}
+.suggestion-block:hover{border-color:var(--primary);background:#0D948815}
+.suggestion-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.suggestion-text{font-size:13px;color:var(--text);line-height:1.5;font-style:italic}
+textarea{
+  width:100%;min-height:110px;padding:13px 14px;
+  border:2px solid var(--border);border-radius:12px;
+  font-size:14px;font-family:inherit;resize:vertical;outline:none;
+  transition:border-color 200ms ease,box-shadow 200ms ease;color:var(--dark);line-height:1.6;
+}
+textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #0D948820}
+.char-count{text-align:right;font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:16px}
+.btn-skip{
+  width:100%;padding:11px;background:none;border:none;
+  color:var(--muted);font-size:13px;cursor:pointer;margin-top:4px;
+}
+.btn-skip:hover{color:var(--text)}
+.btn-back{
+  width:100%;padding:11px;background:#f8fafc;border:1.5px solid var(--border);
+  border-radius:12px;color:var(--text);font-size:13px;font-weight:600;
+  cursor:pointer;margin-top:8px;transition:var(--transition);
+}
+.btn-back:hover{background:var(--border)}
+
+/* ── Spinner inline ─────────────────────────────────────────── */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+
+/* ── Blocked state ──────────────────────────────────────────── */
+.blocked-wrap{text-align:center;padding:32px 8px}
+.blocked-icon{font-size:56px;margin-bottom:14px;display:block}
+.blocked-title{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:8px;font-family:'Figtree',system-ui,sans-serif}
+.blocked-sub{font-size:14px;color:var(--muted);line-height:1.6}
+
+/* ── Greeting patient (U2 — WA) ─────────────────────────────── */
+.patient-greeting{
+  display:none;
+  background:linear-gradient(135deg,#0D9488,#22D3EE);
+  color:#fff;border-radius:14px;padding:12px 16px;
+  margin-bottom:20px;font-size:14px;font-weight:600;
+  text-align:center;animation:fadeUp .3s ease;
+}
+
+/* ── Champ prénom optionnel (C2) ────────────────────────────── */
+.name-input-wrap{
+  margin-top:18px;padding-top:14px;
+  border-top:1px solid var(--border);
+}
+.name-input-label{
+  font-size:12px;font-weight:600;color:var(--muted);
+  margin-bottom:8px;display:flex;align-items:center;gap:4px;
+}
+.name-input-label .optional{
+  font-size:11px;font-weight:400;color:#94a3b8;
+  background:#f1f5f9;border-radius:4px;padding:1px 6px;
+}
+.name-input{
+  width:100%;padding:11px 14px;
+  border:2px solid var(--border);border-radius:12px;
+  font-size:14px;font-family:inherit;outline:none;
+  transition:border-color 200ms ease,box-shadow 200ms ease;
+  color:var(--dark);
+}
+.name-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px #0D948820}
+
+/* ── Validation error (Q3) ──────────────────────────────────── */
+.validation-error{
+  display:none;background:#FEF2F2;border:1px solid #FECACA;
+  border-radius:10px;padding:10px 14px;font-size:13px;
+  color:#DC2626;margin-bottom:12px;animation:fadeUp .2s ease;
+}
+
+/* ── AI loading long (Q4) ───────────────────────────────────── */
+#ai-long-msg{display:none;font-size:12px;color:var(--muted);text-align:center;margin-top:8px;animation:fadeUp .3s ease}
+
+/* ── Honeypot ───────────────────────────────────────────────── */
+.hp-field{position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden;pointer-events:none}
+
+/* ── RTL ────────────────────────────────────────────────────── */
+[dir="rtl"] .card-header{flex-direction:row-reverse}
+[dir="rtl"] .doctor-info{text-align:right}
+[dir="rtl"] .confidential-badge{flex-direction:row-reverse;text-align:right}
+[dir="rtl"] .chips-wrap{direction:rtl}
+[dir="rtl"] .stars-row{flex-direction:row-reverse}
 </style>
 </head>
 <body>
 <div class="card">
+  <!-- Header -->
   <div class="card-header" id="cardHeader">
-    <div class="doctor-logo" id="doctorLogo">?</div>
-    <div class="doctor-name" id="doctorName">Chargement…</div>
-    <div class="doctor-sub" id="doctorSub"></div>
+    <div class="doctor-avatar" id="doctorAvatar">?</div>
+    <div class="doctor-info">
+      <div class="doctor-name" id="doctorName">Chargement…</div>
+      <div class="doctor-sub" id="doctorSub"></div>
+    </div>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()" style="display:none"></button>
   </div>
+
   <div class="card-body">
 
-    <!-- Loading / Error -->
+    <!-- P0 : Loading -->
     <div class="panel active" id="p-loading">
-      <div style="text-align:center;padding:30px 0;color:#64748b;font-size:14px">
-        <div class="spinner" style="border-top-color:#2563eb"></div> Chargement…
+      <div class="loading-wrap">
+        <div class="loader"></div>
+        <div class="loading-text" id="loadingText">Vérification en cours…</div>
       </div>
     </div>
 
-    <div class="panel" id="p-error">
-      <div class="quota-error">
-        <span class="icon" id="errorIcon">⚠️</span>
-        <div id="errorMsg">Une erreur est survenue.</div>
+    <!-- P1a : Token inconnu -->
+    <div class="panel" id="p-err-unknown">
+      <div class="error-state">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title" data-i18n="err_unknown_title">Ce lien est invalide</div>
+        <div class="error-sub" data-i18n="err_unknown_sub">Ce lien ne correspond à aucune demande connue.<br>Contactez le cabinet pour recevoir un lien valide.</div>
+        <a class="btn-contact" id="contactUnknown" href="#">📞 <span data-i18n="contact_cabinet">Contacter le cabinet</span></a>
       </div>
     </div>
 
-    <!-- Blocked: trial expired -->
+    <!-- P1b : Déjà utilisé -->
+    <div class="panel" id="p-err-used">
+      <div class="error-state">
+        <div class="error-icon">✅</div>
+        <div class="error-title" data-i18n="err_used_title">Vous avez déjà répondu</div>
+        <div class="error-sub" data-i18n="err_used_sub">Votre retour a bien été pris en compte.<br>Merci pour votre confiance !</div>
+        <a class="btn-contact" id="contactUsed" href="#">📞 <span data-i18n="contact_cabinet">Contacter le cabinet</span></a>
+      </div>
+    </div>
+
+    <!-- P1c : Token expiré -->
+    <div class="panel" id="p-err-expired">
+      <div class="error-state">
+        <div class="error-icon">⏰</div>
+        <div class="error-title" data-i18n="err_expired_title">Ce lien a expiré</div>
+        <div class="error-sub" data-i18n="err_expired_sub">Les liens sont valables 48 heures.<br>Contactez le cabinet pour recevoir un nouveau lien.</div>
+        <a class="btn-contact" id="contactExpired" href="#">📞 <span data-i18n="contact_cabinet">Contacter le cabinet</span></a>
+      </div>
+    </div>
+
+    <!-- P1d : Expiré pendant la saisie -->
+    <div class="panel" id="p-err-expired-saisie">
+      <div class="error-state">
+        <div class="error-icon">⏰</div>
+        <div class="error-title" data-i18n="err_saisie_title">Ce lien a expiré<br>pendant votre saisie</div>
+        <div class="error-sub" data-i18n="err_saisie_sub">Votre avis n'a pas pu être envoyé.<br>Contactez le cabinet pour un nouveau lien.<br>Votre retour est précieux pour eux.</div>
+        <a class="btn-contact" id="contactSaisie" href="#">📞 <span data-i18n="contact_cabinet">Contacter le cabinet</span></a>
+      </div>
+    </div>
+
+    <!-- P1e : Quota atteint -->
+    <div class="panel" id="p-err-quota">
+      <div class="error-state">
+        <div class="error-icon">⏸️</div>
+        <div class="error-title" data-i18n="err_quota_title">Pas disponible pour le moment</div>
+        <div class="error-sub" data-i18n="err_quota_sub">Le cabinet n'accepte plus de retours pour le moment.<br>Réessayez dans quelques jours ou contactez-les directement.</div>
+        <a class="btn-contact" id="contactQuota" href="#">📞 <span data-i18n="contact_cabinet">Contacter le cabinet</span></a>
+      </div>
+    </div>
+
+    <!-- Bloqué -->
     <div class="panel" id="p-blocked">
-      <div class="blocked-card">
+      <div class="blocked-wrap">
         <span class="blocked-icon">🔒</span>
         <div class="blocked-title">Cabinet temporairement indisponible</div>
         <div class="blocked-sub">Ce service est momentanément suspendu.<br>Veuillez contacter directement le cabinet.</div>
       </div>
     </div>
 
-    <!-- Step 1: Stars -->
-    <div class="panel" id="p-stars">
-      <div class="progress-wrap">
-        <div class="progress-steps">
-          <div class="progress-step active"></div>
-          <div class="progress-step"></div>
-          <div class="progress-step"></div>
-        </div>
-        <div class="progress-label">Étape 1 sur 3</div>
+    <!-- P2 : Accueil -->
+    <div class="panel" id="p-accueil">
+      <!-- U2 — Greeting WhatsApp patient -->
+      <div class="patient-greeting" id="patientGreeting"></div>
+      <div class="welcome-icon" id="welcomeEmoji">👋</div>
+      <div class="welcome-title" data-i18n="welcome_title">Bonjour !</div>
+      <div class="welcome-sub" id="welcomeSub" data-i18n="welcome_sub">Comment s'est passée votre visite ?<br>Votre avis nous aide à mieux vous accueillir la prochaine fois.</div>
+      <div class="confidential-badge">
+        <span class="icon">🔒</span>
+        <p data-i18n="confidential_note">Votre retour reste confidentiel et ne sera jamais publié sans votre accord.</p>
       </div>
-      <div class="rating-title">Comment s'est passée votre visite ?</div>
-      <div class="rating-sub">Sélectionnez une note</div>
-      <div class="stars-wrap" id="starsWrap">
+      <button class="btn-primary" onclick="goStep(1)" data-i18n="btn_start">Donner mon avis →</button>
+    </div>
+
+    <!-- P3 : Note + chips -->
+    <div class="panel" id="p-stars">
+      <div class="progress">
+        <div class="step-circles">
+          <div class="step-dot active" id="sd1">1</div>
+          <div class="step-connector" id="sc1"></div>
+          <div class="step-dot" id="sd2">2</div>
+          <div class="step-connector" id="sc2"></div>
+          <div class="step-dot" id="sd3">3</div>
+        </div>
+        <div class="progress-label" id="stepLabel" data-i18n="step_1">Étape 1 sur 3</div>
+      </div>
+      <div class="stars-title" data-i18n="stars_title">Comment évaluez-vous votre expérience ?</div>
+      <div class="stars-sub" data-i18n="stars_sub">Sélectionnez une note</div>
+      <div class="stars-row" id="starsRow">
         <span class="star" data-v="1">⭐</span>
         <span class="star" data-v="2">⭐</span>
         <span class="star" data-v="3">⭐</span>
         <span class="star" data-v="4">⭐</span>
         <span class="star" data-v="5">⭐</span>
       </div>
-      <div class="star-label" id="starLabel">Touchez une étoile</div>
-    </div>
+      <div class="star-label" id="starLabel" data-i18n="star_placeholder">Touchez une étoile</div>
 
-    <!-- Step 2: Chips -->
-    <div class="panel" id="p-chips">
-      <div class="progress-wrap">
-        <div class="progress-steps">
-          <div class="progress-step done"></div>
-          <div class="progress-step active"></div>
-          <div class="progress-step"></div>
-        </div>
-        <div class="progress-label">Étape 2 sur 3</div>
+      <!-- Chips (visibles si note ≥ 4) -->
+      <div class="chips-section" id="chipsSection">
+        <div class="chips-title" data-i18n="chips_title">Qu'avez-vous apprécié ?</div>
+        <div class="chips-sub" data-i18n="chips_sub">Optionnel · sélection multiple</div>
+        <div class="chips-wrap" id="chipsWrap"></div>
       </div>
-      <div class="chips-title">Qu'avez-vous apprécié ?</div>
-      <div class="chips-sub">Sélectionnez un ou plusieurs points</div>
-      <div class="chips-wrap" id="chipsWrap"></div>
-      <button class="btn" onclick="goStep(3)">Continuer →</button>
-      <button class="btn-back" onclick="goStep(1)">← Retour</button>
+
+      <!-- C2 — Champ prénom optionnel -->
+      <div class="name-input-wrap" id="nameInputWrap" style="display:none">
+        <div class="name-input-label">
+          <span data-i18n="name_label">Votre prénom</span>
+          <span class="optional" data-i18n="name_optional">optionnel</span>
+        </div>
+        <input
+          type="text"
+          id="patientPrenom"
+          class="name-input"
+          maxlength="50"
+          autocomplete="given-name"
+          data-i18n-placeholder="name_placeholder"
+        />
+      </div>
+
+      <!-- Q3 — Erreur de validation -->
+      <div class="validation-error" id="validationError"></div>
+
+      <button class="btn-primary" id="btnStarContinue" onclick="goStepValidated(2)" style="display:none;margin-top:4px" data-i18n="btn_continue">Continuer →</button>
     </div>
 
-    <!-- Step 3: Comment -->
+    <!-- P4 : Commentaire -->
     <div class="panel" id="p-comment">
-      <div class="progress-wrap">
-        <div class="progress-steps">
-          <div class="progress-step done"></div>
-          <div class="progress-step done"></div>
-          <div class="progress-step active"></div>
+      <div class="progress">
+        <div class="step-circles">
+          <div class="step-dot done">✓</div>
+          <div class="step-connector done"></div>
+          <div class="step-dot done">✓</div>
+          <div class="step-connector done"></div>
+          <div class="step-dot active">3</div>
         </div>
-        <div class="progress-label">Étape 3 sur 3</div>
+        <div class="progress-label" data-i18n="step_3">Étape 3 sur 3</div>
       </div>
-      <div class="comment-title">Partagez votre expérience</div>
-      <div class="comment-sub">En quelques mots, décrivez votre visite</div>
+      <div class="comment-title" data-i18n="comment_title">Partagez votre expérience</div>
+      <div class="comment-sub" data-i18n="comment_sub">En quelques mots, décrivez votre visite</div>
+
+      <!-- Suggestion cliquable -->
       <div id="suggestionWrap" style="display:none">
-        <div class="suggestion-label">✨ Suggestion (cliquez pour l'utiliser)</div>
-        <div class="suggestion-box" id="suggestionBox" onclick="useSuggestion()"></div>
+        <div class="suggestion-block" onclick="useSuggestion()">
+          <div class="suggestion-label">✨ <span data-i18n="suggestion_label">Suggestion · cliquez pour l'utiliser</span></div>
+          <div class="suggestion-text" id="suggestionText"></div>
+        </div>
       </div>
-      <textarea id="commentInput" placeholder="Ex : Très bonne prise en charge, médecin à l'écoute…" maxlength="500" oninput="updateCharCount()"></textarea>
+
+      <textarea id="commentInput" maxlength="500" oninput="updateCharCount()" data-i18n-placeholder="comment_placeholder"></textarea>
       <div class="char-count"><span id="charCount">0</span>/500</div>
-      <button class="btn" id="submitBtn" onclick="submitFeedback()" style="margin-top:14px">Envoyer mon avis</button>
-      <button class="btn-skip" onclick="submitFeedback(true)">Passer (sans commentaire)</button>
-      <button class="btn-back" onclick="goStep(2)">← Retour</button>
+
+      <button class="btn-primary" id="submitBtn" onclick="submitFeedback()">
+        <span data-i18n="btn_submit">Envoyer mon avis</span>
+      </button>
+      <!-- Q4 — message si IA prend > 8s -->
+      <div id="ai-long-msg" data-i18n="ai_long">La génération prend un peu plus de temps… merci de patienter.</div>
+      <button class="btn-skip" onclick="submitFeedback(true)" data-i18n="btn_skip">Passer (sans commentaire)</button>
+      <button class="btn-back" onclick="goStep(1)" data-i18n="btn_back">← Retour</button>
     </div>
 
   </div>
 </div>
 
+<!-- Honeypot anti-bot -->
+<div class="hp-field" aria-hidden="true">
+  <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+</div>
+
 <script>
+// ── Doctor name helpers ────────────────────────────────────────
+function cleanDrName(nom) {
+  return (nom || '').replace(/^\s*(Dr\.?\s+|Docteur\s+|Dre\.?\s+|Pr\.?\s+|Prof\.?\s+|الدكتور\s+|دكتور\s+)/i, '').trim();
+}
+function formatDrName(nom) {
+  const clean = cleanDrName(nom);
+  return clean ? 'Dr ' + clean : 'Dr';
+}
+
+// ── i18n ──────────────────────────────────────────────────────
+const i18n = {
+  fr: {
+    loading: 'Vérification en cours…',
+    err_unknown_title: 'Ce lien est invalide',
+    err_unknown_sub: 'Ce lien ne correspond à aucune demande connue.\nContactez le cabinet pour recevoir un lien valide.',
+    err_used_title: 'Vous avez déjà répondu',
+    err_used_sub: 'Votre retour a bien été pris en compte.\nMerci pour votre confiance !',
+    err_expired_title: 'Ce lien a expiré',
+    err_expired_sub: 'Les liens sont valables 48 heures.\nContactez le cabinet pour un nouveau lien.',
+    err_saisie_title: 'Ce lien a expiré\npendant votre saisie',
+    err_saisie_sub: 'Votre avis n\'a pas pu être envoyé.\nContactez le cabinet pour un nouveau lien.',
+    err_quota_title: 'Pas disponible pour le moment',
+    err_quota_sub: 'Le cabinet n\'accepte plus de retours pour le moment.\nRéessayez dans quelques jours.',
+    contact_cabinet: 'Contacter le cabinet',
+    welcome_title: 'Bonjour ! 👋',
+    welcome_sub: 'Comment s\'est passée votre visite ?\nVotre avis nous aide à mieux vous accueillir.',
+    confidential_note: 'Votre retour reste confidentiel et ne sera jamais publié sans votre accord.',
+    btn_start: 'Donner mon avis →',
+    stars_title: 'Comment évaluez-vous votre expérience ?',
+    stars_sub: 'Sélectionnez une note',
+    star_placeholder: 'Touchez une étoile',
+    star_labels: ['','😞 Pas du tout satisfait','😐 Pas vraiment satisfait','😶 Correct, sans plus','😊 Bonne expérience','🌟 Excellente expérience !'],
+    chips_title: 'Qu\'avez-vous apprécié ?',
+    chips_sub: 'Optionnel · sélection multiple',
+    btn_continue: 'Continuer →',
+    step_1: 'Étape 1 sur 3',
+    step_2: 'Étape 2 sur 3',
+    step_3: 'Étape 3 sur 3',
+    comment_title: 'Partagez votre expérience',
+    comment_sub: 'En quelques mots, décrivez votre visite',
+    suggestion_label: 'Suggestion · cliquez pour l\'utiliser',
+    comment_placeholder_5: 'Qu\'est-ce qui vous a le plus plu lors de cette visite ?',
+    comment_placeholder_4: 'Qu\'avez-vous apprécié lors de cette consultation ?',
+    comment_placeholder_3: 'Dites-nous ce que vous avez pensé…',
+    comment_placeholder_12: 'Qu\'est-ce qui n\'a pas bien fonctionné ? On veut vraiment comprendre pour améliorer.',
+    btn_submit: 'Envoyer mon avis',
+    btn_skip: 'Passer (sans commentaire)',
+    btn_back: '← Retour',
+    sending: 'Envoi en cours…',
+    err_network: 'Erreur réseau. Vérifiez votre connexion et réessayez.',
+    name_label: 'Votre prénom',
+    name_optional: 'optionnel',
+    name_placeholder: 'Ex : Fatima, Mohamed…',
+    validation_no_note: 'Veuillez sélectionner une note avant de continuer.',
+    ai_long: 'La génération prend un peu plus de temps… merci de patienter.',
+  },
+  ar: {
+    loading: 'جارٍ التحقق…',
+    err_unknown_title: 'هذا الرابط غير صالح',
+    err_unknown_sub: 'هذا الرابط لا يتوافق مع أي طلب معروف.\nتواصل مع العيادة للحصول على رابط صالح.',
+    err_used_title: 'لقد أجبتَ بالفعل',
+    err_used_sub: 'تم استلام رأيك. شكراً على ثقتك !',
+    err_expired_title: 'انتهت صلاحية هذا الرابط',
+    err_expired_sub: 'الروابط صالحة لمدة 48 ساعة.\nتواصل مع العيادة للحصول على رابط جديد.',
+    err_saisie_title: 'انتهت صلاحية الرابط\nأثناء الكتابة',
+    err_saisie_sub: 'لم يتم إرسال رأيك.\nتواصل مع العيادة للحصول على رابط جديد.',
+    err_quota_title: 'غير متوفر حالياً',
+    err_quota_sub: 'العيادة لا تقبل المزيد من الآراء حالياً.\nحاول مرة أخرى بعد أيام.',
+    contact_cabinet: 'التواصل مع العيادة',
+    welcome_title: '! مرحباً 👋',
+    welcome_sub: 'كيف كانت زيارتك ؟\nرأيك يساعدنا على تحسين استقبالك في المرة القادمة.',
+    confidential_note: 'رأيك سري ولن يُنشر أبداً بدون إذنك.',
+    btn_start: '← أعطِ رأيك',
+    stars_title: 'كيف تقيّم تجربتك ؟',
+    stars_sub: 'اختر تقييماً',
+    star_placeholder: 'اضغط على نجمة',
+    star_labels: ['','😞 غير راضٍ إطلاقاً','😐 غير راضٍ','😶 مقبول','😊 تجربة جيدة','🌟 تجربة ممتازة !'],
+    chips_title: 'ما الذي أعجبك ؟',
+    chips_sub: 'اختياري · اختيار متعدد',
+    btn_continue: '← المتابعة',
+    step_1: 'الخطوة 1 من 3',
+    step_2: 'الخطوة 2 من 3',
+    step_3: 'الخطوة 3 من 3',
+    comment_title: 'شاركنا تجربتك',
+    comment_sub: 'في بضع كلمات، صف زيارتك',
+    suggestion_label: 'اقتراح · انقر لاستخدامه',
+    comment_placeholder_5: 'ما الذي أعجبك أكثر في هذه الزيارة ؟',
+    comment_placeholder_4: 'ما الذي أعجبك في هذه الاستشارة ؟',
+    comment_placeholder_3: 'أخبرنا برأيك…',
+    comment_placeholder_12: 'ما الذي لم يسر بشكل جيد ؟ نريد أن نفهم لنتحسن.',
+    btn_submit: 'إرسال رأيي',
+    btn_skip: 'تخطى (بدون تعليق)',
+    btn_back: 'رجوع →',
+    sending: 'جارٍ الإرسال…',
+    err_network: 'خطأ في الشبكة. تحقق من اتصالك وحاول مجدداً.',
+    name_label: 'اسمك الأول',
+    name_optional: 'اختياري',
+    name_placeholder: 'مثال: فاطمة، محمد…',
+    validation_no_note: 'الرجاء اختيار تقييم قبل المتابعة.',
+    ai_long: 'التوليد يستغرق وقتاً أطول من المعتاد… شكراً لتحلّيك بالصبر.',
+  }
+};
+
+// ── State ─────────────────────────────────────────────────────
 let cfg = null;
 let selectedNote = 0;
 let selectedChips = [];
 let feedbackId = null;
 let abVariante = null;
+let lang = 'fr';
+let currentStep = 'note';
+let formSubmitted = false;
+let patientPrenom = null;     // U2 — prénom WA patient
+const formLoadTime = Date.now();
 
-const starLabels = ['','😞 Mauvais','😐 Passable','😊 Bien','😃 Très bien','🤩 Excellent !'];
+function t(k) { return (i18n[lang] || i18n.fr)[k] || k; }
 
-/* ---- INIT ---- */
+// ── Abandon tracking (FIX 8) ──────────────────────────────────
+window.addEventListener('beforeunload', () => {
+  if (formSubmitted || !cfg) return;
+  const data = JSON.stringify({
+    token: (new URLSearchParams(window.location.search)).get('token') || null,
+    doctor_id: cfg.doctor_id || null,
+    step: currentStep,
+  });
+  navigator.sendBeacon('/api/track-abandon', new Blob([data], { type: 'application/json' }));
+});
+
+// ── Language ──────────────────────────────────────────────────
+function detectLang() {
+  const stored = sessionStorage.getItem('rp_lang');
+  if (stored) return stored;
+  const bl = (navigator.language || '').toLowerCase();
+  return bl.startsWith('ar') ? 'ar' : 'fr';
+}
+
+function applyLang(l) {
+  lang = l;
+  sessionStorage.setItem('rp_lang', l);
+  document.documentElement.lang = l;
+  if (l === 'ar') {
+    document.body.setAttribute('dir', 'rtl');
+    document.getElementById('langBtn').textContent = 'Français';
+  } else {
+    document.body.removeAttribute('dir');
+    document.getElementById('langBtn').textContent = 'العربية';
+  }
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (i18n[lang][k]) el.textContent = i18n[lang][k];
+  });
+  // Placeholder update
+  updateCommentPlaceholder();
+}
+
+function toggleLang() {
+  applyLang(lang === 'fr' ? 'ar' : 'fr');
+}
+
+// ── Panels ────────────────────────────────────────────────────
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+// ── Init ──────────────────────────────────────────────────────
 async function init() {
+  lang = detectLang();
+  applyLang(lang);
+
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
-  // Priority: ?slug= param first, then last path segment (if not a page name)
   const pathSlug = location.pathname.split('/').filter(p => p && p !== 'form' && p !== 'result').pop();
   const slug = params.get('slug') || pathSlug;
 
   let url = '/api/form-config?';
   if (token) url += 'token=' + encodeURIComponent(token);
   else if (slug) url += 'slug=' + encodeURIComponent(slug);
-  else { showError('⚠️', 'Lien invalide ou expiré.'); return; }
+  else { showErrorState('p-err-unknown'); return; }
 
   try {
     const res = await fetch(url);
     const data = await res.json();
+
     if (!data.ok) {
-      if (data.blocked) {
-        showBlocked();
-        return;
-      }
-      showError(data.quota ? '🚫' : '⚠️', data.error || 'Lien invalide.');
+      if (data.blocked) { showBlocked(); return; }
+      if (data.quota)   { showErrorState('p-err-quota', data); return; }
+      if (data.error === 'Token déjà utilisé') { showErrorState('p-err-used', data); return; }
+      if (data.error === 'Token expiré')       { showErrorState('p-err-expired', data); return; }
+      showErrorState('p-err-unknown', data);
       return;
     }
+
     cfg = data;
     abVariante = data.ab_variante || 'A';
     renderHeader(data);
     renderChips(data.chips_positifs || []);
+
     if (data.template_suggestion) {
-      document.getElementById('suggestionBox').textContent = data.template_suggestion;
+      document.getElementById('suggestionText').textContent = data.template_suggestion;
       document.getElementById('suggestionWrap').style.display = 'block';
     }
-    goStep(1);
+
+    // U2 — Greeting WhatsApp patient
+    if (data.patient_prenom) {
+      patientPrenom = data.patient_prenom;
+      const greetingEl = document.getElementById('patientGreeting');
+      if (greetingEl) {
+        greetingEl.textContent = lang === 'ar'
+          ? `مرحباً ${patientPrenom} 👋`
+          : `Bonjour ${patientPrenom} 👋`;
+        greetingEl.style.display = 'block';
+      }
+    }
+
+    // Q5 — OG meta tags dynamiques
+    setOgMeta(data);
+
+    document.getElementById('langBtn').style.display = '';
+    showPanel('p-accueil');
+
   } catch(e) {
-    showError('⚠️', 'Erreur réseau. Veuillez réessayer.');
+    showErrorState('p-err-unknown');
   }
 }
 
 function renderHeader(d) {
-  const logo = document.getElementById('doctorLogo');
+  const avatar = document.getElementById('doctorAvatar');
   if (d.logo_url) {
-    logo.innerHTML = `<img src="${d.logo_url}" alt="Logo" onerror="this.parentElement.textContent='${getInitial(d.nom)}'">`;
+    avatar.innerHTML = `<img src="${d.logo_url}" alt="Logo" onerror="this.parentElement.textContent='${getInitial(d.nom)}'">`;
   } else {
-    logo.textContent = getInitial(d.nom);
+    avatar.textContent = getInitial(d.nom);
   }
-  document.getElementById('doctorName').textContent = d.nom;
-  document.getElementById('doctorSub').textContent = d.specialite + ' · ' + d.ville;
-  document.title = 'Avis — ' + d.nom;
+  document.getElementById('doctorName').textContent = formatDrName(d.nom);
+  document.getElementById('doctorSub').textContent = [d.specialite, d.ville].filter(Boolean).join(' · ');
+  document.title = 'Avis — ' + formatDrName(d.nom);
+
+  // Update welcome sub with doctor name
+  const sub = document.getElementById('welcomeSub');
+  if (lang === 'fr') {
+    sub.innerHTML = `Comment s'est passée votre visite chez <strong>${formatDrName(d.nom)}</strong> ?<br><span style="font-size:13px;color:var(--muted)">Votre avis nous aide à mieux vous accueillir.</span>`;
+  } else {
+    sub.innerHTML = `كيف كانت زيارتك عند <strong>${formatDrName(d.nom)}</strong> ؟<br><span style="font-size:13px;color:var(--muted)">رأيك يساعدنا على تحسين استقبالك.</span>`;
+  }
+
+  // Set WA contact links
+  const wa = d.whatsapp_assistante || '';
+  const waUrl = wa ? `https://wa.me/${wa.replace(/\D/g,'')}` : null;
+  ['contactUnknown','contactUsed','contactExpired','contactSaisie','contactQuota'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (waUrl) el.href = waUrl;
+      else el.style.display = 'none';
+    }
+  });
 }
 
 function getInitial(nom) {
-  return (nom || '').split(' ').filter(p => p.length > 1).map(p => p[0]).join('').substring(0,2).toUpperCase() || 'D';
+  const n = cleanDrName(nom);
+  return (n||'').split(' ').filter(p=>p.length>1).map(p=>p[0]).join('').substring(0,2).toUpperCase()||'D';
+}
+
+// Q5 — OG meta tags dynamiques
+function setOgMeta(d) {
+  const set = (prop, content) => {
+    let el = document.querySelector(`meta[property="${prop}"]`);
+    if (!el) { el = document.createElement('meta'); el.setAttribute('property', prop); document.head.appendChild(el); }
+    el.setAttribute('content', content);
+  };
+  set('og:title',       `Donnez votre avis — ${formatDrName(d.nom)}`);
+  set('og:description', `Partagez votre expérience avec ${formatDrName(d.nom)}, ${d.specialite} à ${d.ville}`);
+  set('og:type',        'website');
+  // theme-color
+  let tc = document.querySelector('meta[name="theme-color"]');
+  if (!tc) { tc = document.createElement('meta'); tc.setAttribute('name','theme-color'); document.head.appendChild(tc); }
+  tc.setAttribute('content','#0D9488');
+}
+
+// Q3 — Validation avant navigation vers étape 2
+function goStepValidated(n) {
+  if (n === 2 && !selectedNote) {
+    const errEl = document.getElementById('validationError');
+    if (errEl) {
+      errEl.textContent = t('validation_no_note');
+      errEl.style.display = 'block';
+      setTimeout(() => { errEl.style.display = 'none'; }, 3500);
+    }
+    return;
+  }
+  goStep(n);
+}
+
+// U4 — Step-circle progress update
+function updateProgress(step) {
+  const sd1   = document.getElementById('sd1');
+  const sd2   = document.getElementById('sd2');
+  const sc1   = document.getElementById('sc1');
+  const label = document.getElementById('stepLabel');
+  if (!sd1 || !sd2) return;
+  if (step === 1) {
+    sd1.className = 'step-dot active'; sd1.textContent = '1';
+    if (sc1) sc1.className = 'step-connector';
+    sd2.className = 'step-dot';        sd2.textContent = '2';
+    if (label) { label.dataset.i18n = 'step_1'; label.textContent = t('step_1'); }
+  } else if (step === 2) {
+    sd1.className = 'step-dot done';   sd1.textContent = '✓';
+    if (sc1) sc1.className = 'step-connector done';
+    sd2.className = 'step-dot active'; sd2.textContent = '2';
+    if (label) { label.dataset.i18n = 'step_2'; label.textContent = t('step_2'); }
+  }
+}
+
+// C2 — Afficher/masquer le champ prénom selon la note
+function updateNameInputVisibility() {
+  const wrap = document.getElementById('nameInputWrap');
+  if (wrap) wrap.style.display = selectedNote ? 'block' : 'none';
 }
 
 function renderChips(chips) {
@@ -249,51 +772,133 @@ function renderChips(chips) {
     el.textContent = c;
     el.addEventListener('click', () => {
       el.classList.toggle('selected');
-      if (el.classList.contains('selected')) selectedChips.push(c);
-      else selectedChips = selectedChips.filter(x => x !== c);
+      selectedChips = el.classList.contains('selected')
+        ? [...selectedChips, c]
+        : selectedChips.filter(x => x !== c);
     });
     wrap.appendChild(el);
   });
 }
 
-/* ---- STARS ---- */
-document.getElementById('starsWrap').addEventListener('click', function(e) {
+function showErrorState(panelId, data) {
+  // Try to set WA contact if cfg available
+  if (cfg) renderHeader(cfg);
+  showPanel(panelId);
+}
+
+function showBlocked() {
+  document.getElementById('doctorName').textContent = 'Cabinet indisponible';
+  document.getElementById('doctorSub').textContent = 'Service temporairement suspendu';
+  document.getElementById('doctorAvatar').textContent = '🔒';
+  showPanel('p-blocked');
+}
+
+// ── Navigation ────────────────────────────────────────────────
+function goStep(n) {
+  if (n === 1) {
+    showPanel('p-stars');
+    currentStep = 'note';
+  } else if (n === 2) {
+    showPanel('p-comment');
+    updateCommentPlaceholder();
+    currentStep = 'commentaire';
+  }
+}
+
+// ── Stars ─────────────────────────────────────────────────────
+document.getElementById('starsRow').addEventListener('click', e => {
   const star = e.target.closest('.star');
   if (!star) return;
   selectedNote = parseInt(star.dataset.v);
+
+  // S2 — Haptic feedback mobile
+  if ('vibrate' in navigator) {
+    navigator.vibrate(selectedNote === 5 ? [50, 30, 50] : [30]);
+  }
+
   updateStars();
-  document.getElementById('starLabel').textContent = starLabels[selectedNote] || '';
-  setTimeout(() => goStep(2), 350);
+  const labels = t('star_labels');
+  document.getElementById('starLabel').textContent = labels[selectedNote] || '';
+
+  // Show chips for 4-5 stars + update progress circle
+  const chipsSection = document.getElementById('chipsSection');
+  if (selectedNote >= 4) {
+    chipsSection.style.display = 'block';
+    updateProgress(2);   // U4 — step 1 done → step 2 active (chips)
+  } else {
+    chipsSection.style.display = 'none';
+    selectedChips = [];
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    updateProgress(1);   // U4 — back to step 1 (no chips needed)
+  }
+
+  // C2 — Afficher champ prénom
+  updateNameInputVisibility();
+
+  // Show continue button
+  const btn = document.getElementById('btnStarContinue');
+  btn.style.display = 'block';
+  btn.textContent = t('btn_continue');
+
+  // Auto-advance after 400ms if rating < 4 (no chips needed)
+  if (selectedNote < 4) {
+    setTimeout(() => goStep(2), 400);
+  }
+
+  currentStep = 'chips';
 });
 
 function updateStars() {
   document.querySelectorAll('.star').forEach((s, i) => {
-    s.classList.toggle('active', i < selectedNote);
+    s.classList.toggle('lit', i < selectedNote);
+    s.classList.toggle('active', i === selectedNote - 1);
   });
 }
 
+// ── Suggestion ────────────────────────────────────────────────
 function useSuggestion() {
-  const s = document.getElementById('suggestionBox').textContent;
-  document.getElementById('commentInput').value = s;
+  const text = document.getElementById('suggestionText').textContent;
+  const ta = document.getElementById('commentInput');
+  ta.value = text;
   updateCharCount();
+  ta.focus();
 }
 
 function updateCharCount() {
   document.getElementById('charCount').textContent = document.getElementById('commentInput').value.length;
 }
 
-/* ---- NAVIGATION ---- */
-function goStep(n) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  const panelId = n === 1 ? 'p-stars' : n === 2 ? 'p-chips' : 'p-comment';
-  document.getElementById(panelId).classList.add('active');
+function updateCommentPlaceholder() {
+  const ta = document.getElementById('commentInput');
+  const key = selectedNote >= 5 ? 'comment_placeholder_5'
+             : selectedNote === 4 ? 'comment_placeholder_4'
+             : selectedNote === 3 ? 'comment_placeholder_3'
+             : 'comment_placeholder_12';
+  ta.placeholder = t(key);
 }
 
-/* ---- SUBMIT ---- */
+// ── Submit ────────────────────────────────────────────────────
 async function submitFeedback(skip = false) {
+  // Q3 — Validation obligatoire
+  if (!selectedNote) {
+    const errEl = document.getElementById('validationError');
+    if (errEl) {
+      errEl.textContent = t('validation_no_note');
+      errEl.style.display = 'block';
+      setTimeout(() => { errEl.style.display = 'none'; }, 3500);
+    }
+    return;
+  }
+
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Envoi…';
+  btn.innerHTML = `<span class="spinner"></span>${t('sending')}`;
+
+  // Q4 — Timeout IA : message après 8 secondes
+  const aiLongMsg = document.getElementById('ai-long-msg');
+  const aiTimeout = setTimeout(() => {
+    if (aiLongMsg) aiLongMsg.style.display = 'block';
+  }, 8000);
 
   const comment = skip ? '' : document.getElementById('commentInput').value.trim();
   const params = new URLSearchParams(window.location.search);
@@ -301,15 +906,21 @@ async function submitFeedback(skip = false) {
   const pathSlug = location.pathname.split('/').filter(p => p && p !== 'form' && p !== 'result').pop();
   const slug = params.get('slug') || pathSlug;
 
+  // C2 — Récupérer le prénom saisi (optionnel)
+  const prenomSaisi = (document.getElementById('patientPrenom')?.value || '').trim() || null;
+
   const payload = {
     note: selectedNote,
     commentaire: comment,
     chips_selected: selectedChips,
     ab_variante: abVariante,
     canal: token ? 'whatsapp' : 'qr',
+    prenom_patient: prenomSaisi,   // C2 — prénom optionnel
+    _hp: document.getElementById('website').value,
+    _t: Math.floor((Date.now() - formLoadTime) / 1000),
   };
   if (token) payload.token = token;
-  if (cfg && cfg.doctor_id) payload.doctor_id = cfg.doctor_id;
+  if (cfg?.doctor_id) payload.doctor_id = cfg.doctor_id;
   if (slug && !token) payload.slug = slug;
 
   try {
@@ -319,44 +930,41 @@ async function submitFeedback(skip = false) {
       body: JSON.stringify(payload)
     });
     const data = await res.json();
+    clearTimeout(aiTimeout);
+    if (aiLongMsg) aiLongMsg.style.display = 'none';
+
     if (data.ok) {
-      // Store result data then redirect
+      formSubmitted = true;
+      currentStep = 'suggestion';
       const resultData = {
         type: data.type,
         google_url: data.google_url || '',
         suggestion: data.suggestion || '',
         wa_cabinet: data.wa_cabinet || '',
         feedback_id: data.feedback_id || '',
-        doctor_nom: cfg ? cfg.nom : '',
-        seo_score: data.seo_score || null,
+        doctor_nom: cfg?.nom || '',
+        doctor_id: cfg?.doctor_id || '',
+        lang,
       };
       sessionStorage.setItem('reviewResult', JSON.stringify(resultData));
       window.location.href = '/result';
+    } else if (data.error === 'token_expire_pendant_saisie') {
+      clearTimeout(aiTimeout);
+      showPanel('p-err-expired-saisie');
     } else {
-      showError('⚠️', data.error || 'Erreur lors de l\'envoi.');
+      clearTimeout(aiTimeout);
+      if (aiLongMsg) aiLongMsg.style.display = 'none';
+      btn.disabled = false;
+      btn.innerHTML = t('btn_submit');
+      alert(data.error || t('err_network'));
     }
   } catch(e) {
-    showError('⚠️', 'Erreur réseau. Veuillez réessayer.');
+    clearTimeout(aiTimeout);
+    if (aiLongMsg) aiLongMsg.style.display = 'none';
     btn.disabled = false;
-    btn.innerHTML = 'Envoyer mon avis';
+    btn.innerHTML = t('btn_submit');
+    alert(t('err_network'));
   }
-}
-
-function showError(icon, msg) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('errorIcon').textContent = icon;
-  document.getElementById('errorMsg').textContent = msg;
-  document.getElementById('p-error').classList.add('active');
-}
-
-function showBlocked() {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('p-blocked').classList.add('active');
-  // Grey out the header to reflect unavailability
-  document.getElementById('cardHeader').style.opacity = '0.6';
-  document.getElementById('doctorName').textContent = 'Cabinet indisponible';
-  document.getElementById('doctorSub').textContent = 'Service temporairement suspendu';
-  document.getElementById('doctorLogo').textContent = '🔒';
 }
 
 init();

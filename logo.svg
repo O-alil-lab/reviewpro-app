@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1628"/>
+      <stop offset="100%" stop-color="#0F2044"/>
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="rGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2F0FF"/>
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect x="2" y="2" width="60" height="60" rx="16" ry="16" fill="url(#bgGrad)"/>
+
+  <!-- Cyan glow border -->
+  <rect x="2" y="2" width="60" height="60" rx="16" ry="16"
+        fill="none" stroke="url(#borderGrad)" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Inner subtle glow -->
+  <rect x="4" y="4" width="56" height="56" rx="14" ry="14"
+        fill="none" stroke="rgba(6,182,212,0.15)" stroke-width="1"/>
+
+  <!-- Bold "R" letter -->
+  <text x="12" y="47" font-family="'Plus Jakarta Sans', 'Inter', system-ui, sans-serif"
+        font-size="38" font-weight="800" fill="url(#rGrad)"
+        letter-spacing="-2">R</text>
+
+  <!-- Cyan diagonal arrow / flash accent -->
+  <g fill="url(#arrowGrad)" filter="url(#glow)">
+    <!-- Arrow body: diagonal line top-right area -->
+    <path d="M42 20 L52 14 L50 24 Z" opacity="0.9"/>
+    <path d="M44 22 L52 14 L54 20 Z" opacity="0.6"/>
+  </g>
+
+  <!-- 4-pointed star sparkle at top-right -->
+  <g transform="translate(49,13)" fill="#06B6D4">
+    <path d="M0,-5 L1,-1 L5,0 L1,1 L0,5 L-1,1 L-5,0 L-1,-1 Z" opacity="0.95"/>
+  </g>
+
+  <!-- Small secondary star -->
+  <g transform="translate(54,22)" fill="#22D3EE">
+    <path d="M0,-2.5 L0.5,-0.5 L2.5,0 L0.5,0.5 L0,2.5 L-0.5,0.5 L-2.5,0 L-0.5,-0.5 Z" opacity="0.7"/>
+  </g>
+</svg>

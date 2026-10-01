@@ -3,909 +3,1927 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — ReviewPro</title>
+<title>Tableau de bord — ReviewPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#f1f5f9;font-family:'Segoe UI',system-ui,sans-serif;color:#0f172a;min-height:100vh}
-
-/* Sidebar */
-.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:#0f172a;display:flex;flex-direction:column;z-index:100}
-.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid #1e293b;display:flex;align-items:center;gap:10px}
-.sidebar-logo .icon{width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.sidebar-logo span{font-size:16px;font-weight:700;color:#fff}
-.plan-badge{margin:12px 16px 0;background:#1e293b;border-radius:8px;padding:8px 12px;font-size:11px}
-.plan-badge .plan-name{font-weight:700;color:#fbbf24;font-size:13px}
-.plan-badge .plan-detail{color:#94a3b8;margin-top:2px}
-.nav{flex:1;padding:16px 0;overflow-y:auto}
-.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;font-size:13px;font-weight:500;color:#94a3b8;cursor:pointer;transition:all .2s;border-left:3px solid transparent}
-.nav-item:hover{background:#1e293b;color:#e2e8f0}
-.nav-item.active{background:#1e293b;color:#fff;border-left-color:#2563eb}
-.nav-item .icon{font-size:16px;width:20px;text-align:center}
-.nav-section{padding:16px 20px 6px;font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.08em}
-.sidebar-footer{padding:16px;border-top:1px solid #1e293b}
-.doctor-info{display:flex;align-items:center;gap:10px}
-.doctor-avatar{width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
-.doctor-name{font-size:12px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.doctor-spec{font-size:10px;color:#64748b}
-.logout-btn{margin-top:10px;width:100%;padding:8px;background:transparent;border:1px solid #334155;border-radius:8px;color:#64748b;font-size:12px;cursor:pointer;transition:.2s}
-.logout-btn:hover{background:#1e293b;color:#94a3b8}
-
-/* Main */
-.main{margin-left:220px;padding:24px;min-height:100vh}
-.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
-.page-header h1{font-size:22px;font-weight:700}
-.page-header p{font-size:13px;color:#64748b;margin-top:2px}
-
-/* Tabs */
-.tab-content{display:none}
-.tab-content.active{display:block}
-
-/* Stats */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
-.stat-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.stat-value{font-size:32px;font-weight:800;color:#0f172a}
-.stat-label{font-size:12px;color:#64748b;margin-top:4px}
-.stat-sub{font-size:11px;color:#94a3b8;margin-top:2px}
-.stat-card.blue .stat-value{color:#2563eb}
-.stat-card.green .stat-value{color:#059669}
-.stat-card.orange .stat-value{color:#d97706}
-.stat-card.red .stat-value{color:#dc2626}
-
-/* Quota bar */
-.quota-bar-wrap{background:#fff;border-radius:14px;padding:20px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.quota-bar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.quota-bar-title{font-size:14px;font-weight:600}
-.quota-bar-count{font-size:14px;font-weight:700;color:#2563eb}
-.quota-bar{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
-.quota-fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:4px;transition:width .6s ease}
-.quota-fill.danger{background:linear-gradient(90deg,#dc2626,#f97316)}
-.upgrade-cta{margin-top:12px;padding:12px 16px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #fbbf24;border-radius:10px;font-size:13px;display:flex;align-items:center;justify-content:space-between;display:none}
-.upgrade-cta .cta-text{color:#92400e;font-weight:500}
-.upgrade-cta .cta-btn{padding:6px 14px;background:#d97706;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer}
-
-/* Link share */
-.link-card{background:#fff;border-radius:14px;padding:20px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.link-card .link-label{font-size:13px;font-weight:600;white-space:nowrap}
-.link-card .link-val{flex:1;font-size:13px;color:#2563eb;font-weight:500;word-break:break-all;min-width:0}
-.link-card-actions{display:flex;gap:8px;flex-shrink:0}
-.icon-btn{padding:7px 12px;border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#374151;transition:.2s;white-space:nowrap}
-.icon-btn:hover{background:#f1f5f9}
-.icon-btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
-
-/* Table */
-.table-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:24px}
-.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.table-title{font-size:15px;font-weight:700}
-.table-sub{font-size:12px;color:#64748b;margin-top:2px}
-table{width:100%;border-collapse:collapse}
-th{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:2px solid #f1f5f9;text-align:left}
-td{font-size:13px;padding:10px 10px;border-bottom:1px solid #f1f5f9;color:#374151;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:#f8fafc}
-.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
-.badge.pos{background:#ecfdf5;color:#059669}
-.badge.neg{background:#fef2f2;color:#dc2626}
-.badge.neutral{background:#f1f5f9;color:#64748b}
-.stars{color:#f59e0b;font-size:13px;letter-spacing:1px}
-.premium-lock{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center}
-.premium-lock .lock-icon{font-size:48px;margin-bottom:12px}
-.premium-lock h3{font-size:17px;font-weight:700;color:#0f172a;margin-bottom:8px}
-.premium-lock p{font-size:13px;color:#64748b;max-width:380px;line-height:1.6}
-.premium-lock .upgrade-btn{margin-top:16px;padding:12px 24px;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
-
-/* Config forms */
-.config-section{background:#fff;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.config-section h3{font-size:15px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none;transition:.2s;background:#fff}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.form-group .hint{font-size:11px;color:#94a3b8;margin-top:4px}
-.save-btn{padding:10px 24px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
-.save-btn:hover{opacity:.9}
-.save-btn:disabled{opacity:.6;cursor:not-allowed}
-.success-toast{display:none;align-items:center;gap:8px;padding:10px 16px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;color:#059669;font-size:13px;font-weight:500;margin-top:12px}
-
-/* Chip editor */
-.chip-grid{display:flex;flex-wrap:wrap;gap:8px}
-.chip-tag{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:20px;padding:4px 10px;font-size:12px}
-.chip-tag .remove{cursor:pointer;color:#94a3b8;font-size:10px}
-.chip-tag .remove:hover{color:#dc2626}
-.chip-add{display:flex;gap:8px;margin-top:10px}
-.chip-add input{flex:1;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none}
-.chip-add input:focus{border-color:#2563eb}
-.chip-add button{padding:0 14px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
-
-/* QR section */
-.qr-wrap{text-align:center;padding:20px}
-.qr-wrap img{width:180px;height:180px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12)}
-.qr-wrap p{font-size:12px;color:#64748b;margin-top:10px}
-
-/* Mobile */
-@media(max-width:768px){
-  .sidebar{width:100%;height:auto;position:fixed;bottom:0;top:auto;flex-direction:row;padding:0;height:60px}
-  .sidebar-logo,.plan-badge,.nav-section,.sidebar-footer{display:none}
-  .nav{display:flex;flex-direction:row;padding:0;overflow-x:auto;align-items:stretch}
-  .nav-item{flex-direction:column;align-items:center;padding:8px 14px;font-size:9px;gap:3px;border-left:none;border-top:3px solid transparent;flex:1;min-width:60px}
-  .nav-item.active{border-top-color:#2563eb;border-left-color:transparent}
-  .nav-item .icon{font-size:18px;width:auto}
-  .main{margin-left:0;margin-bottom:60px;padding:16px}
-  .form-row{grid-template-columns:1fr}
-  .stats-grid{grid-template-columns:1fr 1fr}
+:root{
+  --primary:#0D9488;--primary-dark:#0f766e;--primary-light:#F0FDFA;
+  --accent:#22D3EE;--accent-light:#ecfeff;
+  --success:#22C55E;--success-light:#f0fdf4;
+  --warning:#F59E0B;--warning-light:#fffbeb;
+  --error:#EF4444;--error-light:#fef2f2;
+  --dark:#134E4A;--text:#1e293b;--muted:#64748B;
+  --border:#E2E8F0;--border-light:#F0FDFA;--border-teal:#CCFBF1;
+  --bg:#F0FDFA;--card:#ffffff;--sidebar-w:248px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 6px rgba(0,0,0,.07);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 10px 30px rgba(0,0,0,.08);
+  --shadow-lg:0 10px 15px rgba(0,0,0,.08),0 25px 60px rgba(0,0,0,.1);
+  --radius:14px;--radius-lg:20px;--radius-xl:24px;
+  --transition:all 200ms ease;
 }
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.15);border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty-state{text-align:center;padding:40px 20px;color:#94a3b8;font-size:13px}
-.empty-state .empty-icon{font-size:36px;margin-bottom:8px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
 
-/* Trial banners */
-.trial-banner{border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.trial-banner.active{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #bfdbfe}
-.trial-banner.warning{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #fbbf24}
-.trial-banner.expired{background:linear-gradient(135deg,#fef2f2,#fecaca);border:1.5px solid #f87171}
-.trial-banner .tb-left{display:flex;align-items:center;gap:12px}
-.trial-banner .tb-icon{font-size:28px}
-.trial-banner .tb-title{font-size:14px;font-weight:700;margin-bottom:2px}
-.trial-banner.active .tb-title{color:#1d4ed8}
-.trial-banner.warning .tb-title{color:#92400e}
-.trial-banner.expired .tb-title{color:#b91c1c}
-.trial-banner .tb-sub{font-size:12px;color:#64748b}
-.trial-wa-btn{padding:10px 18px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:.2s}
-.trial-wa-btn:hover{opacity:.9}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);
+  background:#FFFFFF;
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;
+  z-index:100;transition:transform .3s ease;
+}
+.sidebar-brand{
+  padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.brand-icon{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+.brand-name{font-size:16px;font-weight:800;color:var(--dark);letter-spacing:-.3px;font-family:'Figtree',system-ui,sans-serif}
+.brand-tag{font-size:10px;color:var(--muted);font-weight:500;margin-top:1px}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+.nav-section{padding:8px 16px 4px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  margin:1px 8px;border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--muted);
+  transition:var(--transition);position:relative;border:none;background:none;width:calc(100% - 16px);text-align:left;
+}
+.nav-item:hover{background:var(--primary-light);color:var(--primary)}
+.nav-item.active{background:#0D948815;color:var(--primary);font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--primary);border-radius:0 2px 2px 0}
+.nav-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.7}
+.nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1}
+.nav-badge{
+  margin-left:auto;background:var(--error);color:#fff;
+  font-size:10px;font-weight:700;min-width:18px;height:18px;
+  border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 5px;
+}
+
+.sidebar-footer{padding:12px 16px 16px;border-top:1px solid var(--border)}
+.sidebar-version{font-size:10px;color:#94a3b8;text-align:center;margin-bottom:10px;font-weight:500;letter-spacing:.03em}
+.user-card{
+  display:flex;align-items:center;gap:10px;padding:10px;
+  background:var(--primary-light);border-radius:10px;cursor:pointer;
+  transition:var(--transition);border:none;width:100%;text-align:left;
+}
+.user-card:hover{background:var(--border-teal)}
+.user-avatar{
+  width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;background-size:cover;background-position:center;
+}
+.user-name{font-size:12px;font-weight:600;color:var(--dark);line-height:1.3}
+.user-plan{font-size:10px;color:var(--muted)}
+.user-logout{margin-left:auto;color:var(--muted);cursor:pointer;transition:var(--transition);background:none;border:none;padding:4px;display:flex;align-items:center;justify-content:center}
+.user-logout:hover{color:var(--dark)}
+
+/* ── Main ────────────────────────────────────────────────── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── Topbar ──────────────────────────────────────────────── */
+.topbar{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:0 28px;height:68px;display:flex;align-items:center;
+  position:sticky;top:0;z-index:50;gap:16px;
+  box-shadow:var(--shadow-sm);
+}
+.topbar-left{flex:1;min-width:0}
+.topbar-title{font-size:17px;font-weight:700;color:var(--dark);letter-spacing:-.02em;line-height:1.2}
+.topbar-breadcrumb{font-size:11px;color:var(--muted);margin-top:1px;display:flex;align-items:center;gap:4px}
+.topbar-breadcrumb span{color:var(--muted)}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.btn-quick-new{
+  display:flex;align-items:center;gap:6px;padding:8px 14px;
+  background:var(--primary);color:#fff;
+  border:1.5px solid var(--primary);border-radius:10px;font-size:12px;font-weight:600;
+  cursor:pointer;transition:var(--transition);text-decoration:none;white-space:nowrap;
+}
+.btn-quick-new:hover{background:var(--primary-dark);color:#fff;border-color:var(--primary-dark)}
+.notif-btn{
+  position:relative;width:38px;height:38px;border-radius:10px;
+  background:#f8fafc;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:var(--transition);
+}
+.notif-btn:hover{background:var(--border);border-color:#cbd5e1}
+.notif-btn svg{color:var(--muted)}
+#notifCount{
+  position:absolute;top:-4px;right:-4px;background:var(--error);color:#fff;
+  font-size:10px;font-weight:700;min-width:16px;height:16px;
+  border-radius:8px;display:none;align-items:center;justify-content:center;
+  padding:0 4px;border:2px solid #fff;
+  animation:pulse-dot 2s ease infinite;
+}
+.topbar-menu{width:38px;height:38px;border-radius:10px;background:#f8fafc;border:1.5px solid var(--border);display:none;align-items:center;justify-content:center;cursor:pointer;color:var(--dark)}
+
+/* ── Content ─────────────────────────────────────────────── */
+.content{padding:28px;flex:1}
+
+/* ── Tabs ────────────────────────────────────────────────── */
+.tab-pane{display:none;animation:fadeUp .25s ease}
+.tab-pane.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Section headings ────────────────────────────────────── */
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.section-head h2{font-size:20px;font-weight:700;color:var(--dark)}
+.section-head p{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* ── Stats grid ──────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{
+  background:var(--card);border-radius:var(--radius);padding:20px;
+  border:1px solid var(--border);border-left:3px solid var(--primary);
+  box-shadow:var(--shadow);transition:var(--transition);
+  opacity:0;animation:fadeSlideUp .4s ease both;
+}
+.stat-card:nth-child(1){animation-delay:.1s;border-left-color:var(--primary)}
+.stat-card:nth-child(2){animation-delay:.2s;border-left-color:var(--success)}
+.stat-card:nth-child(3){animation-delay:.3s;border-left-color:var(--warning)}
+.stat-card:nth-child(4){animation-delay:.4s;border-left-color:var(--accent)}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.stat-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.stat-icon.blue{background:#0D948815}
+.stat-icon.green{background:var(--success-light)}
+.stat-icon.yellow{background:var(--warning-light)}
+.stat-icon.sky{background:var(--accent-light)}
+.stat-trend{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;display:flex;align-items:center;gap:3px}
+.stat-trend.up{background:var(--success-light);color:var(--success)}
+.stat-trend.down{background:var(--error-light);color:var(--error)}
+.stat-trend.neutral{background:var(--border-light);color:var(--muted)}
+.stat-value{font-size:28px;font-weight:800;color:var(--dark);line-height:1;letter-spacing:-.02em}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px;font-weight:500}
+
+/* ── Quota bar ───────────────────────────────────────────── */
+.quota-card{background:var(--card);border-radius:var(--radius);padding:20px;border:1px solid var(--border);margin-bottom:24px;box-shadow:var(--shadow)}
+.quota-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.quota-title{font-size:14px;font-weight:700;color:var(--dark)}
+.quota-sub{font-size:12px;color:var(--muted)}
+.quota-nums{font-size:13px;font-weight:600;color:var(--muted)}
+.quota-bar-bg{background:var(--border-light);border-radius:8px;height:8px;overflow:hidden;margin-bottom:8px}
+.quota-bar-fill{height:8px;border-radius:8px;transition:width .8s cubic-bezier(.4,0,.2,1);background:linear-gradient(90deg,var(--primary),var(--accent));}
+.quota-bar-fill.warn{background:linear-gradient(90deg,#f59e0b,#ef4444)}
+.quota-info{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+
+/* ── 2/3 column grids ────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.grid-3-1{display:grid;grid-template-columns:1fr 340px;gap:20px;margin-bottom:24px}
+
+/* ── Chart card ──────────────────────────────────────────── */
+.chart-card{background:var(--card);border-radius:var(--radius);padding:22px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.chart-title{font-size:14px;font-weight:700;color:var(--dark);letter-spacing:-.01em}
+.chart-legend{display:flex;gap:16px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:120px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;width:100%}
+.bar{width:100%;border-radius:4px 4px 0 0;min-height:3px;position:relative;cursor:pointer}
+.bar:hover::after{content:attr(data-val);position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;z-index:5}
+.bar.pos{background:linear-gradient(180deg,#34d399,#10b981)}
+.bar.neg{background:linear-gradient(180deg,#f87171,#ef4444)}
+.bar-label{font-size:9px;color:var(--muted);text-align:center;width:100%;overflow:hidden}
+
+/* ── Summary card ────────────────────────────────────────── */
+.summary-card{background:var(--card);border-radius:var(--radius);padding:22px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.summary-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:16px}
+.summary-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.summary-row:last-child{border-bottom:none}
+.summary-label{font-size:13px;color:var(--muted)}
+.summary-val{font-size:14px;font-weight:700;color:var(--dark)}
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty-state{text-align:center;padding:48px 24px}
+.empty-icon{margin-bottom:20px;display:flex;align-items:center;justify-content:center}
+.empty-title{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:8px;letter-spacing:-.01em}
+.empty-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:28px;max-width:360px;margin-left:auto;margin-right:auto}
+.action-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:700px;margin:0 auto}
+.action-card{background:var(--card);border-radius:var(--radius);padding:24px 20px;text-align:center;border:2px solid var(--border);cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm)}
+.action-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.action-card-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;background:var(--primary-light)}
+.action-card h3{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:6px}
+.action-card p{font-size:12px;color:var(--muted);line-height:1.5}
+.action-card-btn{display:inline-block;margin-top:14px;padding:8px 18px;background:var(--primary);color:#fff;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:var(--transition)}
+.action-card-btn:hover{background:var(--primary-dark);transform:translateY(-1px)}
+
+/* ── Feedbacks list ──────────────────────────────────────── */
+.filters-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;color:var(--dark);outline:none;transition:var(--transition);background:#fff;font-family:inherit}
+.search-wrap input:focus{border-color:var(--primary);box-shadow:0 0 0 3px #0D948820}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;align-items:center}
+.filter-select{padding:9px 32px 9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;color:var(--dark);outline:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;font-family:inherit;appearance:none;cursor:pointer;transition:var(--transition)}
+.filter-select:focus{border-color:var(--primary);outline:none}
+.btn-sm{padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition);border:none}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(13,148,136,.2)}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.btn-ghost{background:#f8fafc;color:var(--muted);border:1.5px solid var(--border) !important}
+.btn-ghost:hover{background:var(--border)}
+
+.feedbacks-table{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow)}
+.table-head{display:grid;grid-template-columns:48px 1fr 90px 110px 100px 90px;padding:12px 20px;background:var(--border-light);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;gap:8px}
+.feedback-row{display:grid;grid-template-columns:48px 1fr 90px 110px 100px 90px;padding:14px 20px;border-bottom:1px solid var(--border);align-items:center;transition:var(--transition);cursor:pointer;gap:8px;border-left:2px solid transparent}
+.feedback-row:nth-child(odd){background:#fff}
+.feedback-row:nth-child(even){background:var(--bg)}
+.feedback-row:last-child{border-bottom:none}
+.feedback-row:hover{background:var(--primary-light);border-left-color:var(--primary)}
+.fb-num{font-size:12px;color:var(--muted);font-weight:500}
+.fb-patient{font-size:13px;font-weight:600;color:var(--dark)}
+.fb-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.badge.pos{background:var(--success-light);color:var(--success)}
+.badge.pos::before{background:var(--success)}
+.badge.neg{background:var(--error-light);color:var(--error)}
+.badge.neg::before{background:var(--error)}
+.badge.done{background:#f0fdf4;color:#16a34a}
+.badge.done::before{background:#16a34a}
+.badge.pending{background:var(--warning-light);color:var(--warning)}
+.badge.pending::before{background:var(--warning)}
+.stars-mini{display:flex;gap:1px;font-size:12px;color:#f59e0b}
+
+/* ── Modal ───────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;backdrop-filter:blur(6px)}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius-xl);width:100%;max-width:520px;box-shadow:var(--shadow-lg);animation:modalIn .25s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.modal-head{padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between}
+.modal-title{font-size:17px;font-weight:700;color:var(--dark);letter-spacing:-.01em}
+.modal-close{width:32px;height:32px;border-radius:8px;background:#f8fafc;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:var(--transition);color:var(--muted)}
+.modal-close:hover{background:var(--border);color:var(--dark)}
+.modal-body{padding:20px 28px 28px}
+.detail-block{background:var(--border-light);border-radius:var(--radius);padding:16px;margin-bottom:16px;border:1px solid var(--border)}
+.detail-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
+.detail-row:last-child{margin-bottom:0}
+.detail-label{color:var(--muted);font-weight:500}
+.detail-val{color:var(--dark);font-weight:600;text-align:right}
+.comment-block{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--text);line-height:1.6;font-style:italic}
+.modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{background:#059669;transform:translateY(-1px)}
+.btn-wa{background:#25d366;color:#fff}
+.btn-wa:hover{background:#22c55e;transform:translateY(-1px)}
+.btn-full{width:100%}
+
+/* ── Patients ────────────────────────────────────────────── */
+.patients-table{background:var(--card);border-radius:18px;border:1px solid var(--border);overflow:hidden}
+.pt-head{display:grid;grid-template-columns:1fr 130px 80px 80px 80px;padding:12px 20px;background:#f8fafc;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;gap:8px}
+.pt-row{display:grid;grid-template-columns:1fr 130px 80px 80px 80px;padding:13px 20px;border-bottom:1px solid var(--border);align-items:center;transition:.15s;gap:8px}
+.pt-row:last-child{border-bottom:none}
+.pt-row:hover{background:#f8fafc}
+.pt-name{font-size:13px;font-weight:600;color:var(--dark)}
+.pt-sub{font-size:11px;color:var(--muted)}
+.loyalty-bar-bg{background:#e2e8f0;border-radius:4px;height:6px;width:60px}
+.loyalty-bar{height:6px;border-radius:4px;background:linear-gradient(90deg,var(--primary),var(--accent));}
+
+/* ── Config ──────────────────────────────────────────────── */
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.config-card{background:var(--card);border-radius:var(--radius);padding:24px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.config-card.full{grid-column:1/-1}
+.config-card-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:4px;letter-spacing:-.01em}
+.config-card-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+.form-label .optional{font-size:11px;font-weight:400;color:#94a3b8;margin-left:4px}
+.form-label .required{color:var(--error);margin-left:2px}
+.form-hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--dark);outline:none;font-family:inherit;transition:var(--transition);background:#fff}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px #0D948820}
+.form-input::placeholder{color:#94a3b8}
+textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
+.select-wrap{position:relative}
+.select-wrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:14px}
+.select-wrap select.form-input{appearance:none;padding-right:36px;cursor:pointer}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--primary-light);border:1.5px solid var(--border-teal);color:var(--primary);border-radius:20px;padding:5px 11px;font-size:12px;font-weight:500;transition:var(--transition)}
+.chip .rm{color:#93c5fd;cursor:pointer;transition:var(--transition);background:none;border:none;padding:0;line-height:1;display:flex;align-items:center}
+.chip .rm:hover{color:var(--error)}
+.chip-add-row{display:flex;gap:8px;margin-top:6px}
+.chip-add-row input{flex:1;font-size:13px}
+.chip-add-row button{padding:0 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:var(--transition)}
+.chip-add-row button:hover{background:var(--primary-dark)}
+.save-row{display:flex;justify-content:flex-end;margin-top:8px}
+
+/* ── Plan ────────────────────────────────────────────────── */
+.plan-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.plan-card{background:var(--card);border-radius:var(--radius);padding:24px;border:2px solid var(--border);transition:var(--transition);position:relative;box-shadow:var(--shadow)}
+.plan-card.current{border-color:var(--primary);box-shadow:0 0 0 4px rgba(13,148,136,.08),var(--shadow-md)}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.03em}
+.plan-name{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:4px;letter-spacing:-.01em}
+.plan-price{font-size:26px;font-weight:900;color:var(--dark);margin-bottom:2px;letter-spacing:-.03em}
+.plan-price span{font-size:12px;font-weight:500;color:var(--muted)}
+.plan-quota{font-size:12px;color:var(--muted);margin-bottom:16px}
+.plan-features{list-style:none;margin-bottom:20px}
+.plan-features li{font-size:12px;color:var(--text);padding:5px 0;display:flex;align-items:center;gap:7px}
+.plan-features li svg{flex-shrink:0;color:var(--success)}
+.plan-btn{width:100%;padding:11px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:var(--transition)}
+.plan-btn.current-plan{background:var(--border-light);color:var(--muted);cursor:default;border:1.5px solid var(--border)}
+.plan-btn.upgrade-plan{background:var(--primary);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.25)}
+.plan-btn.upgrade-plan:hover{background:var(--primary-dark);transform:translateY(-1px)}
+
+.referral-card{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:var(--radius);padding:24px;color:#fff;margin-bottom:24px;box-shadow:var(--shadow-md)}
+.referral-title{font-size:16px;font-weight:700;margin-bottom:6px;letter-spacing:-.01em;font-family:'Figtree',system-ui,sans-serif}
+.referral-sub{font-size:13px;color:rgba(255,255,255,.75);margin-bottom:18px;line-height:1.6}
+.link-row{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.link-url{font-size:12px;color:rgba(255,255,255,.9);word-break:break-all;flex:1;font-family:monospace}
+.copy-btn{padding:8px 16px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:var(--transition)}
+.copy-btn:hover{background:rgba(255,255,255,.3)}
+
+/* ── Notifications panel ─────────────────────────────────── */
+.notif-panel{position:fixed;top:64px;right:20px;width:340px;background:#fff;border-radius:18px;border:1px solid var(--border);box-shadow:0 16px 48px rgba(0,0,0,.18);z-index:150;display:none;max-height:420px;overflow-y:auto}
+.notif-panel.open{display:block;animation:dropIn .2s ease}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.notif-panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.notif-panel-title{font-size:14px;font-weight:700;color:var(--dark)}
+.notif-mark-all{font-size:12px;color:var(--primary);cursor:pointer;font-weight:600;background:none;border:none}
+.notif-item{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;transition:.15s;cursor:pointer}
+.notif-item:last-child{border-bottom:none}
+.notif-item:hover{background:#f8fafc}
+.notif-item.unread{background:#eff6ff}
+.notif-item-icon{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.notif-item-icon.neg{background:#fef2f2}
+.notif-item-icon.pos{background:#ecfdf5}
+.notif-item-body{flex:1;min-width:0}
+.notif-item-title{font-size:13px;font-weight:600;color:var(--dark);margin-bottom:2px}
+.notif-item-sub{font-size:12px;color:var(--muted);line-height:1.4}
+.notif-item-time{font-size:10px;color:#94a3b8;margin-top:4px}
+.notif-empty{padding:32px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ── Toast ───────────────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dark);color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;transition:.35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── Pagination ──────────────────────────────────────────── */
+.pagination{display:flex;align-items:center;gap:6px;justify-content:center;margin-top:20px}
+.pg-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;color:var(--muted);cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
+.pg-btn:hover{border-color:var(--primary);color:var(--primary)}
+.pg-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:700}
+
+/* ── Loaders & Alerts ────────────────────────────────────── */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+.spinner.dark{border-color:rgba(100,116,139,.2);border-top-color:var(--muted)}
+.loading-state{text-align:center;padding:40px;color:var(--muted);font-size:13px;font-weight:500}
+.loading-spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+.alert-box{border-radius:12px;padding:12px 16px;font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-weight:500}
+.alert-box.error{background:var(--error-light);border:1px solid #fecaca;color:var(--error)}
+.alert-box.success{background:var(--success-light);border:1px solid #a7f3d0;color:var(--success)}
+.alert-box.info{background:var(--primary-light);border:1px solid var(--border-teal);color:var(--primary)}
+.alert-box.hidden{display:none}
+
+/* ── Bottom nav (mobile) ─────────────────────────────────── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:8px 0 env(safe-area-inset-bottom,8px);z-index:100}
+.bottom-nav-items{display:flex;justify-content:space-around}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;cursor:pointer;transition:.2s;border-radius:10px;font-size:10px;font-weight:500;color:var(--muted);background:none;border:none}
+.bn-item.active{color:var(--primary);font-weight:600}
+.bn-icon{font-size:20px;position:relative}
+.bn-badge{position:absolute;top:-4px;right:-6px;background:var(--error);color:#fff;font-size:9px;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:none;align-items:center;justify-content:center;padding:0 3px}
+
+/* ── Sidebar overlay ─────────────────────────────────────── */
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;display:none;backdrop-filter:blur(2px)}
+.sidebar-overlay.open{display:block}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media(max-width:1100px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .grid-3-1{grid-template-columns:1fr}
+  .plan-cards{grid-template-columns:1fr 1fr}
+}
+@media(max-width:900px){
+  .config-grid{grid-template-columns:1fr}
+  .config-card.full{grid-column:1}
+  .action-cards{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .main{margin-left:0}
+  .topbar{padding:0 16px}
+  .topbar-menu{display:flex}
+  .content{padding:16px;padding-bottom:80px}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .grid-2{grid-template-columns:1fr}
+  .action-cards{grid-template-columns:1fr}
+  .table-head{grid-template-columns:36px 1fr 80px 80px}
+  .feedback-row{grid-template-columns:36px 1fr 80px 80px}
+  .table-head>*:nth-child(4),.feedback-row>*:nth-child(4),
+  .table-head>*:nth-child(6),.feedback-row>*:nth-child(6){display:none}
+  .pt-head{grid-template-columns:1fr 90px 60px}
+  .pt-row{grid-template-columns:1fr 90px 60px}
+  .pt-head>*:nth-child(4),.pt-row>*:nth-child(4),
+  .pt-head>*:nth-child(5),.pt-row>*:nth-child(5){display:none}
+  .bottom-nav{display:block}
+  .notif-panel{right:8px;left:8px;width:auto}
+  .plan-cards{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+}
+
+/* ── Stats 5 cards ───────────────────────────────────────── */
+.stats-grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+@media(max-width:1280px){.stats-grid-5{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.stats-grid-5{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats-grid-5{grid-template-columns:1fr}}
+
+/* ── Trend badge ─────────────────────────────────────────── */
+.trend-badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
+.trend-up{background:#f0fdf4;color:#16a34a}
+.trend-down{background:#fef2f2;color:#dc2626}
+.trend-neutral{background:#f8fafc;color:#64748b}
+
+/* ── Analytics grid ──────────────────────────────────────── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px}
+@media(max-width:1100px){.analytics-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.analytics-grid{grid-template-columns:1fr}}
+.analytics-card{background:var(--card);border-radius:var(--radius);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.analytics-title{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:14px;display:flex;align-items:center;gap:6px;letter-spacing:-.01em}
+
+/* ── Chip bars ───────────────────────────────────────────── */
+.chip-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.chip-bar-label{font-size:11px;color:var(--muted);width:96px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-bar-bg{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.chip-bar-fill{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .7s cubic-bezier(.4,0,.2,1)}
+.chip-bar-cnt{font-size:11px;font-weight:700;color:var(--muted);width:22px;text-align:right;flex-shrink:0}
+
+/* ── Canal split ─────────────────────────────────────────── */
+.canal-split{display:flex;gap:12px;margin-bottom:14px}
+.canal-pill{flex:1;border-radius:10px;padding:12px;text-align:center;border:1.5px solid}
+.canal-pill.qr{background:#eff6ff;border-color:#bfdbfe}
+.canal-pill.wa{background:#f0fdf4;border-color:#a7f3d0}
+.canal-pill-val{font-size:22px;font-weight:900;color:var(--dark);line-height:1}
+.canal-pill-lbl{font-size:11px;font-weight:600;margin-top:3px}
+.canal-pill.qr .canal-pill-lbl{color:#2563eb}
+.canal-pill.wa .canal-pill-lbl{color:#16a34a}
+.canal-stack{height:10px;border-radius:5px;overflow:hidden;display:flex;margin-top:8px}
+.canal-stack-qr{background:#3b82f6;transition:width .7s ease}
+.canal-stack-wa{background:#22c55e;transition:width .7s ease}
+
+/* ── Note distribution ───────────────────────────────────── */
+.note-dist-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.note-star-lbl{font-size:12px;color:var(--muted);width:20px;text-align:right;flex-shrink:0}
+.note-dist-bar-bg{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden}
+.note-dist-bar{height:10px;border-radius:5px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.bar-5{background:#22c55e}.bar-4{background:#86efac}.bar-3{background:#fbbf24}.bar-2{background:#fb923c}.bar-1{background:#ef4444}
+.note-dist-cnt{font-size:11px;font-weight:700;color:var(--muted);width:22px;text-align:right;flex-shrink:0}
+
+/* ── Period buttons ──────────────────────────────────────── */
+.period-tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:8px;padding:3px}
+.period-tab{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;transition:var(--transition)}
+.period-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* ── Week comparison ─────────────────────────────────────── */
+.week-compare-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.week-compare-row:last-child{border-bottom:none}
+.wcr-label{font-size:12px;color:var(--muted)}
+.wcr-vals{display:flex;align-items:center;gap:8px}
+.wcr-this{font-size:14px;font-weight:800;color:var(--dark)}
+.wcr-delta{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px}
+.wcr-up{background:#f0fdf4;color:#16a34a}
+.wcr-down{background:#fef2f2;color:#dc2626}
+.wcr-eq{background:#f8fafc;color:#64748b}
+
+/* ── SEO mini gauge ──────────────────────────────────────── */
+.seo-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.seo-big{font-size:36px;font-weight:900;letter-spacing:-.03em;color:var(--dark);line-height:1}
+.seo-big span{font-size:14px;font-weight:500;color:var(--muted)}
+.seo-bar-bg{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.seo-bar-fill{height:8px;border-radius:4px;background:linear-gradient(90deg,#f59e0b,#22c55e);transition:width .8s ease}
+.seo-sub{font-size:11px;color:var(--muted)}
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<nav class="sidebar">
-  <div class="sidebar-logo">
-    <div class="icon">⭐</div>
-    <span>ReviewPro</span>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ── Sidebar ────────────────────────────────────────────── -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">ReviewPro</div>
+      <div class="brand-tag">Tableau de bord</div>
+    </div>
   </div>
-  <div class="plan-badge">
-    <div class="plan-name" id="planName">Free</div>
-    <div class="plan-detail" id="planDetail">30 avis/mois</div>
-  </div>
-  <div class="nav">
-    <div class="nav-section">Tableau de bord</div>
-    <div class="nav-item active" onclick="showTab('stats')" id="tab-stats">
-      <span class="icon">📊</span> Statistiques
-    </div>
-    <div class="nav-item" onclick="showTab('feedbacks')" id="tab-feedbacks">
-      <span class="icon">💬</span> Avis
-    </div>
-    <div class="nav-item" onclick="showTab('patients')" id="tab-patients">
-      <span class="icon">👥</span> Patients
-    </div>
-    <div class="nav-section">Configuration</div>
-    <div class="nav-item" onclick="showTab('config')" id="tab-config">
-      <span class="icon">⚙️</span> Paramètres
-    </div>
-    <div class="nav-item" onclick="showTab('upgrade')" id="tab-upgrade">
-      <span class="icon">🚀</span> Premium
-    </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <button class="nav-item active" onclick="switchTab('accueil',this)" data-tab="accueil">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      Accueil
+    </button>
+    <button class="nav-item" onclick="switchTab('retours',this)" data-tab="retours">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      Retours patients
+      <span class="nav-badge" id="navBadgeRetours"></span>
+    </button>
+    <button class="nav-item" onclick="switchTab('patients',this)" data-tab="patients">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+      Patients
+    </button>
+    <div class="nav-section">Réglages</div>
+    <button class="nav-item" onclick="switchTab('config',this)" data-tab="config">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      Configuration
+    </button>
+    <button class="nav-item" onclick="switchTab('plan',this)" data-tab="plan">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+      Mon plan
+    </button>
+    <button class="nav-item" onclick="window.location.href='/qr'">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/></svg></span>
+      QR Code
+    </button>
   </div>
   <div class="sidebar-footer">
-    <div class="doctor-info">
-      <div class="doctor-avatar" id="doctorInitial">D</div>
+    <div class="sidebar-version">ReviewPro v2.0</div>
+    <button class="user-card" onclick="switchTab('config',document.querySelector('[data-tab=config]'))">
+      <div class="user-avatar" id="sidebarAvatar">D</div>
       <div>
-        <div class="doctor-name" id="doctorName">Chargement…</div>
-        <div class="doctor-spec" id="doctorSpec"></div>
+        <div class="user-name" id="sidebarName">Chargement…</div>
+        <div class="user-plan" id="sidebarPlan">Plan Starter</div>
       </div>
-    </div>
-    <button class="logout-btn" onclick="logout()">Déconnexion</button>
+      <button class="user-logout" onclick="event.stopPropagation();logout()" title="Déconnexion">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </button>
   </div>
 </nav>
 
-<!-- MAIN -->
-<main class="main">
-
-  <!-- ===== STATS ===== -->
-  <div class="tab-content active" id="content-stats">
-    <div class="page-header">
-      <div>
-        <h1>Tableau de bord</h1>
-        <p id="headerSub">Chargement…</p>
-      </div>
-      <button class="icon-btn primary" onclick="showTab('config')">⚙️ Configurer</button>
+<!-- ── Main ───────────────────────────────────────────────── -->
+<div class="main">
+  <header class="topbar">
+    <button class="topbar-menu" onclick="openSidebar()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbarTitle">Tableau de bord</div>
+      <div class="topbar-breadcrumb"><span>ReviewPro</span> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg> <span id="topbarBreadcrumb">Accueil</span></div>
     </div>
+    <div class="topbar-actions">
+      <a href="/qr" class="btn-quick-new">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Nouveau QR
+      </a>
+      <div class="notif-btn" id="notifBtn" onclick="toggleNotifPanel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="notifCount"></span>
+      </div>
+    </div>
+  </header>
 
-    <!-- Trial banner (shown dynamically by JS) -->
-    <div id="trialBanner" style="display:none"></div>
+  <main class="content">
 
-    <!-- Quota bar -->
-    <div class="quota-bar-wrap">
-      <div class="quota-bar-header">
-        <div>
-          <div class="quota-bar-title">Avis ce mois-ci</div>
+    <!-- ── ACCUEIL ────────────────────────────────────────── -->
+    <div class="tab-pane active" id="tab-accueil">
+
+      <!-- Empty state -->
+      <div id="emptyState" style="display:none">
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#0D948840" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="empty-title">Bienvenue sur ReviewPro !</div>
+          <div class="empty-sub">Vous n'avez pas encore reçu de retours. Commencez par partager votre lien patient avec vos patients.</div>
         </div>
-        <div class="quota-bar-count" id="quotaText">0 / 30</div>
-      </div>
-      <div class="quota-bar"><div class="quota-fill" id="quotaFill" style="width:0%"></div></div>
-      <div class="upgrade-cta" id="upgradeCta">
-        <span class="cta-text">⚠️ Quota bientôt atteint — passez Premium pour des avis illimités</span>
-        <button class="cta-btn" onclick="showTab('upgrade')">Passer Premium</button>
-      </div>
-    </div>
-
-    <!-- Stats cards -->
-    <div class="stats-grid">
-      <div class="stat-card blue"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Avis total</div></div>
-      <div class="stat-card green"><div class="stat-value" id="statPos">—</div><div class="stat-label">Positifs</div><div class="stat-sub">→ Google Maps</div></div>
-      <div class="stat-card red"><div class="stat-value" id="statNeg">—</div><div class="stat-label">Négatifs</div><div class="stat-sub">Traitement interne</div></div>
-      <div class="stat-card orange"><div class="stat-value" id="statGoogle">—</div><div class="stat-label">Clics Google</div><div class="stat-sub">Conversion</div></div>
-    </div>
-
-    <!-- Patient link -->
-    <div class="link-card">
-      <span class="link-label">🔗 Lien patients :</span>
-      <span class="link-val" id="patientLink">—</span>
-      <div class="link-card-actions">
-        <button class="icon-btn" onclick="copyLink()">📋 Copier</button>
-        <button class="icon-btn primary" onclick="openQR()">📷 QR Code</button>
-      </div>
-    </div>
-
-    <!-- Recent feedbacks -->
-    <div class="table-card">
-      <div class="table-header">
-        <div>
-          <div class="table-title">Derniers avis</div>
-          <div class="table-sub">5 plus récents</div>
-        </div>
-        <button class="icon-btn" onclick="showTab('feedbacks')">Voir tout →</button>
-      </div>
-      <div id="recentFeedbacks"><div class="empty-state"><div class="empty-icon">📭</div>Aucun avis pour l'instant</div></div>
-    </div>
-  </div>
-
-  <!-- ===== FEEDBACKS ===== -->
-  <div class="tab-content" id="content-feedbacks">
-    <div class="page-header">
-      <div><h1>Tous les avis</h1><p>Historique complet</p></div>
-      <select id="filterType" onchange="loadFeedbacks()" style="padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none">
-        <option value="">Tous</option>
-        <option value="POSITIF">Positifs</option>
-        <option value="NEGATIF">Négatifs</option>
-      </select>
-    </div>
-    <div class="table-card">
-      <div id="allFeedbacks"><div class="empty-state"><div class="empty-icon">⏳</div>Chargement…</div></div>
-    </div>
-  </div>
-
-  <!-- ===== PATIENTS ===== -->
-  <div class="tab-content" id="content-patients">
-    <div class="page-header">
-      <div><h1>Patients</h1><p>Liste et envoi de tokens WhatsApp</p></div>
-      <button class="icon-btn primary" onclick="showAddPatient()">+ Ajouter</button>
-    </div>
-    <div id="patientsContent">
-      <div class="table-card">
-        <div id="patientsList"><div class="empty-state"><div class="empty-icon">⏳</div>Chargement…</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== CONFIG ===== -->
-  <div class="tab-content" id="content-config">
-    <div class="page-header">
-      <div><h1>Paramètres</h1><p>Profil, liens et personnalisation</p></div>
-    </div>
-
-    <!-- Profil -->
-    <div class="config-section">
-      <h3>👤 Profil cabinet</h3>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nom complet</label>
-          <input type="text" id="cfg_nom">
-        </div>
-        <div class="form-group">
-          <label>Spécialité</label>
-          <input type="text" id="cfg_specialite">
+        <div class="action-cards">
+          <div class="action-card">
+            <div class="action-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <h3>Partager votre lien</h3>
+            <p>Envoyez le lien patient par WhatsApp ou SMS à vos patients après chaque consultation.</p>
+            <button class="action-card-btn" onclick="copyPatientLink()">Copier le lien</button>
+          </div>
+          <div class="action-card">
+            <div class="action-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/></svg>
+            </div>
+            <h3>Imprimer le QR Code</h3>
+            <p>Affichez le QR Code dans votre salle d'attente pour collecter les avis automatiquement.</p>
+            <button class="action-card-btn" onclick="window.location.href='/qr'">Voir le QR Code</button>
+          </div>
+          <div class="action-card">
+            <div class="action-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <h3>Compléter le profil</h3>
+            <p>Ajoutez votre lien Google Maps et WhatsApp pour recevoir les alertes en temps réel.</p>
+            <button class="action-card-btn" onclick="switchTab('config',document.querySelector('[data-tab=config]'))">Configurer →</button>
+          </div>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Ville</label>
-          <input type="text" id="cfg_ville">
+
+      <!-- Dashboard avec données -->
+      <div id="dashData" style="display:none">
+
+        <!-- 5 KPI cards -->
+        <div class="stats-grid-5">
+          <div class="stat-card" style="animation-delay:.05s">
+            <div class="stat-top">
+              <div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></div>
+              <span class="trend-badge trend-neutral" id="trendTotal">—</span>
+            </div>
+            <div class="stat-value" id="statTotal">—</div>
+            <div class="stat-label">Retours reçus</div>
+          </div>
+          <div class="stat-card" style="animation-delay:.1s;border-left-color:var(--success)">
+            <div class="stat-top">
+              <div class="stat-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <span class="trend-badge trend-neutral" id="trendPos">—</span>
+            </div>
+            <div class="stat-value" id="statPos">—</div>
+            <div class="stat-label">Taux positif</div>
+          </div>
+          <div class="stat-card" style="animation-delay:.15s;border-left-color:#f59e0b">
+            <div class="stat-top">
+              <div class="stat-icon yellow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <span class="trend-badge trend-neutral" id="trendNote">—</span>
+            </div>
+            <div class="stat-value" id="statNote">—</div>
+            <div class="stat-label">Note moyenne</div>
+          </div>
+          <div class="stat-card" style="animation-delay:.2s;border-left-color:var(--accent)">
+            <div class="stat-top">
+              <div class="stat-icon sky"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+              <span class="trend-badge trend-neutral" id="trendGoogle">—</span>
+            </div>
+            <div class="stat-value" id="statGoogle">—</div>
+            <div class="stat-label">Publiés Google</div>
+          </div>
+          <div class="stat-card" style="animation-delay:.25s;border-left-color:#8b5cf6">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:#f5f3ff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <span class="trend-badge trend-neutral" id="trendSeo">Score</span>
+            </div>
+            <div class="stat-value" id="statSeo">—</div>
+            <div class="stat-label">Score SEO moyen</div>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Téléphone</label>
-          <input type="tel" id="cfg_telephone">
+
+        <!-- Quota bar compact -->
+        <div class="quota-card" style="margin-bottom:20px">
+          <div class="quota-head">
+            <div><div class="quota-title">Quota mensuel</div><div class="quota-sub">Retours collectés ce mois</div></div>
+            <div style="font-size:13px;font-weight:600;color:var(--muted)"><span id="quotaUsed">0</span> / <span id="quotaMax">30</span></div>
+          </div>
+          <div class="quota-bar-bg"><div class="quota-bar-fill" id="quotaFill" style="width:0%"></div></div>
+          <div class="quota-info"><span id="quotaLeft">— restants</span><span id="quotaReset">Réinitialisé le 1er du mois</span></div>
         </div>
+
+        <!-- Chart + week comparison -->
+        <div class="grid-3-1" style="margin-bottom:20px">
+          <div class="chart-card">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">📈 Activité des retours</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:2px" id="chartSubtitle">30 derniers jours</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="chart-legend">
+                  <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Positifs</div>
+                  <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>Négatifs</div>
+                </div>
+                <div class="period-tabs">
+                  <button class="period-tab" onclick="switchChartPeriod(7,this)">7j</button>
+                  <button class="period-tab active" onclick="switchChartPeriod(30,this)">30j</button>
+                  <button class="period-tab" onclick="switchChartPeriod(90,this)">90j</button>
+                </div>
+              </div>
+            </div>
+            <div class="chart-bars" id="chartBars" style="height:130px">
+              <div style="width:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px">Chargement…</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-title">📊 7 jours vs 7 jours précédents</div>
+            <div class="week-compare-row"><span class="wcr-label">Retours reçus</span><div class="wcr-vals"><span class="wcr-this" id="wc_total">—</span><span class="wcr-delta wcr-eq" id="wcd_total"></span></div></div>
+            <div class="week-compare-row"><span class="wcr-label">Taux positif</span><div class="wcr-vals"><span class="wcr-this" id="wc_pos">—</span><span class="wcr-delta wcr-eq" id="wcd_pos"></span></div></div>
+            <div class="week-compare-row"><span class="wcr-label">Note moyenne</span><div class="wcr-vals"><span class="wcr-this" id="wc_note">—</span><span class="wcr-delta wcr-eq" id="wcd_note"></span></div></div>
+            <div class="week-compare-row"><span class="wcr-label">Publiés Google</span><div class="wcr-vals"><span class="wcr-this" id="wc_google">—</span><span class="wcr-delta wcr-eq" id="wcd_google"></span></div></div>
+            <div class="week-compare-row"><span class="wcr-label">À traiter</span><div class="wcr-vals"><span class="wcr-this" id="wc_neg" style="color:var(--error)">—</span><span class="wcr-delta wcr-eq" id="wcd_neg"></span></div></div>
+          </div>
+        </div>
+
+        <!-- Analytics: chips · canal · notes -->
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <div class="analytics-title">⭐ Top points forts cités</div>
+            <div id="chipsAnalytics"><div style="font-size:13px;color:var(--muted)">Pas encore de données</div></div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-title">📡 Canal de collecte</div>
+            <div id="canalAnalytics"><div style="font-size:13px;color:var(--muted)">Pas encore de données</div></div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-title">🎯 Répartition des notes</div>
+            <div id="notesAnalytics"><div style="font-size:13px;color:var(--muted)">Pas encore de données</div></div>
+          </div>
+        </div>
+
       </div>
-      <div class="form-group">
-        <label>Logo (URL image)</label>
-        <input type="url" id="cfg_logo_url" placeholder="https://…">
+
+      <!-- Loading -->
+      <div id="dashLoading" class="loading-state">
+        <div class="loading-spinner"></div>
+        Chargement du tableau de bord…
       </div>
-      <button class="save-btn" onclick="saveConfig('profil')">💾 Sauvegarder</button>
-      <div class="success-toast" id="toast-profil">✅ Profil sauvegardé</div>
     </div>
 
-    <!-- Liens -->
-    <div class="config-section">
-      <h3>🔗 Liens et notifications</h3>
-      <div class="form-group">
-        <label>Lien Google Maps (avis)</label>
-        <input type="url" id="cfg_google_maps_url" placeholder="https://g.page/r/…/review">
-        <div class="hint">Lien direct vers votre page d'avis Google.</div>
+    <!-- ── RETOURS ────────────────────────────────────────── -->
+    <div class="tab-pane" id="tab-retours">
+      <div class="section-head">
+        <div><h2>Retours patients</h2><p>Historique de tous les retours reçus</p></div>
       </div>
-      <div class="form-group">
-        <label>WhatsApp assistante</label>
-        <input type="tel" id="cfg_whatsapp_assistante" placeholder="+212600000000">
-        <div class="hint">Reçoit les notifications d'avis négatifs.</div>
-      </div>
-      <button class="save-btn" onclick="saveConfig('liens')">💾 Sauvegarder</button>
-      <div class="success-toast" id="toast-liens">✅ Liens sauvegardés</div>
-    </div>
-
-    <!-- Chips -->
-    <div class="config-section">
-      <h3>🏷️ Points forts (chips)</h3>
-      <div class="chip-grid" id="cfgChips"></div>
-      <div class="chip-add">
-        <input type="text" id="newCfgChip" placeholder="Nouveau point…" maxlength="30">
-        <button onclick="addCfgChip()">+ Ajouter</button>
-      </div>
-      <br>
-      <button class="save-btn" onclick="saveConfig('chips')">💾 Sauvegarder les chips</button>
-      <div class="success-toast" id="toast-chips">✅ Chips sauvegardées</div>
-    </div>
-
-    <!-- Template -->
-    <div class="config-section">
-      <h3>✏️ Modèle de suggestion</h3>
-      <div class="form-group">
-        <label>Phrase template</label>
-        <textarea id="cfg_template" rows="3" placeholder="Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}."></textarea>
-        <div class="hint">Variables : {nom}, {specialite}, {ville}</div>
-      </div>
-      <div class="form-group">
-        <label>Mots-clés SEO positifs</label>
-        <input type="text" id="cfg_vocabulaire" placeholder="professionnel, recommande, excellent">
-        <div class="hint">Séparés par des virgules.</div>
-      </div>
-      <div class="form-group">
-        <label>Langue du formulaire patient</label>
-        <select id="cfg_langue">
-          <option value="fr">Français</option>
-          <option value="ar">Arabe</option>
-          <option value="fr-ar">Bilingue</option>
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <span class="search-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+          <input type="text" id="fbSearch" placeholder="Rechercher un patient…" oninput="filterFeedbacks()">
+        </div>
+        <select class="filter-select" id="fbTypeFilter" onchange="filterFeedbacks()">
+          <option value="">Tous les types</option>
+          <option value="POSITIF">Positifs</option>
+          <option value="NEGATIF">Négatifs</option>
         </select>
+        <select class="filter-select" id="fbStatusFilter" onchange="filterFeedbacks()">
+          <option value="">Tous les statuts</option>
+          <option value="pending">À traiter</option>
+          <option value="done">Traités</option>
+        </select>
+        <button class="btn-sm btn-ghost" onclick="resetFilters()">Réinitialiser</button>
       </div>
-      <button class="save-btn" onclick="saveConfig('template')">💾 Sauvegarder</button>
-      <div class="success-toast" id="toast-template">✅ Template sauvegardé</div>
+      <div id="feedbacksContainer">
+        <div class="loading-state"><div class="loading-spinner"></div>Chargement…</div>
+      </div>
+      <div class="pagination" id="fbPagination"></div>
     </div>
 
-    <!-- Password -->
-    <div class="config-section">
-      <h3>🔒 Changer le mot de passe</h3>
-      <div class="form-group">
-        <label>Nouveau mot de passe</label>
-        <input type="password" id="cfg_newpass" placeholder="8 caractères minimum">
+    <!-- ── PATIENTS ───────────────────────────────────────── -->
+    <div class="tab-pane" id="tab-patients">
+      <div class="section-head">
+        <div><h2>Patients</h2><p>Gérez la liste de vos patients</p></div>
+        <button class="btn-sm btn-primary" onclick="openAddPatient()">+ Ajouter</button>
       </div>
-      <div class="form-group">
-        <label>Confirmer</label>
-        <input type="password" id="cfg_newpass2" placeholder="••••••••">
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <span class="search-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+          <input type="text" id="ptSearch" placeholder="Rechercher par nom ou téléphone…" oninput="filterPatients()">
+        </div>
       </div>
-      <div class="error" id="passError" style="display:none;margin-bottom:10px"></div>
-      <button class="save-btn" onclick="changePassword()">🔒 Changer le mot de passe</button>
-      <div class="success-toast" id="toast-password">✅ Mot de passe modifié</div>
+      <div id="patientsContainer">
+        <div class="loading-state"><div class="loading-spinner"></div>Chargement…</div>
+      </div>
     </div>
+
+    <!-- ── CONFIG ─────────────────────────────────────────── -->
+    <div class="tab-pane" id="tab-config">
+      <div class="section-head">
+        <div><h2>Configuration</h2><p>Personnalisez votre cabinet et votre formulaire patient</p></div>
+      </div>
+      <div id="configAlert" class="alert-box hidden"></div>
+      <div class="config-grid" id="configForm">
+        <div class="loading-state" style="grid-column:1/-1"><div class="loading-spinner"></div>Chargement…</div>
+      </div>
+    </div>
+
+    <!-- ── MON PLAN ───────────────────────────────────────── -->
+    <div class="tab-pane" id="tab-plan">
+      <div class="section-head">
+        <div><h2>Mon plan</h2><p>Gérez votre abonnement</p></div>
+      </div>
+      <div class="plan-cards">
+        <div class="plan-card" id="planCardStarter">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">199 <span>MAD / mois</span></div>
+          <div class="plan-quota">30 retours / mois</div>
+          <ul class="plan-features">
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Formulaire patient bilingue FR/AR</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Collecte avis Google Maps</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Alertes retours négatifs</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>QR Code imprimable</li>
+          </ul>
+          <button class="plan-btn current-plan" id="planBtnStarter">Plan actuel</button>
+        </div>
+        <div class="plan-card" id="planCardEssentiel">
+          <div class="plan-name">Essentiel</div>
+          <div class="plan-price">499 <span>MAD / mois</span></div>
+          <div class="plan-quota">100 retours / mois</div>
+          <ul class="plan-features">
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tout Starter inclus</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Avis IA personnalisés</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Statistiques avancées</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Rapport hebdomadaire WhatsApp</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Support prioritaire</li>
+          </ul>
+          <button class="plan-btn upgrade-plan" id="planBtnEssentiel" onclick="upgradePlan('essentiel')">Passer à Essentiel →</button>
+        </div>
+        <div class="plan-card" id="planCardAvance">
+          <div class="plan-badge">Populaire</div>
+          <div class="plan-name">Avancé</div>
+          <div class="plan-price">999 <span>MAD / mois</span></div>
+          <div class="plan-quota">Illimité</div>
+          <ul class="plan-features">
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tout Essentiel inclus</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Multi-cabinet</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Accès API</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tableau de bord analytique</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Account manager dédié</li>
+          </ul>
+          <button class="plan-btn upgrade-plan" id="planBtnAvance" onclick="upgradePlan('avance')">Passer à Avancé →</button>
+        </div>
+      </div>
+
+      <div class="referral-card">
+        <div class="referral-title">Programme de parrainage</div>
+        <div class="referral-sub">Invitez un confrère médecin et recevez <strong>1 mois offert</strong> pour chaque inscription validée via votre lien.</div>
+        <div class="link-row">
+          <div class="link-url" id="referralUrl">Chargement…</div>
+          <button class="copy-btn" onclick="copyReferral()">Copier</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Notifications panel ────────────────────────────────── -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-panel-head">
+    <div class="notif-panel-title">Notifications</div>
+    <button class="notif-mark-all" onclick="markAllRead()">Tout marquer lu</button>
   </div>
+  <div id="notifPanelBody"><div class="notif-empty">Aucune notification</div></div>
+</div>
 
-  <!-- ===== UPGRADE ===== -->
-  <div class="tab-content" id="content-upgrade">
-    <div class="page-header">
-      <div><h1>Passer Premium</h1><p>Débloquez toutes les fonctionnalités</p></div>
+<!-- ── Modal: Détail retour ───────────────────────────────── -->
+<div class="modal-overlay" id="modalFeedback" onclick="if(event.target===this)closeModal('modalFeedback')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalFbTitle">Détail du retour</div>
+      <div class="modal-close" onclick="closeModal('modalFeedback')">✕</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px">
-
-      <!-- Free plan -->
-      <div style="background:#fff;border-radius:16px;padding:28px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
-        <div style="font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Gratuit</div>
-        <div style="font-size:36px;font-weight:800;color:#0f172a;margin-bottom:4px">0 <span style="font-size:16px;font-weight:400;color:#64748b">MAD/mois</span></div>
-        <ul style="list-style:none;margin-top:20px;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#374151">
-          <li>✅ 30 avis / mois</li>
-          <li>✅ Formulaire patient (QR + WhatsApp)</li>
-          <li>✅ Redirection Google Maps</li>
-          <li>✅ Dashboard stats</li>
-          <li>❌ <span style="color:#94a3b8">IA suggestion (enrichissement)</span></li>
-          <li>❌ <span style="color:#94a3b8">Liste patients + tokens</span></li>
-          <li>❌ <span style="color:#94a3b8">Avis illimités</span></li>
-        </ul>
-        <div style="margin-top:20px;padding:10px;background:#f1f5f9;border-radius:8px;text-align:center;font-size:13px;color:#64748b">Plan actuel</div>
-      </div>
-
-      <!-- Premium plan -->
-      <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(37,99,235,.3);position:relative;overflow:hidden">
-        <div style="position:absolute;top:16px;right:16px;background:#fbbf24;color:#92400e;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px">RECOMMANDÉ</div>
-        <div style="font-size:13px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Premium</div>
-        <div style="font-size:36px;font-weight:800;color:#fff;margin-bottom:4px">199 <span style="font-size:16px;font-weight:400;color:#94a3b8">MAD/mois</span></div>
-        <ul style="list-style:none;margin-top:20px;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#e2e8f0">
-          <li>✅ Avis <strong>illimités</strong></li>
-          <li>✅ IA enrichissement Llama 3</li>
-          <li>✅ Gestion patients + tokens WhatsApp</li>
-          <li>✅ Score SEO détaillé</li>
-          <li>✅ A/B test formulaire</li>
-          <li>✅ Analytics avancées</li>
-          <li>✅ Support prioritaire</li>
-        </ul>
-        <button id="upgradeBtn" onclick="requestUpgrade()" style="margin-top:20px;width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">
-          Passer Premium — 199 MAD/mois
-        </button>
-        <div style="margin-top:10px;text-align:center;font-size:11px;color:#64748b">Paiement via WhatsApp · Activation immédiate</div>
-      </div>
-    </div>
-
-    <div id="upgradeSuccess" style="display:none;margin-top:24px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:20px;max-width:800px">
-      <h3 style="color:#059669;margin-bottom:8px">✅ Demande envoyée !</h3>
-      <p style="font-size:13px;color:#374151">Notre équipe vous contactera sur WhatsApp dans les prochaines heures pour finaliser votre abonnement Premium.</p>
-    </div>
+    <div class="modal-body" id="modalFbBody"></div>
   </div>
+</div>
 
-</main>
-
-<!-- Add Patient Modal -->
-<div id="addPatientModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:420px;margin:20px">
-    <h3 style="margin-bottom:20px;font-size:16px">Ajouter un patient</h3>
-    <div class="form-group"><label>Nom du patient</label><input type="text" id="apt_nom" placeholder="Mohamed Alami"></div>
-    <div class="form-group"><label>Téléphone (WhatsApp)</label><input type="tel" id="apt_tel" placeholder="+212600000000"></div>
-    <div id="apt_error" style="color:#dc2626;font-size:13px;margin-bottom:12px;display:none"></div>
-    <div style="display:flex;gap:10px">
-      <button onclick="hideAddPatient()" style="flex:1;padding:11px;background:#f1f5f9;border:none;border-radius:8px;cursor:pointer;font-size:14px">Annuler</button>
-      <button onclick="addPatient()" style="flex:2;padding:11px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Ajouter et envoyer token</button>
+<!-- ── Modal: Ajouter patient ─────────────────────────────── -->
+<div class="modal-overlay" id="modalPatient" onclick="if(event.target===this)closeModal('modalPatient')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">👤 Ajouter un patient</div>
+      <div class="modal-close" onclick="closeModal('modalPatient')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div id="patientAlert" class="alert-box hidden"></div>
+      <div class="form-group">
+        <label class="form-label">Nom complet <span style="color:var(--error)">*</span></label>
+        <input type="text" class="form-input" id="ptNom" placeholder="Dr. Ahmed Benali">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Téléphone</label>
+        <input type="tel" class="form-input" id="ptTel" placeholder="+212 6XX XXX XXX">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm btn-ghost btn-full" style="border:1.5px solid var(--border)!important" onclick="closeModal('modalPatient')">Annuler</button>
+        <button class="btn-sm btn-primary btn-full" id="addPatientBtn" onclick="savePatient()">Ajouter →</button>
+      </div>
     </div>
   </div>
 </div>
 
-<script>
-let doctorData = null;
-// Always use production URL — never window.location.origin (breaks on preview deployments)
-const CANONICAL = 'https://reviewpro-saas.pages.dev';
-let currentChips = [];
-let allFeedbacksData = [];
+<!-- ── Modal: Doublon patient ─────────────────────────────── -->
+<div class="modal-overlay" id="modalDuplicate" onclick="if(event.target===this)closeModal('modalDuplicate')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">⚠️ Patient déjà enregistré</div>
+      <div class="modal-close" onclick="closeModal('modalDuplicate')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="alert-box info">Ce patient semble déjà exister dans votre liste.</div>
+      <div class="detail-block" id="dupBlock"></div>
+      <div class="modal-actions">
+        <button class="btn-sm btn-ghost btn-full" style="border:1.5px solid var(--border)!important" onclick="closeModal('modalDuplicate')">Annuler</button>
+        <button class="btn-sm btn-primary btn-full" onclick="forceAddPatient()">Ajouter quand même</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-/* ---- INIT ---- */
+<!-- ── Bottom nav (mobile) ────────────────────────────────── -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-items">
+    <button class="bn-item active" onclick="switchTab('accueil',null,this)" data-tab="accueil">
+      <div class="bn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span>Accueil</span>
+    </button>
+    <button class="bn-item" onclick="switchTab('retours',null,this)" data-tab="retours">
+      <div class="bn-icon" style="position:relative"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="bn-badge" id="bnBadge"></span></div>
+      <span>Retours</span>
+    </button>
+    <button class="bn-item" onclick="switchTab('patients',null,this)" data-tab="patients">
+      <div class="bn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <span>Patients</span>
+    </button>
+    <button class="bn-item" onclick="switchTab('config',null,this)" data-tab="config">
+      <div class="bn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      <span>Config</span>
+    </button>
+    <button class="bn-item" onclick="switchTab('plan',null,this)" data-tab="plan">
+      <div class="bn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+      <span>Plan</span>
+    </button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────
+let doctorData    = null;
+let feedbacksData = [];
+let fbFiltered    = [];
+let patientsData  = [];
+let configData    = {};
+let selectedChips = [];
+let dupPayload    = null;
+let currentPage   = 1;
+let notifOpen     = false;
+let fbLoaded      = false;
+let ptLoaded      = false;
+let cfgLoaded     = false;
+const PER_PAGE    = 10;
+
+// ── Init ──────────────────────────────────────────────────────
 async function init() {
+  await loadDoctor();
+  loadTab('accueil');
+  startNotifPolling();
+}
+
+async function loadDoctor() {
   try {
-    const res = await fetch('/api/dashboard');
+    const res = await fetch('/api/me');
     if (res.status === 401) { window.location.href = '/login'; return; }
     const data = await res.json();
     if (!data.ok) { window.location.href = '/login'; return; }
     doctorData = data.doctor;
-    renderSidebar(doctorData, data.trial);
-    renderTrialBanner(data.trial, data.upgrade_wa_url);
-    renderStats(data);
-    currentChips = JSON.parse(doctorData.chips_positifs || '[]');
-    renderCfgChips();
-    fillConfigForm(doctorData);
+    const name  = formatDrName(doctorData.nom);
+    document.getElementById('sidebarName').textContent = name;
+    document.getElementById('sidebarPlan').textContent = 'Plan ' + cap(doctorData.plan || 'starter');
+    const av = document.getElementById('sidebarAvatar');
+    if (doctorData.logo_url) {
+      av.style.backgroundImage = `url(${doctorData.logo_url})`;
+      av.style.backgroundSize  = 'cover';
+      av.textContent = '';
+    } else {
+      // Avatar initial: use first letter of the clean name (without Dr prefix)
+      av.textContent = cleanDrName(doctorData.nom || '').charAt(0).toUpperCase() || 'M';
+    }
+    const slug = doctorData.slug || doctorData.id;
+    window._patientLink = `${location.origin}/form/${slug}`;
+    window._referralLink = `${location.origin}/ref/${slug}`;
+    document.getElementById('referralUrl').textContent = window._referralLink;
+    applyPlanUI(doctorData.plan || 'starter');
+  } catch(e) { console.error(e); }
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(tab, sidebarEl, bnEl) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(el => el.classList.remove('active'));
+  if (sidebarEl) sidebarEl.classList.add('active');
+  else { const el = document.querySelector(`.nav-item[data-tab="${tab}"]`); if(el) el.classList.add('active'); }
+  if (bnEl) bnEl.classList.add('active');
+  else { const el = document.querySelector(`.bn-item[data-tab="${tab}"]`); if(el) el.classList.add('active'); }
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById('tab-' + tab);
+  if (pane) pane.classList.add('active');
+  const titles = {accueil:'Tableau de bord',retours:'Retours patients',patients:'Patients',config:'Configuration',plan:'Mon plan'};
+  const breadcrumbs = {accueil:'Accueil',retours:'Retours',patients:'Patients',config:'Configuration',plan:'Mon plan'};
+  document.getElementById('topbarTitle').textContent = titles[tab] || 'ReviewPro';
+  const bc = document.getElementById('topbarBreadcrumb');
+  if (bc) bc.textContent = breadcrumbs[tab] || tab;
+  closeSidebar();
+  loadTab(tab);
+}
+
+function loadTab(tab) {
+  if (tab === 'accueil')  loadDashboard();
+  if (tab === 'retours')  { if (!fbLoaded) loadFeedbacks(); }
+  if (tab === 'patients') { if (!ptLoaded) loadPatients(); }
+  if (tab === 'config')   { if (!cfgLoaded) loadConfig(); }
+}
+
+// ── Dashboard ─────────────────────────────────────────────────
+let _allFeedbacks = [];
+let _chartPeriod  = 30;
+
+async function loadDashboard() {
+  show('dashLoading'); hide('dashData'); hide('emptyState');
+  try {
+    // Parallel: dashboard summary + full feedbacks list
+    const [dashRes, fbRes] = await Promise.all([
+      fetch('/api/dashboard'),
+      fetch('/api/feedbacks?limit=200'),
+    ]);
+    const dashRaw = await dashRes.json();
+    const fbRaw   = await fbRes.json();
+    hide('dashLoading');
+
+    const stats = dashRaw.stats  || {};
+    const doc   = dashRaw.doctor || {};
+    _allFeedbacks = fbRaw.feedbacks || [];
+
+    if (!stats.total && !_allFeedbacks.length) { show('emptyState'); return; }
+    show('dashData');
+
+    const analytics = calcAnalytics(_allFeedbacks);
+
+    renderStats(stats, analytics);
+    renderQuota({ quota_used: doc.avis_ce_mois||0, quota_max: doc.quota||30 });
+    renderChart(_allFeedbacks, _chartPeriod);
+    renderWeekCompare(analytics);
+    renderChipsAnalytics(analytics.chipsCounts);
+    renderCanalAnalytics(analytics);
+    renderNotesAnalytics(analytics.noteDist);
   } catch(e) {
     console.error(e);
+    document.getElementById('dashLoading').innerHTML = '<div class="alert-box error" style="max-width:400px;margin:0 auto">⚠️ Erreur de chargement. <a href="#" onclick="loadDashboard()">Réessayer</a></div>';
   }
 }
 
-function renderTrialBanner(trial, upgradeWaUrl) {
-  const el = document.getElementById('trialBanner');
-  if (!trial) { el.style.display = 'none'; return; }
+// ── Compute analytics from feedbacks array ────────────────────
+function calcAnalytics(fbs) {
+  const now   = Date.now();
+  const DAY   = 86400000;
+  const W7ms  = 7 * DAY;
+  const W14ms = 14 * DAY;
 
-  const waBtn = upgradeWaUrl
-    ? `<a class="trial-wa-btn" href="${upgradeWaUrl}" target="_blank" rel="noopener">💬 Activer Premium</a>`
-    : '';
-
-  if (trial.trial_expired) {
-    el.style.display = 'block';
-    el.innerHTML = `<div class="trial-banner expired">
-      <div class="tb-left">
-        <div class="tb-icon">🔒</div>
-        <div>
-          <div class="tb-title">Votre essai gratuit a expiré</div>
-          <div class="tb-sub">Le formulaire patient est suspendu. Activez Premium pour reprendre la collecte d'avis et l'IA.</div>
-        </div>
-      </div>
-      ${waBtn}
-    </div>`;
-  } else if (trial.in_trial && trial.days_left <= 2) {
-    el.style.display = 'block';
-    el.innerHTML = `<div class="trial-banner warning">
-      <div class="tb-left">
-        <div class="tb-icon">⏰</div>
-        <div>
-          <div class="tb-title">Plus que ${trial.days_left} jour${trial.days_left > 1 ? 's' : ''} d'essai</div>
-          <div class="tb-sub">Activez Premium maintenant pour continuer sans interruption.</div>
-        </div>
-      </div>
-      ${waBtn}
-    </div>`;
-  } else if (trial.in_trial) {
-    el.style.display = 'block';
-    el.innerHTML = `<div class="trial-banner active">
-      <div class="tb-left">
-        <div class="tb-icon">🎁</div>
-        <div>
-          <div class="tb-title">Essai Premium — ${trial.days_left} jours restants</div>
-          <div class="tb-sub">Vous profitez de toutes les fonctionnalités IA incluses. Activez Premium pour continuer après l'essai.</div>
-        </div>
-      </div>
-      ${waBtn}
-    </div>`;
-  } else {
-    el.style.display = 'none';
-  }
-}
-
-function renderSidebar(d, trial) {
-  const initial = d.nom ? d.nom.split(' ').filter(p => p.length > 1).map(p => p[0]).join('').substring(0,2).toUpperCase() : 'D';
-  document.getElementById('doctorInitial').textContent = initial;
-  document.getElementById('doctorName').textContent = d.nom;
-  document.getElementById('doctorSpec').textContent = d.specialite + ' · ' + d.ville;
-
-  let planName, planDetail;
-  if (d.plan === 'premium') {
-    planName = '⭐ Premium';
-    planDetail = 'Avis illimités + IA';
-  } else if (trial && trial.in_trial) {
-    planName = '🎁 Essai Premium';
-    planDetail = `${trial.days_left} jour${trial.days_left > 1 ? 's' : ''} restant${trial.days_left > 1 ? 's' : ''}`;
-  } else if (trial && trial.trial_expired) {
-    planName = '🔒 Expiré';
-    planDetail = 'Activez Premium';
-  } else {
-    planName = 'Free';
-    planDetail = '30 avis / mois';
-  }
-  document.getElementById('planName').textContent = planName;
-  document.getElementById('planDetail').textContent = planDetail;
-}
-
-function renderStats(data) {
-  const d = data.doctor;
-  const stats = data.stats || {};
-  document.getElementById('headerSub').textContent = d.nom + ' · ' + d.specialite + ', ' + d.ville;
-
-  // quota — trial and premium both have unlimited access
-  const hasFullAccess = d.plan === 'premium' || d.plan === 'trial';
-  const quota = hasFullAccess ? '∞ (illimité)' : d.avis_ce_mois + ' / 30';
-  document.getElementById('quotaText').textContent = quota;
-  const pct = hasFullAccess ? 100 : Math.min(100, (d.avis_ce_mois / 30) * 100);
-  document.getElementById('quotaFill').style.width = pct + '%';
-  if (!hasFullAccess && d.avis_ce_mois >= 24) {
-    document.getElementById('upgradeCta').style.display = 'flex';
-    document.getElementById('quotaFill').classList.add('danger');
-  }
-
-  document.getElementById('statTotal').textContent = stats.total || 0;
-  document.getElementById('statPos').textContent = stats.positifs || 0;
-  document.getElementById('statNeg').textContent = stats.negatifs || 0;
-  document.getElementById('statGoogle').textContent = stats.vers_google || 0;
-
-  // Always use production canonical URL — never window.location.origin
-  const slug = d.slug;
-  const link = CANONICAL + '/form/' + encodeURIComponent(slug);
-  document.getElementById('patientLink').textContent = link;
-
-  // recent feedbacks
-  if (data.recent && data.recent.length > 0) {
-    renderFeedbackTable('recentFeedbacks', data.recent);
-  }
-}
-
-function renderFeedbackTable(containerId, feedbacks) {
-  if (!feedbacks || feedbacks.length === 0) {
-    document.getElementById(containerId).innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Aucun avis</div>';
-    return;
-  }
-  let html = `<table><thead><tr><th>Date</th><th>Note</th><th>Patient / Avis IA</th><th>Type</th><th>SEO</th><th>Google</th></tr></thead><tbody>`;
-  feedbacks.forEach((f, i) => {
-    const stars = '★'.repeat(f.note) + '☆'.repeat(5 - f.note);
-    const date = new Date(f.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'short'});
-    const rawComment = (f.commentaire || '').substring(0, 55) + (f.commentaire && f.commentaire.length > 55 ? '…' : '');
-    const aiPreview = f.suggestion_ia ? (f.suggestion_ia.substring(0, 60) + '…') : null;
-    const badge = f.type_final === 'POSITIF'
-      ? '<span class="badge pos">✅ Positif</span>'
-      : f.type_final === 'NEGATIF'
-      ? '<span class="badge neg">⚠️ Négatif</span>'
-      : '<span class="badge neutral">—</span>';
-    const google = f.vers_google ? '✅ Publié' : '—';
-    const seoScore = f.seo_score != null ? f.seo_score : null;
-    const seoBadge = seoScore != null
-      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:${seoScore >= 80 ? '#059669' : seoScore >= 60 ? '#d97706' : '#64748b'}">${seoScore >= 80 ? '🏆' : seoScore >= 60 ? '⚡' : ''} ${seoScore}/100</span>`
-      : '<span style="color:#94a3b8;font-size:12px">—</span>';
-
-    const commentCell = `
-      <div style="font-size:12px;color:#374151;line-height:1.4">${rawComment || '<em style="color:#94a3b8">Sans commentaire</em>'}</div>
-      ${aiPreview ? `<div style="font-size:11px;color:#2563eb;margin-top:4px;cursor:pointer;line-height:1.4" onclick="toggleAiReview('ai-${i}')" title="Voir l'avis IA complet">✨ <em>${aiPreview}</em></div>
-      <div id="ai-${i}" style="display:none;margin-top:8px;padding:8px;background:#eff6ff;border-radius:6px;font-size:11px;color:#1e40af;line-height:1.6">${f.suggestion_ia || ''}</div>` : ''}`;
-
-    html += `<tr>
-      <td style="white-space:nowrap;font-size:12px">${date}</td>
-      <td><span class="stars" style="font-size:11px">${stars}</span></td>
-      <td>${commentCell}</td>
-      <td>${badge}</td>
-      <td>${seoBadge}</td>
-      <td style="font-size:12px;white-space:nowrap">${google}</td>
-    </tr>`;
+  const thisWeek = fbs.filter(f => now - new Date(f.created_at).getTime() < W7ms);
+  const prevWeek = fbs.filter(f => {
+    const age = now - new Date(f.created_at).getTime();
+    return age >= W7ms && age < W14ms;
   });
-  html += '</tbody></table>';
-  document.getElementById(containerId).innerHTML = html;
+
+  const calcPeriodStats = (arr) => {
+    const total    = arr.length;
+    const positifs = arr.filter(f => f.type_final === 'POSITIF').length;
+    const google   = arr.filter(f => f.vers_google).length;
+    const negatifs = total - positifs;
+    const notes    = arr.map(f => f.note).filter(Boolean);
+    const noteAvg  = notes.length ? (notes.reduce((a,b)=>a+b,0)/notes.length) : null;
+    const seoScores= arr.map(f=>f.seo_score).filter(v=>v!=null);
+    const seoAvg   = seoScores.length ? Math.round(seoScores.reduce((a,b)=>a+b,0)/seoScores.length) : null;
+    const nonTraites = arr.filter(f=>f.type_final==='NEGATIF'&&!f.traite).length;
+    return { total, positifs, negatifs, google, noteAvg, seoAvg, nonTraites };
+  };
+
+  const tw = calcPeriodStats(thisWeek);
+  const pw = calcPeriodStats(prevWeek);
+  const all = calcPeriodStats(fbs);
+
+  // Chip frequency
+  const chipsCounts = {};
+  fbs.forEach(f => {
+    let chips = [];
+    try { chips = JSON.parse(f.chips_selected || '[]'); } catch{}
+    chips.forEach(c => { chipsCounts[c] = (chipsCounts[c]||0) + 1; });
+  });
+
+  // Canal split
+  const qrCount = fbs.filter(f=>f.canal==='QR').length;
+  const waCount  = fbs.filter(f=>f.canal==='WA').length;
+
+  // Note distribution
+  const noteDist = {1:0,2:0,3:0,4:0,5:0};
+  fbs.forEach(f => { if(f.note>=1&&f.note<=5) noteDist[f.note]++; });
+
+  return { thisWeek:tw, prevWeek:pw, all, chipsCounts, qrCount, waCount, noteDist };
 }
 
-function toggleAiReview(id) {
+function animateCounter(el, target, isFloat, suffix) {
+  if (!el) return;
+  const num = parseFloat(target);
+  if (isNaN(num) || num <= 0) return;
+  const duration = 700;
+  const start    = Date.now();
+  const tick = () => {
+    const p    = Math.min(1, (Date.now()-start)/duration);
+    const ease = 1 - Math.pow(1-p, 3);
+    el.textContent = (isFloat ? (num*ease).toFixed(1) : Math.round(num*ease)) + (suffix||'');
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function trendBadge(id, curr, prev, suffix, lowerIsBetter) {
   const el = document.getElementById(id);
-  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-
-/* ---- TABS ---- */
-function showTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('content-' + tab).classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'feedbacks') loadFeedbacks();
-  if (tab === 'patients') loadPatients();
-}
-
-/* ---- FEEDBACKS ---- */
-async function loadFeedbacks() {
-  const type = document.getElementById('filterType').value;
-  const url = '/api/feedbacks' + (type ? '?type=' + type : '');
-  document.getElementById('allFeedbacks').innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Chargement…</div>';
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    renderFeedbackTable('allFeedbacks', data.feedbacks || []);
-  } catch(e) {
-    document.getElementById('allFeedbacks').innerHTML = '<div class="empty-state">Erreur de chargement</div>';
+  if (!el) return;
+  if (prev == null || curr == null) { el.className='trend-badge trend-neutral'; el.textContent='Nouveau'; return; }
+  const delta = curr - prev;
+  const pct   = prev ? Math.round(Math.abs(delta/prev)*100) : 0;
+  const up    = delta > 0;
+  const isGood = lowerIsBetter ? !up : up;
+  if (Math.abs(delta) < 0.01) {
+    el.className='trend-badge trend-neutral'; el.textContent='= stable';
+  } else {
+    el.className = 'trend-badge ' + (isGood ? 'trend-up' : 'trend-down');
+    el.textContent = (up ? '↑' : '↓') + ' ' + pct + '%';
   }
 }
 
-/* ---- PATIENTS ---- */
-async function loadPatients() {
-  if (!doctorData) return;
-  // Trial users have full access — only 'expired' plan is blocked
-  const hasAccess = doctorData.plan === 'premium' || doctorData.plan === 'trial';
-  if (!hasAccess) {
-    document.getElementById('patientsList').innerHTML = `
-      <div class="premium-lock">
-        <div class="lock-icon">🔒</div>
-        <h3>Fonctionnalité Premium</h3>
-        <p>La gestion des patients et l'envoi de tokens WhatsApp sont réservés aux abonnés Premium.</p>
-        <button class="upgrade-btn" onclick="showTab('upgrade')">Passer Premium — 199 MAD/mois</button>
-      </div>`;
+function renderStats(stats, analytics) {
+  const tw = analytics.thisWeek;
+  const pw = analytics.prevWeek;
+  const all= analytics.all;
+
+  // Total
+  const elTotal = document.getElementById('statTotal');
+  elTotal.textContent = all.total;
+  animateCounter(elTotal, all.total, false);
+  trendBadge('trendTotal', tw.total, pw.total, '', false);
+
+  // Taux positif
+  const posRate = all.total ? Math.round((all.positifs/all.total)*100) : 0;
+  const posRatePrev = pw.total ? Math.round((pw.positifs/pw.total)*100) : null;
+  const elPos = document.getElementById('statPos');
+  elPos.textContent = posRate + '%';
+  animateCounter(elPos, posRate, false, '%');
+  trendBadge('trendPos', tw.total ? Math.round((tw.positifs/tw.total)*100) : 0, posRatePrev, '%', false);
+
+  // Note moyenne
+  const elNote = document.getElementById('statNote');
+  if (all.noteAvg) {
+    elNote.textContent = all.noteAvg.toFixed(1) + ' ★';
+    animateCounter(elNote, all.noteAvg, true, ' ★');
+    trendBadge('trendNote', tw.noteAvg, pw.noteAvg, '', false);
+  } else {
+    elNote.textContent = '—';
+    document.getElementById('trendNote').textContent = 'N/A';
+  }
+
+  // Google publiés
+  const convPct = all.positifs ? Math.round((all.google/all.positifs)*100) : 0;
+  const elGoogle = document.getElementById('statGoogle');
+  elGoogle.textContent = all.google;
+  animateCounter(elGoogle, all.google, false);
+  const googleEl = document.getElementById('trendGoogle');
+  if (googleEl) { googleEl.className='trend-badge trend-neutral'; googleEl.textContent = convPct + '% conv.'; }
+
+  // SEO moyen
+  const elSeo = document.getElementById('statSeo');
+  if (all.seoAvg != null) {
+    elSeo.textContent = all.seoAvg + '/70';
+    animateCounter(elSeo, all.seoAvg, false, '/70');
+    const seoEl = document.getElementById('trendSeo');
+    if (seoEl) {
+      const cls = all.seoAvg >= 55 ? 'trend-up' : all.seoAvg >= 35 ? 'trend-neutral' : 'trend-down';
+      seoEl.className = 'trend-badge ' + cls;
+      seoEl.textContent = all.seoAvg >= 55 ? 'Bon' : all.seoAvg >= 35 ? 'Moyen' : 'Faible';
+    }
+  } else {
+    elSeo.textContent = '—';
+    document.getElementById('trendSeo').textContent = 'N/A';
+  }
+}
+
+function renderQuota(d) {
+  const used = d.quota_used || 0, max = d.quota_max || 30;
+  const pct  = max >= 9999 ? 10 : Math.min(100, Math.round((used/max)*100));
+  document.getElementById('quotaUsed').textContent = used;
+  document.getElementById('quotaMax').textContent  = max >= 9999 ? '∞' : max;
+  document.getElementById('quotaLeft').textContent = max >= 9999 ? 'Illimité' : Math.max(0,max-used)+' restants';
+  const fill = document.getElementById('quotaFill');
+  fill.style.width = pct + '%';
+  pct >= 80 ? fill.classList.add('warn') : fill.classList.remove('warn');
+}
+
+// ── Chart (built from feedbacks array) ────────────────────────
+let _chartFbs = [];
+function switchChartPeriod(days, btn) {
+  _chartPeriod = days;
+  document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const sub = document.getElementById('chartSubtitle');
+  if (sub) sub.textContent = days + ' derniers jours';
+  renderChart(_allFeedbacks, days);
+}
+
+function renderChart(fbs, days) {
+  const wrap = document.getElementById('chartBars');
+  if (!fbs.length) {
+    wrap.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);font-size:13px">Pas encore de données</div>';
     return;
   }
-  try {
-    const res = await fetch('/api/patients');
-    const data = await res.json();
-    if (!data.patients || data.patients.length === 0) {
-      document.getElementById('patientsList').innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>Aucun patient. Ajoutez votre premier patient.</div>';
-      return;
+
+  // Build day buckets
+  const now    = new Date();
+  const buckets= {};
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date(now); d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    buckets[key] = { pos:0, neg:0 };
+  }
+  fbs.forEach(f => {
+    const key = (f.created_at||'').slice(0,10);
+    if (buckets[key]) {
+      if (f.type_final==='POSITIF') buckets[key].pos++;
+      else buckets[key].neg++;
     }
-    let html = `<table><thead><tr><th>Nom</th><th>Téléphone</th><th>Ajouté le</th><th>Action</th></tr></thead><tbody>`;
-    data.patients.forEach(p => {
-      const date = new Date(p.created_at).toLocaleDateString('fr-FR');
-      html += `<tr><td>${p.nom}</td><td>${p.telephone}</td><td>${date}</td><td><button class="icon-btn" onclick="sendToken('${p.id}','${p.telephone}')">📲 Envoyer lien</button></td></tr>`;
-    });
-    html += '</tbody></table>';
-    document.getElementById('patientsList').innerHTML = html;
-  } catch(e) {
-    document.getElementById('patientsList').innerHTML = '<div class="empty-state">Erreur de chargement</div>';
+  });
+
+  const arr  = Object.entries(buckets).map(([date,v])=>({date,...v}));
+  const maxV = Math.max(...arr.map(d=>(d.pos||0)+(d.neg||0)),1);
+
+  // Smart label: show day/month based on period
+  const showEvery = days <= 14 ? 1 : days <= 30 ? 3 : 7;
+  wrap.innerHTML = arr.map((d,i) => {
+    const ph = Math.round(((d.pos||0)/maxV)*100);
+    const nh = Math.round(((d.neg||0)/maxV)*100);
+    const dt = new Date(d.date);
+    const lbl = (i % showEvery === 0) ? dt.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}).slice(0,-1) : '';
+    const total = (d.pos||0)+(d.neg||0);
+    return `<div class="bar-col">
+      <div class="bar-wrap">
+        ${d.neg ? `<div class="bar neg" style="height:${nh}%" data-val="${d.neg} nég."></div>` : ''}
+        ${d.pos ? `<div class="bar pos" style="height:${ph}%" data-val="${d.pos} pos."></div>` : ''}
+        ${!total ? `<div style="height:3px;width:100%;background:#e2e8f0;border-radius:2px;margin-top:auto"></div>` : ''}
+      </div>
+      <div class="bar-label">${lbl}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Week comparison ────────────────────────────────────────────
+function renderWeekCompare(analytics) {
+  const tw = analytics.thisWeek;
+  const pw = analytics.prevWeek;
+
+  const setRow = (idVal, idDelta, curr, prev, isFloat, suffix, lowerIsBetter) => {
+    const el = document.getElementById(idVal);
+    const dl = document.getElementById(idDelta);
+    if (el) el.textContent = curr != null ? (isFloat ? curr.toFixed(1) : curr) + (suffix||'') : '—';
+    if (!dl) return;
+    if (prev == null || curr == null) { dl.className='wcr-delta wcr-eq'; dl.textContent=''; return; }
+    const delta = curr - prev;
+    if (Math.abs(delta) < 0.05) { dl.className='wcr-delta wcr-eq'; dl.textContent='= stable'; return; }
+    const up = delta > 0;
+    const isGood = lowerIsBetter ? !up : up;
+    dl.className = 'wcr-delta ' + (isGood ? 'wcr-up' : 'wcr-down');
+    dl.textContent = (up ? '↑' : '↓') + ' ' + (isFloat ? Math.abs(delta).toFixed(1) : Math.abs(Math.round(delta))) + (suffix||'');
+  };
+
+  setRow('wc_total',  'wcd_total',  tw.total,    pw.total,    false, '',    false);
+  const twRate = tw.total ? Math.round(tw.positifs/tw.total*100) : 0;
+  const pwRate = pw.total ? Math.round(pw.positifs/pw.total*100) : null;
+  setRow('wc_pos',    'wcd_pos',    twRate,       pwRate,      false, '%',   false);
+  setRow('wc_note',   'wcd_note',   tw.noteAvg,   pw.noteAvg,  true,  ' ★', false);
+  setRow('wc_google', 'wcd_google', tw.google,    pw.google,   false, '',    false);
+  setRow('wc_neg',    'wcd_neg',    tw.nonTraites,pw.nonTraites,false,'',    true);
+}
+
+// ── Chips analytics ────────────────────────────────────────────
+function renderChipsAnalytics(chipsCounts) {
+  const el = document.getElementById('chipsAnalytics');
+  if (!el) return;
+  const sorted = Object.entries(chipsCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if (!sorted.length) { el.innerHTML='<div style="font-size:13px;color:var(--muted)">Aucun chip sélectionné</div>'; return; }
+  const maxC = sorted[0][1];
+  el.innerHTML = sorted.map(([chip, cnt]) => {
+    const pct = Math.round((cnt/maxC)*100);
+    return `<div class="chip-bar-row">
+      <div class="chip-bar-label" title="${esc(chip)}">${esc(chip)}</div>
+      <div class="chip-bar-bg"><div class="chip-bar-fill" style="width:${pct}%"></div></div>
+      <div class="chip-bar-cnt">${cnt}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Canal analytics ────────────────────────────────────────────
+function renderCanalAnalytics(analytics) {
+  const el = document.getElementById('canalAnalytics');
+  if (!el) return;
+  const qr = analytics.qrCount, wa = analytics.waCount, total = qr + wa;
+  if (!total) { el.innerHTML='<div style="font-size:13px;color:var(--muted)">Pas encore de données</div>'; return; }
+  const qrPct = Math.round(qr/total*100), waPct = 100-qrPct;
+  el.innerHTML = `
+    <div class="canal-split">
+      <div class="canal-pill qr">
+        <div class="canal-pill-val">${qr}</div>
+        <div class="canal-pill-lbl">🔲 QR Code</div>
+      </div>
+      <div class="canal-pill wa">
+        <div class="canal-pill-val">${wa}</div>
+        <div class="canal-pill-lbl">💬 WhatsApp</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px">
+      <span>QR ${qrPct}%</span><span>WA ${waPct}%</span>
+    </div>
+    <div class="canal-stack">
+      <div class="canal-stack-qr" style="width:${qrPct}%"></div>
+      <div class="canal-stack-wa" style="width:${waPct}%"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">${total} retours collectés au total</div>`;
+}
+
+// ── Notes distribution ─────────────────────────────────────────
+function renderNotesAnalytics(noteDist) {
+  const el = document.getElementById('notesAnalytics');
+  if (!el) return;
+  const total = Object.values(noteDist).reduce((a,b)=>a+b,0);
+  if (!total) { el.innerHTML='<div style="font-size:13px;color:var(--muted)">Pas encore de données</div>'; return; }
+  const colors = {5:'#22c55e',4:'#86efac',3:'#fbbf24',2:'#fb923c',1:'#ef4444'};
+  el.innerHTML = [5,4,3,2,1].map(star => {
+    const cnt = noteDist[star]||0;
+    const pct = total ? Math.round(cnt/total*100) : 0;
+    return `<div class="note-dist-row">
+      <div class="note-star-lbl">${star}★</div>
+      <div class="note-dist-bar-bg"><div class="note-dist-bar bar-${star}" style="width:${pct}%;background:${colors[star]}"></div></div>
+      <div class="note-dist-cnt">${cnt}</div>
+    </div>`;
+  }).join('') + `<div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">${total} notes reçues</div>`;
+}
+
+// ── Feedbacks ─────────────────────────────────────────────────
+async function loadFeedbacks() {
+  fbLoaded = false;
+  document.getElementById('feedbacksContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Chargement…</div>';
+  try {
+    const res  = await fetch('/api/feedbacks?limit=200');
+    const data = await res.json();
+    feedbacksData = data.feedbacks || [];
+    fbFiltered    = [...feedbacksData];
+    fbLoaded      = true;
+    renderFbTable();
+  } catch {
+    document.getElementById('feedbacksContainer').innerHTML = '<div class="alert-box error">⚠️ Erreur lors du chargement.</div>';
   }
 }
 
-function showAddPatient() {
-  const hasAccess = doctorData && (doctorData.plan === 'premium' || doctorData.plan === 'trial');
-  if (!hasAccess) { showTab('upgrade'); return; }
-  document.getElementById('addPatientModal').style.display = 'flex';
-}
-function hideAddPatient() {
-  document.getElementById('addPatientModal').style.display = 'none';
-  document.getElementById('apt_nom').value = '';
-  document.getElementById('apt_tel').value = '';
-  document.getElementById('apt_error').style.display = 'none';
+function filterFeedbacks() {
+  const q   = document.getElementById('fbSearch').value.toLowerCase();
+  const typ = document.getElementById('fbTypeFilter').value;
+  const st  = document.getElementById('fbStatusFilter').value;
+  fbFiltered = feedbacksData.filter(fb => {
+    const mQ  = !q   || (fb.prenom_patient||fb.patient_nom||'').toLowerCase().includes(q);
+    const mT  = !typ || fb.type_final === typ;
+    const mS  = !st  || (st==='done' ? fb.traite : !fb.traite);
+    return mQ && mT && mS;
+  });
+  currentPage = 1;
+  renderFbTable();
 }
 
-async function addPatient() {
-  const nom = document.getElementById('apt_nom').value.trim();
-  const telephone = document.getElementById('apt_tel').value.trim();
-  const errEl = document.getElementById('apt_error');
-  if (!nom || !telephone) { errEl.textContent = 'Nom et téléphone requis.'; errEl.style.display = 'block'; return; }
+function resetFilters() {
+  document.getElementById('fbSearch').value = '';
+  document.getElementById('fbTypeFilter').value = '';
+  document.getElementById('fbStatusFilter').value = '';
+  fbFiltered = [...feedbacksData];
+  currentPage = 1;
+  renderFbTable();
+}
+
+function renderFbTable() {
+  const start = (currentPage-1)*PER_PAGE;
+  const page  = fbFiltered.slice(start, start+PER_PAGE);
+  const box   = document.getElementById('feedbacksContainer');
+  if (!fbFiltered.length) {
+    box.innerHTML = '<div class="feedbacks-table"><div class="empty-state" style="padding:36px 20px"><div class="empty-icon" style="font-size:40px">🔍</div><div class="empty-title" style="font-size:16px">Aucun retour trouvé</div><div class="empty-sub">Modifiez vos filtres de recherche.</div></div></div>';
+    document.getElementById('fbPagination').innerHTML = '';
+    return;
+  }
+  let h = `<div class="feedbacks-table">
+    <div class="table-head"><div>#</div><div>Patient</div><div>Date</div><div>Note</div><div>Type</div><div>Statut</div></div>`;
+  page.forEach((fb, i) => {
+    const n    = start + i + 1;
+    const date = fb.created_at ? new Date(fb.created_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) : '—';
+    const stars = fb.note ? '⭐'.repeat(fb.note)+'☆'.repeat(5-fb.note) : '—';
+    h += `<div class="feedback-row" onclick="openFeedback('${fb.id}')">
+      <div class="fb-num">${n}</div>
+      <div><div class="fb-patient">${esc(fb.prenom_patient || fb.patient_nom || (fb.canal==='WA'?'Patient WA':'Patient QR'))}</div><div class="fb-sub">${fb.patient_tel||''}</div></div>
+      <div style="font-size:12px;color:var(--muted)">${date}</div>
+      <div class="stars-mini">${stars}</div>
+      <div><span class="badge ${fb.type_final==='POSITIF'?'pos':'neg'}">${fb.type_final==='POSITIF'?'✅ Positif':'⚠️ Négatif'}</span></div>
+      <div><span class="badge ${fb.traite?'done':'pending'}">${fb.traite?'Traité':'En attente'}</span></div>
+    </div>`;
+  });
+  h += '</div>';
+  box.innerHTML = h;
+
+  const pages = Math.ceil(fbFiltered.length/PER_PAGE);
+  let pg = '';
+  if (pages>1) {
+    if (currentPage>1) pg += `<button class="pg-btn" onclick="goPage(${currentPage-1})">‹</button>`;
+    for (let i=1;i<=pages;i++) {
+      if (i===1||i===pages||Math.abs(i-currentPage)<=1)
+        pg += `<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+      else if (Math.abs(i-currentPage)===2)
+        pg += `<span style="padding:0 4px;color:var(--muted)">…</span>`;
+    }
+    if (currentPage<pages) pg += `<button class="pg-btn" onclick="goPage(${currentPage+1})">›</button>`;
+  }
+  document.getElementById('fbPagination').innerHTML = pg;
+}
+
+function goPage(p) { currentPage=p; renderFbTable(); scrollTo({top:0,behavior:'smooth'}); }
+
+function openFeedback(id) {
+  const fb = feedbacksData.find(f=>f.id==id);
+  if (!fb) return;
+  const date  = fb.created_at ? new Date(fb.created_at).toLocaleString('fr-FR') : '—';
+  const stars = fb.note ? '⭐'.repeat(fb.note)+'☆'.repeat(5-fb.note) : '—';
+  document.getElementById('modalFbTitle').textContent = fb.type_final==='POSITIF' ? '✅ Retour positif' : '⚠️ Retour négatif';
+
+  let h = `<div class="detail-block">
+    <div class="detail-row"><span class="detail-label">Patient</span><span class="detail-val">${esc(fb.prenom_patient || fb.patient_nom || (fb.canal==='WA'?'Patient WA':'Patient QR'))}</span></div>
+    <div class="detail-row"><span class="detail-label">Téléphone</span><span class="detail-val">${fb.patient_tel||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Date</span><span class="detail-val">${date}</span></div>
+    <div class="detail-row"><span class="detail-label">Note</span><span class="detail-val">${stars}</span></div>
+    <div class="detail-row"><span class="detail-label">Type</span><span class="detail-val"><span class="badge ${fb.type_final==='POSITIF'?'pos':'neg'}">${fb.type_final}</span></span></div>
+    <div class="detail-row"><span class="detail-label">Statut</span><span class="detail-val"><span class="badge ${fb.traite?'done':'pending'}">${fb.traite?'Traité ✓':'En attente'}</span></span></div>
+  </div>`;
+
+  if (fb.chips_positifs?.length) {
+    h += `<div style="margin-bottom:14px"><div class="form-label" style="margin-bottom:8px">Points forts mentionnés</div><div class="chips-wrap">${fb.chips_positifs.map(c=>`<span class="chip">${esc(c)}</span>`).join('')}</div></div>`;
+  }
+  if (fb.commentaire) {
+    h += `<div class="form-label" style="margin-bottom:8px">Commentaire patient</div><div class="comment-block">"${esc(fb.commentaire)}"</div>`;
+  }
+  if (fb.suggestion_ia) {
+    h += `<div class="form-label" style="margin-bottom:8px">Avis suggéré (IA)</div><div class="comment-block" style="background:#eff6ff;border-color:#bfdbfe;font-style:normal">${esc(fb.suggestion_ia)}</div>`;
+  }
+
+  h += '<div class="modal-actions">';
+  if (fb.type_final==='NEGATIF' && !fb.traite) {
+    h += `<button class="btn-sm btn-success btn-full" onclick="markTraite('${fb.id}')">✅ Marquer comme traité</button>`;
+  }
+  if (fb.patient_tel) {
+    const wa = (fb.patient_tel||'').replace(/\s/g,'');
+    h += `<a href="https://wa.me/${wa}" target="_blank" rel="noopener" class="btn-sm btn-wa btn-full" style="display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none">💬 Contacter par WhatsApp</a>`;
+  }
+  if (!fb.traite && fb.type_final==='POSITIF') {
+    h += `<button class="btn-sm btn-ghost btn-full" style="border:1.5px solid var(--border)" onclick="markTraite('${fb.id}')">✓ Archiver</button>`;
+  }
+  h += '</div>';
+
+  document.getElementById('modalFbBody').innerHTML = h;
+  openModal('modalFeedback');
+}
+
+async function markTraite(id) {
   try {
-    const res = await fetch('/api/patients', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nom, telephone })
-    });
+    const res  = await fetch(`/api/feedbacks/${id}/traite`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({traite:true})});
     const data = await res.json();
     if (data.ok) {
-      hideAddPatient();
-      loadPatients();
-    } else {
-      errEl.textContent = data.error || 'Erreur.';
-      errEl.style.display = 'block';
+      feedbacksData = feedbacksData.map(f => f.id==id ? {...f,traite:1} : f);
+      fbFiltered    = fbFiltered.map(f => f.id==id ? {...f,traite:1} : f);
+      closeModal('modalFeedback');
+      renderFbTable();
+      showToast('Retour marqué comme traité');
+      fetchNotifCount();
     }
-  } catch(e) {
-    errEl.textContent = 'Erreur réseau.';
-    errEl.style.display = 'block';
-  }
+  } catch { showToast('⚠️ Erreur réseau'); }
 }
 
-async function sendToken(patientId, telephone) {
-  if (!confirm('Envoyer un lien d\'avis WhatsApp à ' + telephone + ' ?')) return;
+// ── Patients ──────────────────────────────────────────────────
+async function loadPatients() {
+  ptLoaded = false;
+  document.getElementById('patientsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Chargement…</div>';
   try {
-    const res = await fetch('/api/tokens/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ patient_id: patientId })
-    });
+    const res  = await fetch('/api/patients');
     const data = await res.json();
-    if (data.ok && data.wa_url) {
-      window.open(data.wa_url, '_blank');
-    } else {
-      alert(data.error || 'Erreur lors de la génération du token.');
-    }
-  } catch(e) {
-    alert('Erreur réseau.');
+    patientsData = data.patients || [];
+    ptLoaded     = true;
+    renderPtTable();
+  } catch {
+    document.getElementById('patientsContainer').innerHTML = '<div class="alert-box error">⚠️ Erreur lors du chargement.</div>';
   }
 }
 
-/* ---- CONFIG ---- */
-function fillConfigForm(d) {
-  document.getElementById('cfg_nom').value = d.nom || '';
-  document.getElementById('cfg_specialite').value = d.specialite || '';
-  document.getElementById('cfg_ville').value = d.ville || '';
-  document.getElementById('cfg_telephone').value = d.telephone || '';
-  document.getElementById('cfg_logo_url').value = d.logo_url || '';
-  document.getElementById('cfg_google_maps_url').value = d.google_maps_url || '';
-  document.getElementById('cfg_whatsapp_assistante').value = d.whatsapp_assistante || '';
-  document.getElementById('cfg_template').value = d.template_suggestion || '';
-  const vocab = JSON.parse(d.vocabulaire_positif || '[]');
-  document.getElementById('cfg_vocabulaire').value = vocab.join(', ');
-  document.getElementById('cfg_langue').value = d.langue_defaut || 'fr';
+function filterPatients() {
+  const q = document.getElementById('ptSearch').value.toLowerCase();
+  renderPtTable(patientsData.filter(p => (p.nom||'').toLowerCase().includes(q)||(p.telephone||'').includes(q)));
+}
+
+function renderPtTable(list) {
+  const data = list || patientsData;
+  const box  = document.getElementById('patientsContainer');
+  if (!data.length) {
+    box.innerHTML = '<div class="patients-table"><div class="empty-state" style="padding:36px 20px"><div class="empty-icon" style="font-size:40px">👥</div><div class="empty-title" style="font-size:16px">Aucun patient</div><div class="empty-sub">Ajoutez votre premier patient.</div></div></div>';
+    return;
+  }
+  let h = `<div class="patients-table">
+    <div class="pt-head"><div>Patient</div><div>Téléphone</div><div>Retours</div><div>Note moy.</div><div>Fidélité</div></div>`;
+  data.forEach(p => {
+    const score = p.score_fidelite || 0;
+    const barW  = Math.min(100, score * 20);
+    h += `<div class="pt-row">
+      <div><div class="pt-name">${esc(p.nom||'—')}</div><div class="pt-sub">${p.email||''}</div></div>
+      <div style="font-size:12px;color:var(--muted)">${p.telephone||'—'}</div>
+      <div><span class="badge" style="background:#f8fafc;color:var(--muted)">${p.nb_retours||0}</span></div>
+      <div style="font-size:12px">${p.moyenne_note ? p.moyenne_note.toFixed(1)+' ⭐' : '—'}</div>
+      <div><div class="loyalty-bar-bg"><div class="loyalty-bar" style="width:${barW}%"></div></div></div>
+    </div>`;
+  });
+  h += '</div>';
+  box.innerHTML = h;
+}
+
+function openAddPatient() {
+  document.getElementById('ptNom').value = '';
+  document.getElementById('ptTel').value = '';
+  document.getElementById('patientAlert').className = 'alert-box hidden';
+  openModal('modalPatient');
+}
+
+async function savePatient() {
+  const nom = document.getElementById('ptNom').value.trim();
+  const tel = document.getElementById('ptTel').value.trim();
+  if (!nom) { showAlertBox('patientAlert','error','Le nom est requis.'); return; }
+  const btn = document.getElementById('addPatientBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Ajout…';
+  try {
+    const res  = await fetch('/api/patients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nom,telephone:tel})});
+    const data = await res.json();
+    if (data.ok) {
+      ptLoaded = false; closeModal('modalPatient'); loadPatients(); showToast('Patient ajouté avec succès');
+    } else if (data.duplicate) {
+      const ex = data.existing || {};
+      document.getElementById('dupBlock').innerHTML = `<div class="detail-row"><span class="detail-label">Nom</span><span class="detail-val">${esc(ex.nom||nom)}</span></div><div class="detail-row"><span class="detail-label">Téléphone</span><span class="detail-val">${ex.telephone||'—'}</span></div>`;
+      dupPayload = {nom,telephone:tel,force:true};
+      closeModal('modalPatient'); openModal('modalDuplicate');
+    } else {
+      showAlertBox('patientAlert','error',data.error||'Erreur lors de l\'ajout.');
+    }
+  } catch { showAlertBox('patientAlert','error','Erreur réseau.'); }
+  btn.disabled = false; btn.innerHTML = 'Ajouter →';
+}
+
+async function forceAddPatient() {
+  if (!dupPayload) return;
+  const res  = await fetch('/api/patients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(dupPayload)}).catch(()=>null);
+  if (res) {
+    const data = await res.json();
+    if (data.ok) { ptLoaded=false; closeModal('modalDuplicate'); loadPatients(); showToast('✅ Patient ajouté'); }
+  }
+}
+
+// ── Config ────────────────────────────────────────────────────
+async function loadConfig() {
+  cfgLoaded = false;
+  document.getElementById('configForm').innerHTML = '<div class="loading-state" style="grid-column:1/-1"><div class="loading-spinner"></div>Chargement…</div>';
+  try {
+    const res  = await fetch('/api/config');
+    const data = await res.json();
+    configData    = {...data, loaded:true};
+    selectedChips = data.chips_positifs || ['Accueil','Professionnalisme','Explications','Temps d\'attente','Propreté','Écoute'];
+    cfgLoaded     = true;
+    renderConfigForm();
+  } catch {
+    document.getElementById('configForm').innerHTML = '<div class="alert-box error" style="grid-column:1/-1">⚠️ Erreur de chargement.</div>';
+  }
+}
+
+function renderConfigForm() {
+  const d = configData;
+  const logoHtml = d.logo_url
+    ? `<div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
+        <img id="cfg_logo_preview_img" src="${esc(d.logo_url)}" style="height:52px;max-width:120px;border-radius:10px;object-fit:contain;border:1.5px solid var(--border);padding:4px;background:#f8fafc" alt="Logo actuel">
+        <button type="button" onclick="removeLogo()" style="font-size:11px;color:var(--danger);background:none;border:1px solid #fecaca;border-radius:6px;padding:3px 10px;cursor:pointer">✕ Supprimer</button>
+      </div>`
+    : `<div id="cfg_logo_preview_wrap" style="display:none;margin-bottom:10px"><img id="cfg_logo_preview_img" style="height:52px;max-width:120px;border-radius:10px;object-fit:contain;border:1.5px solid var(--border);padding:4px;background:#f8fafc"></div>`;
+
+  document.getElementById('configForm').innerHTML = `
+
+    <div class="config-card full">
+      <div class="config-card-title">👤 Identité du cabinet</div>
+      <div class="config-card-sub">Informations affichées sur votre formulaire patient et utilisées par l'IA</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group"><label class="form-label">Nom du médecin</label><input type="text" class="form-input" id="cfg_nom" placeholder="Dr. Youssef Alami" value="${esc(d.nom||'')}"></div>
+        <div class="form-group"><label class="form-label">Spécialité</label><input type="text" class="form-input" id="cfg_spec" placeholder="Cardiologue" value="${esc(d.specialite||'')}"></div>
+        <div class="form-group"><label class="form-label">Ville</label><input type="text" class="form-input" id="cfg_ville" placeholder="Casablanca" value="${esc(d.ville||'')}"></div>
+        <div class="form-group"><label class="form-label">Téléphone du cabinet</label><input type="tel" class="form-input" id="cfg_tel" placeholder="+212 5XX XXX XXX" value="${esc(d.telephone||'')}"></div>
+      </div>
+      <div class="save-row"><button class="btn-sm btn-primary" onclick="saveSection('identite')">💾 Enregistrer</button></div>
+    </div>
+
+    <div class="config-card">
+      <div class="config-card-title">🖼️ Profil du cabinet</div>
+      <div class="config-card-sub">Apparence de votre formulaire patient</div>
+      <div class="form-group">
+        <label class="form-label">Logo du cabinet <span style="font-weight:400;color:#94a3b8">· optionnel</span></label>
+        ${logoHtml}
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:#f8fafc;border:1.5px dashed var(--border);border-radius:10px;padding:12px 16px;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--primary)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <span style="font-size:22px">📁</span>
+          <span style="font-size:13px;color:var(--muted)">Cliquer pour choisir un fichier <strong style="color:var(--primary)">PNG, JPG ou SVG</strong> — max 500 Ko</span>
+          <input type="file" id="cfg_logo_file" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none" onchange="handleLogoUpload(this)">
+        </label>
+        <input type="hidden" id="cfg_logo" value="${esc(d.logo_url||'')}">
+      </div>
+      <div class="form-group"><label class="form-label">Langue par défaut</label><div class="select-wrap"><select class="form-input" id="cfg_langue"><option value="fr" ${(d.langue_defaut||'fr')==='fr'?'selected':''}>🇫🇷 Français</option><option value="ar" ${d.langue_defaut==='ar'?'selected':''}>🇲🇦 Arabe</option></select></div></div>
+      <div class="save-row"><button class="btn-sm btn-primary" onclick="saveSection('profil')">💾 Enregistrer</button></div>
+    </div>
+
+    <div class="config-card">
+      <div class="config-card-title">🔗 Liens importants</div>
+      <div class="config-card-sub">Google Maps & alertes WhatsApp</div>
+      <div class="form-group"><label class="form-label">Lien Google Maps</label><input type="url" class="form-input" id="cfg_gmaps" placeholder="https://g.page/r/…/review" value="${esc(d.google_maps_url||'')}"><div class="form-hint">Lien direct vers votre page d'avis Google.</div></div>
+      <div class="form-group"><label class="form-label">WhatsApp alertes</label><input type="tel" class="form-input" id="cfg_whatsapp" placeholder="+212 6XX XXX XXX" value="${esc(d.whatsapp_assistante||'')}"><div class="form-hint">Reçoit une notification pour chaque avis négatif.</div></div>
+      <div class="save-row"><button class="btn-sm btn-primary" onclick="saveSection('liens')">💾 Enregistrer</button></div>
+    </div>
+
+    <div class="config-card full">
+      <div class="config-card-title">✍️ Phrase modèle & mots-clés IA</div>
+      <div class="config-card-sub">Pré-remplit le champ texte du formulaire (avis ≥ 4 étoiles)</div>
+      <div class="form-group"><textarea class="form-input" id="cfg_template" rows="3" placeholder="Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}.">${esc(d.template_suggestion||'')}</textarea><div class="form-hint">Variables : <strong>{nom}</strong>, <strong>{specialite}</strong>, <strong>{ville}</strong></div></div>
+      <div class="form-group"><label class="form-label">Mots-clés IA</label><input type="text" class="form-input" id="cfg_vocab" placeholder="professionnel, recommande, excellent" value="${esc((d.vocabulaire_positif||[]).join(', '))}"><div class="form-hint">Séparés par des virgules. Intégrés dans les avis générés par IA.</div></div>
+      <div class="save-row"><button class="btn-sm btn-primary" onclick="saveSection('template')">💾 Enregistrer</button></div>
+    </div>
+
+    <div class="config-card full">
+      <div class="config-card-title">⭐ Points forts du cabinet</div>
+      <div class="config-card-sub">Affichés dans le formulaire patient pour les avis ≥ 4 étoiles</div>
+      <div class="chips-wrap" id="cfgChips"></div>
+      <div class="chip-add-row"><input type="text" class="form-input" id="cfgNewChip" placeholder="Ajouter un point fort…" maxlength="30"><button onclick="cfgAddChip()">+ Ajouter</button></div>
+      <div class="save-row" style="margin-top:16px"><button class="btn-sm btn-primary" onclick="saveSection('chips')">💾 Enregistrer les points forts</button></div>
+    </div>
+
+    <div class="config-card full">
+      <div class="config-card-title">🔗 Votre lien patient</div>
+      <div class="config-card-sub">Partagez ce lien ou affichez le QR Code dans votre cabinet</div>
+      <div class="link-row" style="background:#f8fafc;border:1.5px solid var(--border)">
+        <div class="link-url" style="color:var(--primary)">${window._patientLink||'—'}</div>
+        <button class="copy-btn" style="background:var(--primary);border-color:var(--primary)" onclick="copyPatientLink()">📋 Copier</button>
+      </div>
+      <div style="margin-top:12px"><button class="btn-sm btn-ghost" style="border:1.5px solid var(--border)" onclick="window.location.href='/qr'">🖨️ Imprimer le QR Code</button></div>
+    </div>`;
+
+  renderCfgChips();
+  document.getElementById('cfgNewChip').addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();cfgAddChip();} });
+}
+
+// ── Logo upload helpers ───────────────────────────────────────
+function handleLogoUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 500 * 1024) {
+    showAlertBox('configAlert', 'error', 'Image trop grande. Maximum 500 Ko.');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    document.getElementById('cfg_logo').value = dataUrl;
+    // Show/update preview
+    let previewWrap = document.getElementById('cfg_logo_preview_wrap');
+    let previewImg  = document.getElementById('cfg_logo_preview_img');
+    if (previewWrap) { previewWrap.style.display = 'block'; }
+    if (previewImg)  { previewImg.src = dataUrl; }
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  document.getElementById('cfg_logo').value = '';
+  const previewImg  = document.getElementById('cfg_logo_preview_img');
+  if (previewImg) previewImg.closest('[style*="margin-bottom"]').remove();
+  // Re-render to show the upload zone cleanly
+  configData.logo_url = '';
+  renderConfigForm();
 }
 
 function renderCfgChips() {
-  const wrap = document.getElementById('cfgChips');
-  wrap.innerHTML = '';
-  currentChips.forEach((c, i) => {
-    const el = document.createElement('div');
-    el.className = 'chip-tag';
-    el.innerHTML = `${c} <span class="remove" onclick="removeCfgChip(${i})">✕</span>`;
-    wrap.appendChild(el);
+  const w = document.getElementById('cfgChips'); if(!w) return;
+  w.innerHTML = selectedChips.map((c,i) => `<div class="chip">${esc(c)} <button class="rm" onclick="cfgRmChip(${i})">✕</button></div>`).join('');
+}
+function cfgRmChip(i) { selectedChips.splice(i,1); renderCfgChips(); }
+function cfgAddChip() {
+  const v = document.getElementById('cfgNewChip').value.trim();
+  if (v && !selectedChips.includes(v)) { selectedChips.push(v); renderCfgChips(); }
+  document.getElementById('cfgNewChip').value = '';
+}
+
+async function saveSection(section) {
+  let payload = {};
+  if (section==='identite') {
+    const nom  = document.getElementById('cfg_nom').value.trim();
+    const spec = document.getElementById('cfg_spec').value.trim();
+    const vill = document.getElementById('cfg_ville').value.trim();
+    const tel  = document.getElementById('cfg_tel').value.trim();
+    if (!nom || !spec || !vill) { showAlertBox('configAlert','error','Nom, spécialité et ville sont obligatoires.'); return; }
+    payload = { nom, specialite:spec, ville:vill, telephone:tel };
+  }
+  if (section==='profil')   payload = { logo_url:document.getElementById('cfg_logo').value, langue_defaut:document.getElementById('cfg_langue').value };
+  if (section==='liens')    payload = { google_maps_url:document.getElementById('cfg_gmaps').value.trim(), whatsapp_assistante:document.getElementById('cfg_whatsapp').value.trim() };
+  if (section==='template') payload = { template_suggestion:document.getElementById('cfg_template').value.trim(), vocabulaire_positif:document.getElementById('cfg_vocab').value.trim().split(',').map(v=>v.trim()).filter(Boolean) };
+  if (section==='chips')    payload = { chips_positifs:selectedChips };
+  try {
+    const res  = await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data = await res.json();
+    if (data.ok) {
+      configData = {...configData,...payload};
+      showAlertBox('configAlert','success','Configuration enregistrée avec succès.');
+      setTimeout(() => document.getElementById('configAlert').className='alert-box hidden', 3500);
+    } else {
+      showAlertBox('configAlert','error',data.error||'Erreur lors de la sauvegarde.');
+    }
+  } catch { showAlertBox('configAlert','error','Erreur réseau.'); }
+}
+
+// ── Plan ──────────────────────────────────────────────────────
+function applyPlanUI(plan) {
+  const p = plan.toLowerCase();
+  ['starter','essentiel','avance'].forEach(name => {
+    const btn  = document.getElementById('planBtn'+cap(name));
+    const card = document.getElementById('planCard'+cap(name));
+    if (!btn) return;
+    if (name === p) {
+      btn.className  = 'plan-btn current-plan';
+      btn.textContent = 'Plan actuel';
+      card.classList.add('current');
+    } else {
+      btn.className   = 'plan-btn upgrade-plan';
+      btn.textContent = `Passer à ${cap(name)} →`;
+      btn.onclick     = () => upgradePlan(name);
+      card.classList.remove('current');
+    }
   });
 }
-function removeCfgChip(i) { currentChips.splice(i,1); renderCfgChips(); }
-function addCfgChip() {
-  const v = document.getElementById('newCfgChip').value.trim();
-  if (v && !currentChips.includes(v)) { currentChips.push(v); renderCfgChips(); document.getElementById('newCfgChip').value=''; }
+
+async function upgradePlan(plan) {
+  const btn = document.getElementById('planBtn'+cap(plan));
+  if (!btn || btn.classList.contains('current-plan')) return;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Traitement…';
+  try {
+    const res  = await fetch('/api/upgrade',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan})});
+    const data = await res.json();
+    if (data.ok) {
+      showToast('✅ Plan mis à jour : '+cap(plan));
+      if (doctorData) doctorData.plan = plan;
+      document.getElementById('sidebarPlan').textContent = 'Plan '+cap(plan);
+      applyPlanUI(plan);
+    } else { showToast('⚠️ '+(data.error||'Erreur')); }
+  } catch { showToast('⚠️ Erreur réseau'); }
+  btn.disabled = false; btn.innerHTML = 'Passer à '+cap(plan)+' →';
 }
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('newCfgChip').addEventListener('keydown', function(e) {
-    if (e.key==='Enter') { e.preventDefault(); addCfgChip(); }
-  });
+
+// ── Notifications (FIX 7) ─────────────────────────────────────
+function startNotifPolling() {
+  fetchNotifCount();
+  setInterval(() => { if (!document.hidden) fetchNotifCount(); }, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) fetchNotifCount(); });
+}
+
+async function fetchNotifCount() {
+  try {
+    const res  = await fetch('/api/notifications');
+    const data = await res.json();
+    const cnt  = data.count || 0;
+    const show = cnt > 0;
+    const nc   = document.getElementById('notifCount');
+    const nbr  = document.getElementById('navBadgeRetours');
+    const bnb  = document.getElementById('bnBadge');
+    nc.textContent = cnt; nc.style.display = show ? 'flex' : 'none';
+    nbr.textContent = cnt; nbr.style.display = show ? 'flex' : 'none';
+    bnb.textContent = cnt; bnb.style.display = show ? 'flex' : 'none';
+    if ((data.notifications || data.items) && notifOpen) renderNotifPanel(data.notifications || data.items || []);
+  } catch {}
+}
+
+function toggleNotifPanel() {
+  notifOpen = !notifOpen;
+  document.getElementById('notifPanel').classList.toggle('open', notifOpen);
+  if (notifOpen) {
+    fetch('/api/notifications').then(r=>r.json()).then(d => { if(d.notifications) renderNotifPanel(d.notifications); }).catch(()=>{});
+  }
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#notifPanel') && !e.target.closest('#notifBtn')) {
+    notifOpen = false;
+    document.getElementById('notifPanel').classList.remove('open');
+  }
 });
 
-async function saveConfig(section) {
-  let payload = {};
-  if (section === 'profil') {
-    payload = {
-      nom: document.getElementById('cfg_nom').value.trim(),
-      specialite: document.getElementById('cfg_specialite').value.trim(),
-      ville: document.getElementById('cfg_ville').value.trim(),
-      telephone: document.getElementById('cfg_telephone').value.trim(),
-      logo_url: document.getElementById('cfg_logo_url').value.trim(),
-    };
-  } else if (section === 'liens') {
-    payload = {
-      google_maps_url: document.getElementById('cfg_google_maps_url').value.trim(),
-      whatsapp_assistante: document.getElementById('cfg_whatsapp_assistante').value.trim(),
-    };
-  } else if (section === 'chips') {
-    payload = { chips_positifs: currentChips };
-  } else if (section === 'template') {
-    const vocab = document.getElementById('cfg_vocabulaire').value.split(',').map(v=>v.trim()).filter(Boolean);
-    payload = {
-      template_suggestion: document.getElementById('cfg_template').value.trim(),
-      vocabulaire_positif: vocab,
-      langue_defaut: document.getElementById('cfg_langue').value,
-    };
-  }
-  try {
-    const res = await fetch('/api/config', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (data.ok) {
-      const toast = document.getElementById('toast-' + section);
-      toast.style.display = 'flex';
-      setTimeout(() => toast.style.display='none', 3000);
-      if (data.doctor) { doctorData = data.doctor; renderSidebar(data.doctor); }
-    }
-  } catch(e) { alert('Erreur réseau.'); }
+function renderNotifPanel(notifs) {
+  const body = document.getElementById('notifPanelBody');
+  if (!notifs?.length) { body.innerHTML = '<div class="notif-empty">Aucune notification</div>'; return; }
+  body.innerHTML = notifs.map(n => {
+    const isNeg = n.type === 'NEGATIF';
+    const date  = n.created_at ? new Date(n.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+    const stars = n.note ? '★'.repeat(n.note) + '☆'.repeat(5 - n.note) : '—';
+    return `<div class="notif-item ${n.traite?'':'unread'}" onclick="notifClick('${n.feedback_id||''}')">
+      <div class="notif-item-icon ${isNeg?'neg':'pos'}">${isNeg
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+      }</div>
+      <div class="notif-item-body">
+        <div class="notif-item-title">${isNeg?'Retour négatif à traiter':'Nouveau retour positif'}</div>
+        <div class="notif-item-sub">${esc(n.prenom_patient || n.patient_nom || (n.canal==='WA'?'Patient WA':'Patient QR'))} · ${stars}</div>
+        <div class="notif-item-time">${date}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-async function changePassword() {
-  const p1 = document.getElementById('cfg_newpass').value;
-  const p2 = document.getElementById('cfg_newpass2').value;
-  const errEl = document.getElementById('passError');
-  errEl.style.display = 'none';
-  if (!p1 || p1.length < 8) { errEl.textContent = 'Mot de passe trop court (8 car. minimum).'; errEl.style.display = 'block'; return; }
-  if (p1 !== p2) { errEl.textContent = 'Les mots de passe ne correspondent pas.'; errEl.style.display = 'block'; return; }
-  try {
-    const res = await fetch('/api/auth/change-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ new_password: p1 })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      document.getElementById('cfg_newpass').value = '';
-      document.getElementById('cfg_newpass2').value = '';
-      const toast = document.getElementById('toast-password');
-      toast.style.display = 'flex';
-      setTimeout(() => toast.style.display='none', 3000);
-    } else {
-      errEl.textContent = data.error || 'Erreur.';
-      errEl.style.display = 'block';
-    }
-  } catch(e) { alert('Erreur réseau.'); }
-}
-
-/* ---- UPGRADE ---- */
-async function requestUpgrade() {
-  const btn = document.getElementById('upgradeBtn');
-  btn.disabled = true;
-  btn.textContent = 'Envoi en cours…';
-  try {
-    const res = await fetch('/api/upgrade', { method: 'POST' });
-    const data = await res.json();
-    if (data.ok) {
-      document.getElementById('upgradeSuccess').style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = '📲 Renvoyer sur WhatsApp';
-      // Always open WhatsApp — wa_url is always returned now
-      if (data.wa_url) window.open(data.wa_url, '_blank');
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Passer Premium — 199 MAD/mois';
-      alert(data.error || 'Erreur.');
-    }
-  } catch(e) {
-    btn.disabled = false;
-    btn.textContent = 'Passer Premium — 199 MAD/mois';
+function notifClick(fbId) {
+  notifOpen = false;
+  document.getElementById('notifPanel').classList.remove('open');
+  if (fbId) {
+    switchTab('retours', document.querySelector('[data-tab=retours]'));
+    fbLoaded = false;
+    setTimeout(loadFeedbacks, 200);
   }
 }
 
-/* ---- UTILS ---- */
-function copyLink() {
-  const link = doctorData ? CANONICAL + '/form/' + encodeURIComponent(doctorData.slug) : document.getElementById('patientLink').textContent;
-  navigator.clipboard.writeText(link).then(() => {
-    const btn = event.target;
-    btn.textContent = '✅ Copié !';
-    setTimeout(() => btn.textContent = '📋 Copier', 2000);
-  });
+async function markAllRead() {
+  try {
+    await fetch('/api/notifications/mark-read',{method:'POST'});
+    ['notifCount','navBadgeRetours','bnBadge'].forEach(id => document.getElementById(id).style.display='none');
+    document.getElementById('notifPanelBody').innerHTML = '<div class="notif-empty">Tout est à jour.</div>';
+  } catch {}
 }
 
-function openQR() {
-  if (doctorData && doctorData.slug) {
-    // Always open QR on production domain regardless of current deployment URL
-    window.open(CANONICAL + '/qr?slug=' + encodeURIComponent(doctorData.slug), '_blank');
-  } else {
-    alert('Impossible de générer le QR code : identifiant médecin introuvable.');
-  }
-}
-
+// ── Auth ──────────────────────────────────────────────────────
 async function logout() {
-  await fetch('/api/auth/logout', { method: 'POST' });
+  await fetch('/api/auth/logout',{method:'POST'}).catch(()=>{});
   window.location.href = '/login';
 }
 
+// ── Links ─────────────────────────────────────────────────────
+function copyPatientLink() {
+  const l = window._patientLink; if(!l) return;
+  navigator.clipboard?.writeText(l).catch(()=>{});
+  showToast('Lien patient copié !');
+}
+function copyReferral() {
+  const l = window._referralLink; if(!l) return;
+  navigator.clipboard?.writeText(l).catch(()=>{});
+  showToast('Lien de parrainage copié !');
+}
+
+// ── Sidebar (mobile) ──────────────────────────────────────────
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ── Modals ────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+});
+
+// ── Toast ─────────────────────────────────────────────────────
+let _toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cap(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : ''; }
+function cleanDrName(nom) {
+  return (nom || '').replace(/^\s*(Dr\.?\s+|Docteur\s+|Dre\.?\s+|Pr\.?\s+|Prof\.?\s+|الدكتور\s+|دكتور\s+)/i, '').trim();
+}
+function formatDrName(nom) {
+  const clean = cleanDrName(nom);
+  return clean ? 'Dr ' + clean : 'Dr';
+}
+function show(id) { document.getElementById(id).style.display='block'; }
+function hide(id) { document.getElementById(id).style.display='none'; }
+function showAlertBox(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'alert-box '+type;
+  el.innerHTML = msg;
+}
+
+// ── Start ─────────────────────────────────────────────────────
 init();
 </script>
 </body>

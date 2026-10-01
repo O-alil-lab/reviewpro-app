@@ -2,287 +2,663 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Merci pour votre avis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:16px}
-body.positive{background:linear-gradient(160deg,#0f172a 0%,#064e3b 60%,#065f46 100%)}
-body.negative{background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 60%,#312e81 100%)}
-body.loading{background:linear-gradient(160deg,#0f172a,#1e3a5f)}
+:root{
+  --primary:#0D9488;--primary-dark:#0f766e;--accent:#22D3EE;--success:#22C55E;
+  --error:#dc2626;--dark:#134E4A;--text:#1e293b;--muted:#64748B;--border:#E2E8F0;
+  --border-teal:#CCFBF1;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  min-height:100vh;min-height:100dvh;
+  font-family:'Noto Sans',system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+  transition:background .5s ease;
+}
+body.loading{background:#F0FDFA}
+body.positive{background:linear-gradient(160deg,#065f46 0%,#059669 55%,#10b981 100%)}
+body.negative{background:linear-gradient(160deg,#134E4A 0%,#0D9488 55%,#0f766e 100%)}
 
-.card{background:#fff;border-radius:24px;padding:36px 32px;width:100%;max-width:420px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.4)}
-.big-icon{font-size:72px;margin-bottom:16px;animation:pop .5s ease}
-@keyframes pop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
-h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px}
-.sub{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:24px}
+/* Card */
+.card{
+  background:#fff;border-radius:24px;padding:32px 28px;
+  width:100%;max-width:420px;text-align:center;
+  box-shadow:0 4px 6px rgba(0,0,0,.07),0 10px 30px rgba(0,0,0,.08);
+  animation:cardIn .5s ease;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
-/* Suggestion */
-.suggestion-block{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:20px;text-align:left}
-.suggestion-label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.suggestion-text{font-size:14px;color:#374151;line-height:1.6;font-style:italic}
-.copy-btn{margin-top:10px;width:100%;padding:9px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;transition:.2s}
-.copy-btn:hover{background:#e2e8f0}
-.copy-btn.copied{background:#ecfdf5;border-color:#a7f3d0;color:#059669}
+/* Icons */
+.big-icon{font-size:64px;margin-bottom:14px;animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 
-/* Steps guide */
-.steps-guide{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;text-align:left}
-.step-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#f8fafc;border:1.5px solid #e2e8f0}
-.step-item.done{background:#ecfdf5;border-color:#a7f3d0}
-.step-item.active{background:#eff6ff;border-color:#bfdbfe}
-.step-num{width:26px;height:26px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.step-item.done .step-num{background:#059669;color:#fff}
-.step-item.active .step-num{background:#2563eb;color:#fff}
-.step-text{font-size:13px;color:#374151;font-weight:500;line-height:1.4}
-.step-text small{display:block;font-size:11px;color:#94a3b8;font-weight:400}
+/* Confetti (positif) */
+.confetti-wrap{position:relative;margin-bottom:4px}
+.confetti-wrap::before,.confetti-wrap::after{
+  content:'🎉';position:absolute;font-size:20px;top:-8px;
+  animation:confettiFly 1.5s ease forwards;
+}
+.confetti-wrap::before{left:20px;animation-delay:.2s}
+.confetti-wrap::after{right:20px;content:'✨';animation-delay:.4s}
+@keyframes confettiFly{from{opacity:0;transform:translateY(0)}to{opacity:0;transform:translateY(-30px)}}
 
-/* Auto-copy toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:100;animation:slideUp .3s ease;white-space:nowrap}
-@keyframes slideUp{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+/* Text */
+h1{font-size:20px;font-weight:800;color:var(--dark);margin-bottom:6px;line-height:1.3;font-family:'Figtree',system-ui,sans-serif}
+.sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:22px}
 
-/* Google button */
-.google-btn{width:100%;padding:16px;background:linear-gradient(135deg,#1a73e8,#1557b0);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;transition:all .2s;text-decoration:none}
-.google-btn:hover{opacity:.92;transform:translateY(-1px)}
-.google-btn .g-icon{width:22px;height:22px;background:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#1a73e8;flex-shrink:0}
+/* ── Positive flow ─────────────────────────────────────────── */
+.suggestion-block{
+  background:#F0FDFA;border:1.5px solid var(--border-teal);border-radius:16px;
+  padding:16px;margin-bottom:16px;text-align:left;
+}
+.suggestion-label{
+  font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:5px;
+}
+#suggestion-text{
+  width:100%;font-size:13px;color:var(--text);line-height:1.6;
+  font-style:italic;border:none;background:transparent;
+  resize:none;min-height:auto;overflow:hidden;outline:none;font-family:inherit;
+}
 
-/* Negative */
-.neg-block{background:#fef2f2;border:1.5px solid #fecaca;border-radius:14px;padding:20px;margin-bottom:20px;text-align:left}
-.neg-block h3{font-size:15px;font-weight:700;color:#dc2626;margin-bottom:6px}
-.neg-block p{font-size:13px;color:#374151;line-height:1.5;margin-bottom:14px}
-.wa-btn{width:100%;padding:13px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:.2s}
+/* ── Maps CTA — bloc motivationnel ──────────────────────────── */
+.maps-cta{
+  display:flex;align-items:flex-start;gap:12px;
+  background:linear-gradient(135deg,#065f46 0%,#059669 100%);
+  border-radius:16px;padding:16px 18px;margin-bottom:18px;
+}
+.maps-cta-emoji{font-size:32px;flex-shrink:0;line-height:1.1}
+.maps-cta-body strong{
+  display:block;font-size:14px;font-weight:800;color:#fff;
+  margin-bottom:4px;font-family:'Figtree',system-ui,sans-serif;line-height:1.3;
+}
+.maps-cta-body p{font-size:12px;color:rgba(255,255,255,.85);line-height:1.5}
+
+/* ── Mini-steps ①②③ ─────────────────────────────────────────── */
+.mini-steps{
+  display:flex;align-items:center;justify-content:center;
+  gap:4px;margin-bottom:18px;
+}
+.mini-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.mini-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;
+  background:#E2E8F0;color:#94a3b8;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.mini-step.active .mini-dot{
+  background:var(--primary);color:#fff;
+  box-shadow:0 0 0 4px #0D948825;transform:scale(1.12);
+}
+.mini-step.done .mini-dot{background:#22C55E;color:#fff;transform:scale(1)}
+.mini-step-lbl{
+  font-size:10px;color:var(--muted);font-weight:600;
+  text-align:center;line-height:1.3;max-width:60px;
+}
+.mini-step.active .mini-step-lbl{color:var(--primary);font-weight:700}
+.mini-step.done .mini-step-lbl{color:#15803d}
+.mini-arrow{font-size:16px;color:#CBD5E1;flex-shrink:0;padding:0 2px;margin-bottom:14px}
+
+/* ── Label instruction copie ────────────────────────────────── */
+.copy-instr{
+  font-size:12px;font-weight:700;color:var(--dark);
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;text-align:left;
+}
+.copy-instr-badge{
+  background:var(--primary);color:#fff;border-radius:50%;
+  width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex-shrink:0;font-family:'Figtree',system-ui,sans-serif;
+}
+
+/* Copy status */
+#copy-status{
+  display:none;font-size:13px;font-weight:600;color:#16a34a;
+  margin-bottom:14px;padding:10px 14px;
+  background:#f0fdf4;border-radius:10px;border:1px solid #a7f3d0;
+  animation:fadeUp .3s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Copy button */
+#btn-copy{
+  width:100%;padding:15px;
+  background:#0D9488;
+  color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;
+  cursor:pointer;margin-bottom:12px;transition:all 200ms ease;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+  font-family:'Figtree',system-ui,sans-serif;
+}
+#btn-copy:hover{background:#0f766e;transform:translateY(-1px)}
+#btn-copy:active{transform:translateY(0)}
+
+/* Guide étapes */
+#guide-etapes{
+  display:none;text-align:left;
+  background:#ECFDF5;border:1.5px solid #A7F3D0;border-radius:14px;
+  padding:14px 16px;margin-bottom:16px;animation:fadeUp .3s ease;
+}
+.guide-title{font-size:12px;font-weight:700;color:#065f46;margin-bottom:10px}
+.guide-step{
+  display:flex;align-items:flex-start;gap:10px;
+  margin-bottom:8px;font-size:13px;color:var(--text);line-height:1.45;
+}
+.guide-step:last-child{margin-bottom:0}
+.guide-num{font-size:18px;flex-shrink:0;line-height:1}
+
+/* Countdown */
+#countdown-section{display:none;margin-bottom:16px;animation:fadeUp .3s ease}
+.countdown-label{font-size:13px;color:var(--muted);margin-bottom:8px}
+.countdown-box{
+  display:inline-flex;flex-direction:column;align-items:center;
+  background:#F0FDFA;border-radius:14px;padding:10px 24px;margin-bottom:14px;
+}
+.countdown-number{font-size:48px;font-weight:900;color:var(--dark);line-height:1;font-family:'Figtree',system-ui,sans-serif}
+.countdown-unit{font-size:11px;color:var(--muted);margin-top:2px;font-weight:500}
+
+/* Action buttons */
+.action-btns{display:flex;gap:8px;margin-bottom:12px}
+#btn-open-now{
+  flex:1;padding:13px;
+  background:var(--primary);
+  color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;
+  cursor:pointer;transition:200ms ease;font-family:'Figtree',system-ui,sans-serif;
+}
+#btn-open-now:hover{background:var(--primary-dark)}
+#btn-cancel{
+  flex:0 0 auto;padding:13px 18px;background:#f1f5f9;color:var(--muted);
+  border:1.5px solid var(--border);border-radius:12px;font-size:13px;
+  font-weight:600;cursor:pointer;transition:200ms ease;
+}
+#btn-cancel:hover{background:var(--border)}
+
+/* Fallback maps button */
+#btn-maps-fallback{
+  display:none;width:100%;padding:14px;
+  background:var(--primary);
+  color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;
+  cursor:pointer;margin-bottom:10px;transition:200ms ease;
+  font-family:'Figtree',system-ui,sans-serif;
+}
+#btn-maps-fallback:hover{background:var(--primary-dark)}
+
+/* Skip */
+.skip-btn{
+  display:block;font-size:12px;color:#94a3b8;cursor:pointer;
+  background:none;border:none;width:100%;padding:6px;margin-top:2px;
+}
+.skip-btn:hover{color:var(--muted)}
+
+/* ── Negative flow ─────────────────────────────────────────── */
+.neg-block{
+  background:#F0FDFA;border:1.5px solid var(--border-teal);border-radius:16px;
+  padding:20px;margin-bottom:18px;text-align:left;
+}
+.neg-block h3{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:6px}
+.neg-block p{font-size:13px;color:var(--text);line-height:1.55;margin-bottom:14px}
+.wa-btn{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,#25d366,#128c7e);
+  color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:8px;text-decoration:none;transition:200ms ease;
+}
 .wa-btn:hover{opacity:.92}
 
-.thanks-note{font-size:12px;color:#94a3b8;margin-top:16px}
+/* Thanks note */
+.thanks-note{font-size:12px;color:#94a3b8;margin-top:16px;line-height:1.6}
+.confidential-note{
+  font-size:12px;color:var(--muted);margin-top:12px;padding:10px 14px;
+  background:#F0FDFA;border-radius:10px;border:1px solid var(--border-teal);
+  display:flex;align-items:center;gap:6px;text-align:left;
+}
+.confidential-note .icon{flex-shrink:0}
 
-/* SEO score badge */
-.seo-badge{display:flex;align-items:center;gap:10px;border-radius:12px;padding:12px 16px;margin-bottom:16px}
-.seo-badge.excellent{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1.5px solid #6ee7b7}
-.seo-badge.good{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fbbf24}
-.seo-badge-icon{font-size:22px;flex-shrink:0}
-.seo-badge-text{flex:1}
-.seo-badge-title{font-size:13px;font-weight:700;color:#065f46;margin-bottom:1px}
-.seo-badge.good .seo-badge-title{color:#92400e}
-.seo-badge-sub{font-size:11px;color:#6b7280}
-.seo-score-bar{height:5px;background:#d1fae5;border-radius:3px;margin-top:5px;overflow:hidden}
-.seo-badge.good .seo-score-bar{background:#fde68a}
-.seo-score-fill{height:100%;background:linear-gradient(90deg,#059669,#10b981);border-radius:3px;transition:width .8s ease}
-.seo-badge.good .seo-score-fill{background:linear-gradient(90deg,#d97706,#f59e0b)}
+/* ── Étape 4 — Remerciement ──────────────────────────────────── */
+#etape-merci{display:none;animation:fadeUp .4s ease}
+.merci-anim{font-size:64px;text-align:center;margin-bottom:12px;animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
+.merci-titre{font-size:22px;font-weight:800;color:var(--dark);margin-bottom:8px;font-family:'Figtree',system-ui,sans-serif}
+.merci-msg{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.merci-card{
+  display:flex;align-items:flex-start;gap:10px;
+  background:#F0FDFA;border:1.5px solid var(--border-teal);border-radius:14px;
+  padding:14px 16px;margin-bottom:16px;text-align:left;
+}
+.merci-card-icon{font-size:22px;flex-shrink:0}
+.merci-card p{font-size:13px;color:var(--text);line-height:1.55}
+.merci-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#F0FDF4;border:1px solid #A7F3D0;border-radius:30px;
+  padding:8px 16px;font-size:13px;font-weight:600;color:#065f46;
+  margin-top:4px;
+}
+
+/* ── Clôture avis négatif ────────────────────────────────────── */
+.neg-closure{
+  margin-top:16px;padding:14px 16px;
+  background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;
+  font-size:13px;color:#1e3a5f;line-height:1.6;text-align:left;
+}
+.neg-closure .enc{font-weight:600;color:#1d4ed8;margin-bottom:4px;display:block}
+
+/* RTL */
+[dir="rtl"] .suggestion-block,[dir="rtl"] #guide-etapes,[dir="rtl"] .neg-block{text-align:right}
+[dir="rtl"] .maps-cta{flex-direction:row-reverse;text-align:right}
+[dir="rtl"] .mini-steps{flex-direction:row-reverse}
+[dir="rtl"] .mini-arrow{transform:scaleX(-1)}
+[dir="rtl"] .copy-instr{flex-direction:row-reverse;text-align:right}
+[dir="rtl"] .guide-step{flex-direction:row-reverse}
+[dir="rtl"] .confidential-note{flex-direction:row-reverse}
+[dir="rtl"] .merci-card{flex-direction:row-reverse;text-align:right}
 </style>
 </head>
 <body class="loading">
-<div class="card" id="card">
-  <div class="big-icon" id="mainIcon">⏳</div>
+<div class="card">
+  <div id="mainIcon" class="big-icon">⏳</div>
   <h1 id="mainTitle">Chargement…</h1>
   <div class="sub" id="mainSub"></div>
   <div id="mainContent"></div>
 </div>
 
 <script>
-function trackGoogle(e) {
-  e.preventDefault();
-  const url = e.currentTarget.href;
-  // Open immediately (before async) to avoid popup blockers
-  window.open(url, '_blank');
-  const feedbackId = window.__feedbackId;
-  if (feedbackId) {
-    fetch('/api/track-google', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ feedback_id: feedbackId }),
-    }).catch(() => {});
-  }
+// ── Doctor name helpers ────────────────────────────────────────
+function cleanDrName(nom) {
+  return (nom || '').replace(/^\s*(Dr\.?\s+|Docteur\s+|Dre\.?\s+|Pr\.?\s+|Prof\.?\s+|الدكتور\s+|دكتور\s+)/i, '').trim();
+}
+function formatDrName(nom) {
+  const clean = cleanDrName(nom);
+  return clean ? 'Dr ' + clean : 'Dr';
 }
 
+// ── State ─────────────────────────────────────────────────────
+let countdownTimer = null;
+let countdownValue = 10;
+let googleMapsUrl  = '';
+let feedbackId     = '';
+let doctorId       = '';
+let doctorNom      = '';
+let lang           = 'fr';
+
+// ── i18n ──────────────────────────────────────────────────────
+const i18n = {
+  fr: {
+    thanks:          'Merci pour votre confiance ! 😊',
+    sub:             'Votre retour a bien été transmis au cabinet.',
+    copied:          '✅ Texte copié dans votre presse-papier !',
+    copy_btn:        '📋 Copier le texte',
+    cd_label:        'Google Maps s\'ouvre dans :',
+    cd_unit:         'secondes',
+    guide_title:     'Quand Google Maps s\'ouvre, 3 choses à faire :',
+    guide1:          'Collez le texte copié (appui long → "Coller")',
+    guide2:          'Donnez une note en étoiles',
+    guide3:          'Appuyez sur "Publier"',
+    open_now:        'Ouvrir maintenant →',
+    cancel:          'Annuler',
+    maps_fallback:   '⭐ Ouvrir Google Maps →',
+    skip:            'Non merci, je passe',
+    suggestion_label:'💡 Exemple d\'avis (modifiable) :',
+    neg_title:       'Merci d\'avoir pris le temps de nous répondre 🙏',
+    neg_sub:         'Votre retour a bien été reçu par le cabinet. Il restera strictement confidentiel.',
+    neg_contact:     'Vous souhaitez en parler directement ?',
+    neg_wa:          'Contacter le cabinet',
+    neg_note:        '🔒 Votre avis ne sera jamais publié sans votre accord.',
+    thanks_note:     'Votre expérience peut aider d\'autres patients à trouver un bon médecin. 🙏',
+    maps_cta_title:  'Partagez votre avis sur Google Maps 📍',
+    maps_cta_sub:    'Votre témoignage aide des dizaines de patients à trouver {nom}. Ça prend moins de 30 secondes !',
+    mini_copy:       'Copier',
+    mini_open:       'Google Maps',
+    mini_publish:    'Publier',
+    copy_instr:      'Copiez ce texte, puis collez-le sur Google Maps :',
+    merci_titre:     'Merci du fond du cœur ! 🎉',
+    merci_msg:       'Votre avis est précieux pour le Dr. {nom} et pour tous les patients qui cherchent un médecin de confiance.',
+    merci_card:      'En partageant votre expérience, vous aidez d\'autres personnes à trouver les meilleurs soins. Prenez soin de vous !',
+    merci_badge:     '✨ Avis partagé avec succès',
+    neg_closure_enc: 'Votre message a bien été transmis au cabinet.',
+    neg_closure_txt: 'Nous espérons que votre prochain rendez-vous se passera mieux. Prenez soin de vous. 💙',
+  },
+  ar: {
+    thanks:          'شكراً على ثقتك ! 😊',
+    sub:             'تم إرسال رأيك إلى العيادة.',
+    copied:          '✅ تم نسخ النص !',
+    copy_btn:        '📋 نسخ النص',
+    cd_label:        'ستفتح خرائط Google بعد :',
+    cd_unit:         'ثوانٍ',
+    guide_title:     'حين تُفتح خرائط Google، أمامك 3 خطوات :',
+    guide1:          'الصق النص (ضغطة طويلة → لصق)',
+    guide2:          'أعطِ تقييماً بالنجوم',
+    guide3:          'اضغط على نشر',
+    open_now:        '← فتح الآن',
+    cancel:          'إلغاء',
+    maps_fallback:   '⭐ فتح خرائط Google ←',
+    skip:            'لا شكراً',
+    suggestion_label:'💡 مثال على تقييم (قابل للتعديل) :',
+    neg_title:       'شكراً لأخذ الوقت للرد علينا 🙏',
+    neg_sub:         'تم استلام رأيك من قِبل العيادة. سيبقى سرياً تماماً.',
+    neg_contact:     'هل تريد التحدث مباشرة ؟',
+    neg_wa:          'التواصل مع العيادة',
+    neg_note:        '🔒 لن يُنشر رأيك أبداً دون موافقتك.',
+    thanks_note:     'رأيك يساعد مرضى آخرين على إيجاد طبيب جيد. 🙏',
+    maps_cta_title:  'شارك رأيك على خرائط Google 📍',
+    maps_cta_sub:    'شهادتك تساعد عشرات المرضى في إيجاد {nom}. لا يستغرق سوى 30 ثانية !',
+    mini_copy:       'نسخ',
+    mini_open:       'خرائط',
+    mini_publish:    'نشر',
+    copy_instr:      'انسخ هذا النص ثم الصقه على خرائط Google :',
+    merci_titre:     'شكراً من القلب ! 🎉',
+    merci_msg:       'رأيك ثمين للدكتور {nom} ولكل المرضى الذين يبحثون عن طبيب موثوق.',
+    merci_card:      'بمشاركة تجربتك، تساعد الآخرين في إيجاد أفضل رعاية صحية. اعتنِ بنفسك !',
+    merci_badge:     '✨ تم مشاركة رأيك بنجاح',
+    neg_closure_enc: 'تم إرسال رسالتك إلى العيادة.',
+    neg_closure_txt: 'نأمل أن يكون موعدك القادم أفضل. اعتنِ بنفسك. 💙',
+  },
+};
+function t(k) { return (i18n[lang]||i18n.fr)[k]||k; }
+
+// ── Init ──────────────────────────────────────────────────────
 function init() {
-  const raw = sessionStorage.getItem('reviewResult');
   let data = null;
-  try { data = raw ? JSON.parse(raw) : null; } catch(e) {}
+  try { data = JSON.parse(sessionStorage.getItem('reviewResult')||'null'); } catch {}
 
   if (!data) {
-    // Fallback: try URL params
-    const params = new URLSearchParams(location.search);
+    const p = new URLSearchParams(location.search);
     data = {
-      type: params.get('type') || 'POSITIF',
-      google_url: params.get('google_url') || '',
-      suggestion: params.get('suggestion') || '',
-      doctor_nom: params.get('nom') || '',
+      type:       p.get('type')||'POSITIF',
+      google_url: p.get('google_url')||'',
+      suggestion: p.get('suggestion')||'',
+      wa_cabinet: p.get('wa_cabinet')||'',
+      feedback_id:'',doctor_id:'',
     };
   }
 
-  window.__feedbackId = data.feedback_id || null;
-
-  if (data.type === 'POSITIF') {
-    renderPositive(data);
-  } else {
-    renderNegative(data);
+  // Language
+  const stored = sessionStorage.getItem('rp_lang');
+  const bl = (navigator.language||'').toLowerCase();
+  lang = stored || (data.lang) || (bl.startsWith('ar') ? 'ar' : 'fr');
+  if (lang === 'ar') {
+    document.documentElement.lang = 'ar';
+    document.body.setAttribute('dir', 'rtl');
   }
+
+  feedbackId    = data.feedback_id||'';
+  doctorId      = data.doctor_id||'';
+  doctorNom     = data.doctor_nom||'';
+  googleMapsUrl = data.google_url||'';
+
+  if (data.type === 'POSITIF') renderPositive(data);
+  else                          renderNegative(data);
 }
 
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
-}
-
-function autoCopyAndOpen(suggestion, googleUrl, feedbackId) {
-  // Step 1: auto-copy text to clipboard
-  navigator.clipboard.writeText(suggestion).then(() => {
-    // Mark step 1 done, step 2 active
-    document.getElementById('step1').className = 'step-item done';
-    document.getElementById('step2').className = 'step-item active';
-    showToast('✅ Avis copié dans le presse-papiers !');
-
-    // Step 2: open Google Maps after short delay
-    setTimeout(() => {
-      document.getElementById('step2').className = 'step-item done';
-      document.getElementById('step3').className = 'step-item active';
-
-      // Track + open
-      window.open(googleUrl, '_blank');
-      if (feedbackId) {
-        fetch('/api/track-google', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ feedback_id: feedbackId }),
-        }).catch(() => {});
-      }
-    }, 800);
-  }).catch(() => {
-    // Clipboard blocked (old browsers) — fallback: show copy button + open maps
-    showToast('📋 Copiez votre avis, puis collez-le sur Google Maps');
-    if (googleUrl) window.open(googleUrl, '_blank');
-  });
-}
-
+// ── Positive ──────────────────────────────────────────────────
 function renderPositive(data) {
   document.body.className = 'positive';
-  document.getElementById('mainIcon').textContent = '🎉';
-  document.getElementById('mainTitle').textContent = 'Merci beaucoup !';
-  document.getElementById('mainSub').textContent = 'Votre avis enrichi par l\'IA est prêt. Publiez-le sur Google Maps en un clic !';
+  const iconWrap = document.getElementById('mainIcon');
+  iconWrap.className = 'big-icon confetti-wrap';
+  iconWrap.textContent = '✅';
+  document.getElementById('mainTitle').textContent = t('thanks');
+  document.getElementById('mainSub').textContent   = t('sub');
 
-  let html = '';
+  const c = document.getElementById('mainContent');
+  c.innerHTML = `
 
-  if (data.suggestion) {
-    // SEO score badge (if score available)
-    if (data.seo_score != null && data.seo_score >= 60) {
-      const isExcellent = data.seo_score >= 80;
-      const cls = isExcellent ? 'excellent' : 'good';
-      const icon = isExcellent ? '🏆' : '⚡';
-      const title = isExcellent
-        ? `Score SEO : ${data.seo_score}/100 — Excellent pour Google !`
-        : `Score SEO : ${data.seo_score}/100 — Bon avis`;
-      const sub = isExcellent
-        ? 'Votre avis va maximiser la visibilité du médecin sur Google Maps'
-        : 'Votre avis aidera le médecin à être mieux référencé';
-      html += `
-      <div class="seo-badge ${cls}">
-        <div class="seo-badge-icon">${icon}</div>
-        <div class="seo-badge-text">
-          <div class="seo-badge-title">${title}</div>
-          <div class="seo-badge-sub">${sub}</div>
-          <div class="seo-score-bar"><div class="seo-score-fill" style="width:${data.seo_score}%"></div></div>
-        </div>
-      </div>`;
-    }
-
-    // Avis IA box (readonly, toujours visible)
-    html += `
-    <div class="suggestion-block">
-      <div class="suggestion-label">✨ Votre avis enrichi par l'IA :</div>
-      <div class="suggestion-text" id="suggText">${data.suggestion}</div>
-      <button class="copy-btn" id="copyBtn" onclick="copySuggestion()">📋 Copier manuellement</button>
-    </div>`;
-  }
-
-  if (data.google_url) {
-    // 3-step visual guide
-    html += `
-    <div class="steps-guide">
-      <div class="step-item active" id="step1">
-        <div class="step-num">1</div>
-        <div class="step-text">Votre avis est copié automatiquement
-          <small>Prêt à coller dans Google Maps</small>
-        </div>
-      </div>
-      <div class="step-item" id="step2">
-        <div class="step-num">2</div>
-        <div class="step-text">Google Maps s'ouvre
-          <small>La page de review du médecin apparaît</small>
-        </div>
-      </div>
-      <div class="step-item" id="step3">
-        <div class="step-num">3</div>
-        <div class="step-text">Collez et publiez
-          <small>Appui long → Coller → Envoyer ⭐⭐⭐⭐⭐</small>
-        </div>
+    <!-- ① Bloc CTA motivationnel Maps -->
+    <div class="maps-cta">
+      <div class="maps-cta-emoji">📍</div>
+      <div class="maps-cta-body">
+        <strong>${t('maps_cta_title')}</strong>
+        <p>${t('maps_cta_sub').replace('{nom}', formatDrName(doctorNom) || 'votre médecin')}</p>
       </div>
     </div>
 
-    <a class="google-btn" href="${data.google_url}"
-       onclick="event.preventDefault(); autoCopyAndOpen('${(data.suggestion||'').replace(/'/g,"\\'")}', '${data.google_url}', '${data.feedback_id||''}')">
-      <div class="g-icon">G</div>
-      Copier &amp; Publier sur Google Maps
-    </a>`;
-  } else {
-    html += `<div style="background:#f1f5f9;border-radius:12px;padding:14px;font-size:13px;color:#64748b;margin-bottom:12px">✅ Votre avis a bien été enregistré. Merci !</div>`;
+    <!-- Mini-steps ①②③ progression -->
+    <div class="mini-steps">
+      <div class="mini-step active" id="ms1">
+        <div class="mini-dot">1</div>
+        <div class="mini-step-lbl">${t('mini_copy')}</div>
+      </div>
+      <div class="mini-arrow">›</div>
+      <div class="mini-step" id="ms2">
+        <div class="mini-dot">2</div>
+        <div class="mini-step-lbl">${t('mini_open')}</div>
+      </div>
+      <div class="mini-arrow">›</div>
+      <div class="mini-step" id="ms3">
+        <div class="mini-dot">3</div>
+        <div class="mini-step-lbl">${t('mini_publish')}</div>
+      </div>
+    </div>
+
+    <!-- Label instruction + suggestion -->
+    <div class="copy-instr">
+      <span class="copy-instr-badge">1</span>
+      <span>${t('copy_instr')}</span>
+    </div>
+    <div class="suggestion-block">
+      <div class="suggestion-label">${t('suggestion_label')}</div>
+      <textarea id="suggestion-text">${escHtml(data.suggestion||'')}</textarea>
+    </div>
+
+    <div id="copy-status"></div>
+    <button id="btn-copy">${t('copy_btn')}</button>
+
+    <div id="guide-etapes">
+      <div class="guide-title">${t('guide_title')}</div>
+      <div class="guide-step"><span class="guide-num">①</span><span>${t('guide1')}</span></div>
+      <div class="guide-step"><span class="guide-num">②</span><span>⭐ ${t('guide2')}</span></div>
+      <div class="guide-step"><span class="guide-num">③</span><span>✅ ${t('guide3')}</span></div>
+    </div>
+
+    <div id="countdown-section">
+      <div class="countdown-label">${t('cd_label')}</div>
+      <div class="countdown-box">
+        <span class="countdown-number" id="countdown-number">10</span>
+        <span class="countdown-unit">${t('cd_unit')}</span>
+      </div>
+      <div class="action-btns">
+        <button id="btn-open-now">${t('open_now')}</button>
+        <button id="btn-cancel">${t('cancel')}</button>
+      </div>
+    </div>
+
+    <button id="btn-maps-fallback">${t('maps_fallback')}</button>
+    ${googleMapsUrl ? `<button class="skip-btn" id="btn-skip">${t('skip')}</button>` : ''}
+    <div class="thanks-note">${t('thanks_note')}</div>
+
+    <!-- Étape 4 : Remerciement (affiché après clic Google Maps) -->
+    <div id="etape-merci">
+      <div class="merci-anim">🎉</div>
+      <h1 class="merci-titre">${t('merci_titre')}</h1>
+      <p class="merci-msg">${t('merci_msg').replace('{nom}', cleanDrName(doctorNom) || 'votre médecin')}</p>
+      <div class="merci-card">
+        <span class="merci-card-icon">💚</span>
+        <p>${t('merci_card')}</p>
+      </div>
+      <div class="merci-badge">${t('merci_badge')}</div>
+    </div>
+  `;
+
+  // Auto-resize textarea : affiche tout le texte sans scroll
+  const sug = document.getElementById('suggestion-text');
+  if (sug) {
+    sug.style.height = 'auto';
+    sug.style.height = sug.scrollHeight + 'px';
+    sug.addEventListener('input', () => {
+      sug.style.height = 'auto';
+      sug.style.height = sug.scrollHeight + 'px';
+    });
   }
 
-  html += `<div class="thanks-note">Votre avis aide d'autres patients à trouver un bon médecin. Merci 🙏</div>`;
-  document.getElementById('mainContent').innerHTML = html;
+  if (!googleMapsUrl) {
+    document.getElementById('btn-copy').style.display = 'none';
+    const fb = document.getElementById('btn-maps-fallback');
+    fb.textContent = '✅ Avis enregistré';
+    fb.style.display = 'block';
+    fb.disabled = true;
+    fb.style.background = '#6b7280';
+    fb.style.boxShadow = 'none';
+    return;
+  }
 
-  // Auto-copy on page load if suggestion exists and Google URL is present
-  if (data.suggestion && data.google_url) {
-    setTimeout(() => {
-      navigator.clipboard.writeText(data.suggestion).then(() => {
-        if (document.getElementById('step1')) {
-          document.getElementById('step1').className = 'step-item done';
-          document.getElementById('step1').querySelector('.step-text').innerHTML =
-            '✅ Avis copié automatiquement<small>Prêt à coller sur Google Maps</small>';
-        }
-        showToast('✅ Avis copié — cliquez le bouton Google Maps !');
-      }).catch(() => {});
-    }, 600);
+  document.getElementById('btn-copy').addEventListener('click', handleCopy);
+  document.getElementById('btn-open-now').addEventListener('click', openMaps);
+  document.getElementById('btn-cancel').addEventListener('click', cancelCountdown);
+  document.getElementById('btn-maps-fallback').addEventListener('click', openMaps);
+  if (document.getElementById('btn-skip')) {
+    document.getElementById('btn-skip').addEventListener('click', cancelCountdown);
   }
 }
 
+// ── Copy handler (FIX 8 — countdown après copie) ──────────────
+async function handleCopy() {
+  const textarea = document.getElementById('suggestion-text');
+  const text = textarea.value || textarea.textContent || '';
+  let copied = false;
+  if (navigator.clipboard?.writeText) {
+    try { await navigator.clipboard.writeText(text); copied = true; } catch {}
+  }
+  if (!copied) {
+    try { textarea.select(); document.execCommand('copy'); copied = true; } catch {}
+  }
+  if (!copied) return;
+
+  const status = document.getElementById('copy-status');
+  status.textContent   = t('copied');
+  status.style.display = 'block';
+  document.getElementById('btn-copy').style.display = 'none';
+  document.getElementById('guide-etapes').style.display      = 'block';
+  document.getElementById('countdown-section').style.display = 'block';
+
+  // Mini-steps : 1 → done (✓), 2 → active
+  const ms1 = document.getElementById('ms1');
+  const ms2 = document.getElementById('ms2');
+  if (ms1) {
+    ms1.classList.remove('active'); ms1.classList.add('done');
+    const d1 = ms1.querySelector('.mini-dot'); if (d1) d1.textContent = '✓';
+  }
+  if (ms2) ms2.classList.add('active');
+
+  if (feedbackId) {
+    fetch('/api/track-copy', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ feedback_id: feedbackId }),
+    }).catch(()=>{});
+  }
+  setTimeout(startCountdown, 900);
+}
+
+// ── Countdown ─────────────────────────────────────────────────
+function startCountdown() {
+  countdownValue = 10;
+  document.getElementById('countdown-number').textContent = countdownValue;
+  countdownTimer = setInterval(() => {
+    countdownValue--;
+    document.getElementById('countdown-number').textContent = countdownValue;
+    if (countdownValue <= 0) { clearInterval(countdownTimer); openMaps(); }
+  }, 1000);
+}
+
+function cancelCountdown() {
+  clearInterval(countdownTimer);
+  document.getElementById('countdown-section').style.display = 'none';
+  document.getElementById('guide-etapes').style.display      = 'none';
+  document.getElementById('btn-maps-fallback').style.display = 'block';
+}
+
+// ── Open Maps (C1 — mobile-safe) ──────────────────────────────
+function openMaps() {
+  clearInterval(countdownTimer);
+
+  if (feedbackId) {
+    fetch('/api/track-google', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ feedback_id: feedbackId, doctor_id: doctorId }),
+    }).catch(()=>{});
+  }
+
+  // Mini-steps : 2 → done (✓), 3 → active
+  const ms2o = document.getElementById('ms2');
+  const ms3o = document.getElementById('ms3');
+  if (ms2o) {
+    ms2o.classList.remove('active'); ms2o.classList.add('done');
+    const d2 = ms2o.querySelector('.mini-dot'); if (d2) d2.textContent = '✓';
+  }
+  if (ms3o) ms3o.classList.add('active');
+
+  // Tentative window.open (desktop) + fallback window.location (mobile)
+  const opened = window.open(googleMapsUrl, '_blank');
+  if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+    // Popup bloqué (mobile) → même onglet
+    window.location.href = googleMapsUrl;
+  }
+
+  // Afficher l'étape 4 — remerciement après 1.5s
+  setTimeout(showMerci, 1500);
+}
+
+// ── Étape 4 : Remerciement (U1 + S1 confetti) ────────────────
+function showMerci() {
+  const merci = document.getElementById('etape-merci');
+  if (!merci) return;
+
+  // Cacher les sections précédentes, afficher merci
+  const toHide = ['countdown-section','guide-etapes','btn-copy','btn-maps-fallback','btn-skip','copy-status'];
+  toHide.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  merci.style.display = 'block';
+
+  // Scroll doux vers le haut
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Confetti léger (canvas-confetti — S1)
+  if (typeof confetti === 'function') {
+    setTimeout(() => confetti({
+      particleCount: 80, spread: 70,
+      origin: { y: 0.55 },
+      colors: ['#0D9488','#F0FDFA','#10B981','#ffffff','#22D3EE'],
+    }), 300);
+  }
+}
+
+// ── Negative ──────────────────────────────────────────────────
 function renderNegative(data) {
   document.body.className = 'negative';
-  document.getElementById('mainIcon').textContent = '🙏';
-  document.getElementById('mainTitle').textContent = 'Merci pour votre retour';
-  document.getElementById('mainSub').textContent = 'Nous prenons votre avis très au sérieux. Notre équipe va l\'examiner pour améliorer votre prochaine expérience.';
+  document.getElementById('mainIcon').textContent  = '🙏';
+  document.getElementById('mainTitle').textContent = t('neg_title');
+  document.getElementById('mainSub').textContent   = t('neg_sub');
 
-  let html = `
-  <div class="neg-block">
-    <h3>📞 Nous voulons arranger les choses</h3>
-    <p>Si vous souhaitez qu'on vous rappelle ou que quelqu'un s'occupe de votre situation personnellement, contactez-nous directement.</p>`;
-
+  let html = `<div class="neg-block"><h3>${t('neg_contact')}</h3><p>${escHtml(t('neg_sub'))}</p>`;
   if (data.wa_cabinet) {
-    html += `<a class="wa-btn" href="${data.wa_cabinet}" target="_blank" rel="noopener">
-      <span style="font-size:20px">💬</span> Contacter le cabinet sur WhatsApp
+    html += `<a class="wa-btn" href="${escHtml(data.wa_cabinet)}" target="_blank" rel="noopener">
+      <span style="font-size:20px">💬</span> ${t('neg_wa')}
     </a>`;
   }
-
   html += `</div>`;
-  html += `<div class="thanks-note">Votre confiance est importante pour nous. Merci de nous avoir aidés à nous améliorer. 🙏</div>`;
+  html += `<div class="confidential-note"><span class="icon">🔒</span><span>${t('neg_note')}</span></div>`;
+  // U3 — clôture chaleureuse
+  html += `<div class="neg-closure">
+    <span class="enc">${t('neg_closure_enc')}</span>
+    ${t('neg_closure_txt')}
+  </div>`;
+  html += `<div class="thanks-note" style="text-align:center;margin-top:14px">${t('thanks_note')}</div>`;
   document.getElementById('mainContent').innerHTML = html;
 }
 
-function copySuggestion() {
-  const text = document.getElementById('suggText').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✅ Copié !';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = '📋 Copier mon avis';
-      btn.classList.remove('copied');
-    }, 2500);
-  });
+// ── Util ──────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 init();
 </script>
+
+<!-- S1 — canvas-confetti (3 KB, chargé après init) -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
 </body>
 </html>

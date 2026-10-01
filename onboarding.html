@@ -4,204 +4,394 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Configuration — ReviewPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif;padding:20px}
-  .card{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:520px;box-shadow:0 25px 60px rgba(0,0,0,.35)}
-  .header{text-align:center;margin-bottom:32px}
-  .logo-icon{width:52px;height:52px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px}
-  .header h1{font-size:20px;font-weight:700;color:#0f172a}
-  .header p{font-size:13px;color:#64748b;margin-top:4px}
-  /* Steps */
-  .steps{display:flex;justify-content:center;gap:0;margin-bottom:32px}
-  .step{display:flex;flex-direction:column;align-items:center;position:relative;flex:1}
-  .step:not(:last-child)::after{content:'';position:absolute;top:16px;left:50%;width:100%;height:2px;background:#e2e8f0;z-index:0}
-  .step.done::after{background:#2563eb}
-  .step-circle{width:32px;height:32px;border-radius:50%;background:#e2e8f0;color:#64748b;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;position:relative;z-index:1;transition:.3s}
-  .step.active .step-circle{background:#2563eb;color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.2)}
-  .step.done .step-circle{background:#059669;color:#fff}
-  .step-label{font-size:10px;color:#94a3b8;margin-top:4px;text-align:center}
-  .step.active .step-label{color:#2563eb;font-weight:600}
-  /* Panels */
-  .panel{display:none}
-  .panel.active{display:block}
-  .form-group{margin-bottom:18px}
-  label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
-  .hint{font-size:11px;color:#94a3b8;margin-top:4px}
-  input,select,textarea{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#0f172a;transition:border-color .2s;outline:none;background:#fff}
-  input:focus,select:focus,textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-  textarea{resize:vertical;min-height:80px}
-  .chip-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-  .chip{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;transition:.2s;user-select:none}
-  .chip.selected{background:#eff6ff;border-color:#2563eb;color:#1d4ed8;font-weight:600}
-  .chip .x{color:#94a3b8;font-size:11px}
-  .chip-input{display:flex;gap:8px;margin-top:8px}
-  .chip-input input{flex:1}
-  .chip-input button{padding:0 16px;background:#2563eb;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap}
-  .btns{display:flex;gap:10px;margin-top:8px}
-  .btn-prev{flex:1;padding:12px;background:#f1f5f9;color:#374151;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
-  .btn-next{flex:2;padding:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
-  .btn-next:hover{opacity:.92}
-  .btn-next:disabled{opacity:.6;cursor:not-allowed}
-  .skip{text-align:center;margin-top:10px;font-size:12px;color:#94a3b8;cursor:pointer}
-  .skip a{color:#64748b;text-decoration:underline}
-  .error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .success-icon{font-size:56px;text-align:center;margin-bottom:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;min-height:100dvh;
+  background:#F0FDFA;
+  font-family:'Noto Sans',system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.container{width:100%;max-width:560px}
+
+/* Brand */
+.brand{text-align:center;margin-bottom:24px}
+.brand-logo{
+  width:56px;height:56px;border-radius:16px;margin:0 auto 12px;
+  background:linear-gradient(135deg,#0D9488,#22D3EE);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+.brand h1{font-size:24px;font-weight:800;color:#134E4A;letter-spacing:-.5px;font-family:'Figtree',system-ui,sans-serif}
+.brand p{font-size:13px;color:#64748B;margin-top:4px}
+
+/* Card */
+.card{
+  background:#fff;border-radius:20px;overflow:hidden;
+  border:1px solid #CCFBF1;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+}
+
+/* Card top — stepper */
+.card-top{background:linear-gradient(135deg,#0D9488,#0f766e);padding:24px 28px}
+
+/* Stepper */
+.connector-row{display:flex;align-items:flex-start;width:100%}
+.step-wrap{display:flex;flex-direction:column;align-items:center;flex:0 0 auto}
+.step-circle{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;transition:all .3s;
+  background:rgba(255,255,255,.15);color:rgba(255,255,255,.5);
+  border:2px solid rgba(255,255,255,.2);
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.step-label{
+  font-size:10px;font-weight:500;color:rgba(255,255,255,.45);
+  white-space:nowrap;text-align:center;margin-top:5px;
+  font-family:'Noto Sans',system-ui,sans-serif;
+}
+.step-connector{flex:1;height:2px;background:rgba(255,255,255,.15);margin:17px 6px 0;transition:background .4s}
+
+/* Progress bar */
+.progress-bar-wrap{margin-top:16px}
+.progress-bar-bg{background:rgba(255,255,255,.15);border-radius:4px;height:4px}
+.progress-bar-fill{height:4px;border-radius:4px;background:#22D3EE;transition:width .5s ease}
+
+/* Body */
+.card-body{padding:28px 32px 32px}
+
+/* Panel */
+.panel{display:none;animation:fadeUp .3s ease}
+.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.panel-title{font-size:17px;font-weight:700;color:#134E4A;margin-bottom:4px;font-family:'Figtree',system-ui,sans-serif}
+.panel-sub{font-size:13px;color:#64748B;margin-bottom:22px;line-height:1.5}
+
+/* Form */
+.form-group{margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+.hint{font-size:11px;color:#94A3B8;margin-top:5px;line-height:1.5}
+.hint a{color:#0D9488;text-decoration:none}
+.hint a:hover{text-decoration:underline}
+input[type="text"],input[type="url"],input[type="tel"],select,textarea{
+  width:100%;padding:12px 14px;border:2px solid #E2E8F0;border-radius:10px;
+  font-size:14px;color:#134E4A;transition:border-color .2s,box-shadow .2s;
+  outline:none;font-family:'Noto Sans',system-ui,sans-serif;background:#fff;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#0D9488;box-shadow:0 0 0 3px #0D948820;
+}
+input::placeholder,textarea::placeholder{color:#94A3B8}
+textarea{resize:vertical;min-height:84px;line-height:1.5}
+.select-wrap{position:relative}
+.select-wrap::after{
+  content:'';position:absolute;right:14px;top:50%;transform:translateY(-50%) rotate(45deg);
+  width:6px;height:6px;border-right:2px solid #64748B;border-bottom:2px solid #64748B;
+  pointer-events:none;
+}
+select{appearance:none;padding-right:36px;cursor:pointer}
+
+/* Chips */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#F0FDFA;border:1.5px solid #0D9488;color:#0D9488;
+  border-radius:20px;padding:5px 12px;font-size:13px;font-weight:500;cursor:default;
+  transition:.2s;user-select:none;
+}
+.chip .rm{
+  color:#5EEAD4;font-size:12px;line-height:1;margin-left:2px;
+  cursor:pointer;background:none;border:none;padding:0;transition:color .2s;
+}
+.chip .rm:hover{color:#DC2626}
+.chip-add{display:flex;gap:8px;margin-top:4px}
+.chip-add input{flex:1}
+.chip-add button{
+  padding:0 18px;background:#0D9488;
+  color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;
+  cursor:pointer;white-space:nowrap;transition:background .2s;
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.chip-add button:hover{background:#0f766e}
+
+/* Alert */
+.alert-error{
+  background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;
+  border-radius:8px;padding:11px 14px;font-size:13px;
+  margin-bottom:16px;display:none;align-items:center;gap:8px;
+}
+
+/* Buttons */
+.btn-row{display:flex;gap:10px;margin-top:8px}
+.btn-back{
+  flex:1;padding:13px;background:#F8FAFC;border:2px solid #E2E8F0;
+  color:#374151;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;
+  transition:background .2s;font-family:'Figtree',system-ui,sans-serif;
+}
+.btn-back:hover{background:#F1F5F9}
+.btn-next{
+  flex:2;padding:13px;
+  background:#0D9488;
+  color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.btn-next:hover{background:#0f766e;transform:translateY(-1px)}
+.btn-next:active{transform:translateY(0)}
+.btn-next:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-full{
+  width:100%;padding:14px;
+  background:#22C55E;
+  color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 6px rgba(0,0,0,.07);
+  margin-top:4px;font-family:'Figtree',system-ui,sans-serif;
+}
+.btn-full:hover{background:#16a34a;transform:translateY(-1px)}
+.btn-full:active{transform:translateY(0)}
+
+.skip-link{text-align:center;margin-top:12px;font-size:12px;color:#94A3B8}
+.skip-link a{color:#64748B;text-decoration:underline;cursor:pointer}
+
+/* Spinner */
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Success */
+.success-card{text-align:center;padding:8px 0}
+.success-icon{
+  width:72px;height:72px;border-radius:50%;margin:0 auto 18px;
+  background:#D1FAE5;border:1px solid #A7F3D0;
+  display:flex;align-items:center;justify-content:center;
+  animation:pop .6s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.success-title{font-size:22px;font-weight:800;color:#134E4A;margin-bottom:8px;font-family:'Figtree',system-ui,sans-serif}
+.success-sub{font-size:14px;color:#64748B;line-height:1.6;margin-bottom:24px}
+.link-box{
+  background:#F0FDFA;border:1.5px solid #CCFBF1;border-radius:12px;
+  padding:16px;margin-bottom:20px;text-align:left;
+}
+.link-box-label{font-size:11px;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.link-box-url{font-size:14px;font-weight:600;color:#0D9488;word-break:break-all}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.action-btn{
+  padding:12px 10px;border-radius:10px;border:none;cursor:pointer;
+  font-size:13px;font-weight:600;transition:all .2s;text-align:center;
+  font-family:'Figtree',system-ui,sans-serif;
+}
+.action-btn.secondary{background:#F0FDFA;color:#0D9488;border:1.5px solid #CCFBF1}
+.action-btn.secondary:hover{background:#CCFBF1}
+
+/* Responsive */
+@media(max-width:480px){
+  .card-body{padding:22px 20px 24px}
+  .card-top{padding:20px}
+}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
-    <div class="logo-icon">⭐</div>
-    <h1>Configuration de votre profil</h1>
-    <p>Quelques étapes pour lancer votre outil d'avis</p>
+<div class="container">
+  <!-- Brand -->
+  <div class="brand">
+    <div class="brand-logo">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </div>
+    <h1>ReviewPro</h1>
+    <p>Configuration de votre cabinet · 3 étapes rapides</p>
   </div>
 
-  <!-- Steps indicator -->
-  <div class="steps">
-    <div class="step active" id="s1"><div class="step-circle">1</div><div class="step-label">Profil</div></div>
-    <div class="step" id="s2"><div class="step-circle">2</div><div class="step-label">Liens</div></div>
-    <div class="step" id="s3"><div class="step-circle">3</div><div class="step-label">Chips</div></div>
-    <div class="step" id="s4"><div class="step-circle">4</div><div class="step-label">Terminé</div></div>
-  </div>
-
-  <div class="error" id="errMsg"></div>
-
-  <!-- Panel 1: Logo + Langue -->
-  <div class="panel active" id="p1">
-    <div class="form-group">
-      <label>Logo du cabinet (URL image)</label>
-      <input type="url" id="logo_url" placeholder="https://… (optionnel)">
-      <div class="hint">Lien vers votre photo ou logo. Laissez vide pour utiliser l'initiale.</div>
-    </div>
-    <div class="form-group">
-      <label>Langue par défaut du formulaire patient</label>
-      <select id="langue_defaut">
-        <option value="fr">Français</option>
-        <option value="ar">Arabe</option>
-        <option value="fr-ar">Français + Arabe (bilingue)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Phrase modèle pour les avis IA</label>
-      <textarea id="template_suggestion" rows="3" placeholder="Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}. Je recommande vivement."></textarea>
-      <div class="hint">Utilisez {nom}, {specialite}, {ville} comme variables.</div>
-    </div>
-    <div class="btns">
-      <button class="btn-next" onclick="goNext(1)">Suivant →</button>
-    </div>
-    <div class="skip"><a href="/dashboard">Passer et configurer plus tard</a></div>
-  </div>
-
-  <!-- Panel 2: Google Maps + WhatsApp -->
-  <div class="panel" id="p2">
-    <div class="form-group">
-      <label>Lien Google Maps (avis)</label>
-      <input type="url" id="google_maps_url" placeholder="https://g.page/r/…/review">
-      <div class="hint">Votre lien direct vers la page d'avis Google. <a href="https://search.google.com/local/writereview" target="_blank" style="color:#2563eb">Comment le trouver ?</a></div>
-    </div>
-    <div class="form-group">
-      <label>WhatsApp assistante (notifications)</label>
-      <input type="tel" id="whatsapp_assistante" placeholder="+212600000000">
-      <div class="hint">Les nouveaux avis négatifs seront notifiés sur ce numéro.</div>
-    </div>
-    <div class="form-group">
-      <label>Téléphone cabinet</label>
-      <input type="tel" id="telephone" placeholder="0522000000">
-    </div>
-    <div class="btns">
-      <button class="btn-prev" onclick="goPanel(1)">← Retour</button>
-      <button class="btn-next" onclick="goNext(2)">Suivant →</button>
-    </div>
-    <div class="skip"><a href="/dashboard">Passer</a></div>
-  </div>
-
-  <!-- Panel 3: Chips positifs -->
-  <div class="panel" id="p3">
-    <div class="form-group">
-      <label>Points forts à afficher aux patients</label>
-      <div class="hint" style="margin-bottom:8px">Cliquez pour désélectionner. Ces points apparaissent dans le formulaire.</div>
-      <div class="chip-wrap" id="chipsWrap"></div>
-      <div class="chip-input">
-        <input type="text" id="newChip" placeholder="Ajouter un point…" maxlength="30">
-        <button onclick="addChip()">+ Ajouter</button>
+  <div class="card">
+    <!-- Stepper header -->
+    <div class="card-top">
+      <div class="connector-row" id="stepper">
+        <div class="step-wrap"><div class="step-circle step-c" id="sc1">1</div><div class="step-label step-l" id="sl1">Profil</div></div>
+        <div class="step-connector" id="cn1"></div>
+        <div class="step-wrap"><div class="step-circle step-c" id="sc2">2</div><div class="step-label step-l" id="sl2">Liens</div></div>
+        <div class="step-connector" id="cn2"></div>
+        <div class="step-wrap"><div class="step-circle step-c" id="sc3">3</div><div class="step-label step-l" id="sl3">Points forts</div></div>
+        <div class="step-connector" id="cn3"></div>
+        <div class="step-wrap"><div class="step-circle step-c" id="sc4">4</div><div class="step-label step-l" id="sl4">Terminé</div></div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:25%"></div></div>
       </div>
     </div>
-    <div class="form-group">
-      <label>Mots-clés SEO positifs</label>
-      <input type="text" id="vocabulaire_positif" placeholder="professionnel, recommande, excellent">
-      <div class="hint">Séparés par des virgules. L'IA les intègre dans les avis enrichis.</div>
-    </div>
-    <div class="btns">
-      <button class="btn-prev" onclick="goPanel(2)">← Retour</button>
-      <button class="btn-next" id="saveBtn" onclick="saveOnboarding()">Terminer →</button>
-    </div>
-  </div>
 
-  <!-- Panel 4: Success -->
-  <div class="panel" id="p4">
-    <div class="success-icon">🎉</div>
-    <h2 style="text-align:center;font-size:20px;color:#0f172a;margin-bottom:8px">Votre profil est prêt !</h2>
-    <p style="text-align:center;font-size:14px;color:#64748b;margin-bottom:24px">Partagez votre lien ou imprimez votre QR code pour collecter vos premiers avis.</p>
-    <div style="background:#f8fafc;border-radius:12px;padding:16px;text-align:center;margin-bottom:20px">
-      <div style="font-size:12px;color:#64748b;margin-bottom:6px">Votre lien patient</div>
-      <div style="font-size:14px;font-weight:600;color:#2563eb" id="patientLink">—</div>
+    <div class="card-body">
+      <div class="alert-error" id="alertError">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="alertMsg"></span>
+      </div>
+
+      <!-- Panel 1: Profil -->
+      <div class="panel active" id="p1">
+        <div class="panel-title">Profil du cabinet</div>
+        <div class="panel-sub">Personnalisez l'apparence de votre formulaire patient.</div>
+        <div class="form-group">
+          <label for="logo_url">Logo (URL image) <span style="font-weight:400;color:#94A3B8">· optionnel</span></label>
+          <input type="url" id="logo_url" placeholder="https://votre-site.com/logo.png">
+          <div class="hint">Lien vers votre photo ou logo. Sans logo, l'initiale sera utilisée.</div>
+        </div>
+        <div class="form-group">
+          <label for="langue_defaut">Langue du formulaire patient</label>
+          <div class="select-wrap">
+            <select id="langue_defaut">
+              <option value="fr">Français</option>
+              <option value="ar">Arabe (العربية)</option>
+            </select>
+          </div>
+          <div class="hint">Le patient peut toujours changer la langue sur le formulaire.</div>
+        </div>
+        <div class="form-group">
+          <label for="template_suggestion">Phrase modèle pour les avis</label>
+          <textarea id="template_suggestion" rows="3" placeholder="Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}. Je recommande vivement."></textarea>
+          <div class="hint">Variables disponibles : <strong>{nom}</strong>, <strong>{specialite}</strong>, <strong>{ville}</strong></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-next" style="flex:1" onclick="goNext(1)">Suivant →</button>
+        </div>
+        <div class="skip-link"><a href="/dashboard">Passer et configurer plus tard</a></div>
+      </div>
+
+      <!-- Panel 2: Liens -->
+      <div class="panel" id="p2">
+        <div class="panel-title">Liens importants</div>
+        <div class="panel-sub">Ces liens permettent d'orienter vos patients satisfaits vers Google Maps et de vous notifier des avis négatifs.</div>
+        <div class="form-group">
+          <label for="google_maps_url">Lien Google Maps (avis) <span style="font-weight:400;color:#94A3B8">· recommandé</span></label>
+          <input type="url" id="google_maps_url" placeholder="https://g.page/r/…/review">
+          <div class="hint">Lien direct vers votre page d'avis Google. <a href="https://search.google.com/local/writereview" target="_blank">Comment le trouver ?</a></div>
+        </div>
+        <div class="form-group">
+          <label for="whatsapp_assistante">WhatsApp pour les alertes</label>
+          <input type="tel" id="whatsapp_assistante" placeholder="+212 6XX XXX XXX">
+          <div class="hint">Vous recevrez une notification WhatsApp pour chaque avis négatif.</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goPanel(1)">← Retour</button>
+          <button class="btn-next" onclick="goNext(2)">Suivant →</button>
+        </div>
+        <div class="skip-link"><a href="/dashboard">Passer</a></div>
+      </div>
+
+      <!-- Panel 3: Chips -->
+      <div class="panel" id="p3">
+        <div class="panel-title">Points forts de votre cabinet</div>
+        <div class="panel-sub">Ces points apparaissent dans le formulaire patient (avis ≥ 4 étoiles). Cliquez sur ✕ pour retirer.</div>
+        <div class="form-group">
+          <div class="chips-wrap" id="chipsWrap"></div>
+          <div class="chip-add">
+            <input type="text" id="newChip" placeholder="Ajouter un point fort…" maxlength="30">
+            <button onclick="addChip()">+ Ajouter</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="vocabulaire_positif">Mots-clés pour les avis IA</label>
+          <input type="text" id="vocabulaire_positif" placeholder="professionnel, recommande, excellent, qualité">
+          <div class="hint">Séparés par des virgules. Intégrés automatiquement dans les avis générés.</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goPanel(2)">← Retour</button>
+          <button class="btn-next" id="saveBtn" onclick="saveOnboarding()">Terminer</button>
+        </div>
+      </div>
+
+      <!-- Panel 4: Success -->
+      <div class="panel" id="p4">
+        <div class="success-card">
+          <div class="success-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="success-title">Votre cabinet est prêt !</div>
+          <div class="success-sub">Partagez votre lien ou imprimez votre QR Code pour collecter vos premiers avis patients dès aujourd'hui.</div>
+          <div class="link-box">
+            <div class="link-box-label">Votre lien patient</div>
+            <div class="link-box-url" id="patientLink">—</div>
+          </div>
+          <div class="action-grid">
+            <button class="action-btn secondary" onclick="copyLink()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copier le lien
+            </button>
+            <button class="action-btn secondary" onclick="window.location.href='/qr'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/></svg>
+              QR Code
+            </button>
+          </div>
+          <button class="btn-full" onclick="window.location.href='/dashboard'">Accéder au tableau de bord →</button>
+        </div>
+      </div>
     </div>
-    <button class="btn-next" style="width:100%;padding:13px" onclick="window.location.href='/dashboard'">Accéder au tableau de bord →</button>
   </div>
 </div>
 
 <script>
 const defaultChips = ['Accueil','Professionnalisme','Explications','Temps d\'attente','Propreté','Écoute'];
 let selectedChips = [...defaultChips];
+let patientLinkUrl = '';
 
 function renderChips() {
   const wrap = document.getElementById('chipsWrap');
   wrap.innerHTML = '';
   selectedChips.forEach((c, i) => {
     const el = document.createElement('div');
-    el.className = 'chip selected';
-    el.innerHTML = `${c} <span class="x" onclick="removeChip(${i})">✕</span>`;
+    el.className = 'chip';
+    el.innerHTML = `${c} <button class="rm" onclick="removeChip(${i})" aria-label="Retirer">✕</button>`;
     wrap.appendChild(el);
   });
 }
-
-function removeChip(i) {
-  selectedChips.splice(i, 1);
-  renderChips();
-}
-
+function removeChip(i) { selectedChips.splice(i,1); renderChips(); }
 function addChip() {
   const val = document.getElementById('newChip').value.trim();
-  if (val && !selectedChips.includes(val)) {
-    selectedChips.push(val);
-    renderChips();
-    document.getElementById('newChip').value = '';
-  }
+  if (val && !selectedChips.includes(val)) { selectedChips.push(val); renderChips(); }
+  document.getElementById('newChip').value = '';
 }
-
-document.getElementById('newChip').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') { e.preventDefault(); addChip(); }
-});
-
+document.getElementById('newChip').addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();addChip();} });
 renderChips();
 
 function goPanel(n) {
-  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i === n-1));
-  document.querySelectorAll('.step').forEach((s,i) => {
-    s.classList.remove('active','done');
-    if (i < n-1) s.classList.add('done');
-    else if (i === n-1) s.classList.add('active');
-  });
-  document.getElementById('errMsg').style.display = 'none';
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n-1));
+  updateStepper(n);
+  document.getElementById('alertError').style.display = 'none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateStepper(current) {
+  const pct = {1:25,2:50,3:75,4:100};
+  document.getElementById('progressFill').style.width = (pct[current]||25) + '%';
+  for(let i=1;i<=4;i++){
+    const c = document.getElementById('sc'+i);
+    const l = document.getElementById('sl'+i);
+    if (i < current) {
+      c.style.cssText = 'background:#22C55E;color:#fff;border-color:#22C55E;box-shadow:none';
+      c.textContent = '✓';
+      l.style.color = 'rgba(255,255,255,.8)';
+    } else if (i === current) {
+      c.style.cssText = 'background:#fff;color:#0D9488;border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25)';
+      c.textContent = i;
+      l.style.color = '#fff';
+    } else {
+      c.style.cssText = 'background:rgba(255,255,255,.12);color:rgba(255,255,255,.4);border-color:rgba(255,255,255,.15);box-shadow:none';
+      c.textContent = i;
+      l.style.color = 'rgba(255,255,255,.35)';
+    }
+    if(i<4){
+      const cn = document.getElementById('cn'+i);
+      cn.style.background = i < current ? '#22C55E' : 'rgba(255,255,255,.15)';
+    }
+  }
 }
 
 function goNext(current) {
   if (current === 1) {
-    const tmpl = document.getElementById('template_suggestion').value.trim();
-    if (!tmpl) {
+    if (!document.getElementById('template_suggestion').value.trim()) {
       document.getElementById('template_suggestion').value = 'Très bon accueil. Dr {nom} est un excellent {specialite} à {ville}. Je recommande vivement.';
     }
   }
@@ -210,53 +400,57 @@ function goNext(current) {
 
 async function saveOnboarding() {
   const btn = document.getElementById('saveBtn');
-  const errMsg = document.getElementById('errMsg');
-  errMsg.style.display = 'none';
+  const alertEl = document.getElementById('alertError');
+  alertEl.style.display = 'none';
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Enregistrement…';
 
   const vocab = document.getElementById('vocabulaire_positif').value.trim()
-    .split(',').map(v => v.trim()).filter(Boolean);
+    .split(',').map(v=>v.trim()).filter(Boolean);
 
   const payload = {
-    logo_url: document.getElementById('logo_url').value.trim(),
-    langue_defaut: document.getElementById('langue_defaut').value,
+    logo_url:            document.getElementById('logo_url').value.trim(),
+    langue_defaut:       document.getElementById('langue_defaut').value,
     template_suggestion: document.getElementById('template_suggestion').value.trim(),
-    google_maps_url: document.getElementById('google_maps_url').value.trim(),
+    google_maps_url:     document.getElementById('google_maps_url').value.trim(),
     whatsapp_assistante: document.getElementById('whatsapp_assistante').value.trim(),
-    telephone: document.getElementById('telephone').value.trim(),
-    chips_positifs: selectedChips,
-    vocabulaire_positif: vocab
+    chips_positifs:      selectedChips,
+    vocabulaire_positif: vocab,
   };
 
   try {
     const res = await fetch('/api/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (data.ok) {
       if (data.slug) {
-        document.getElementById('patientLink').textContent =
-          `${window.location.origin}/form/${data.slug}`;
+        patientLinkUrl = `${window.location.origin}/form/${data.slug}`;
+        document.getElementById('patientLink').textContent = patientLinkUrl;
       }
       goPanel(4);
-      document.querySelector('#s4 .step-circle').textContent = '✓';
-      document.getElementById('s4').classList.add('done');
     } else {
-      errMsg.textContent = data.error || 'Erreur lors de la sauvegarde.';
-      errMsg.style.display = 'block';
+      document.getElementById('alertMsg').textContent = data.error || 'Erreur lors de la sauvegarde.';
+      alertEl.style.display = 'flex';
       btn.disabled = false;
-      btn.innerHTML = 'Terminer →';
+      btn.innerHTML = 'Terminer';
     }
-  } catch(err) {
-    errMsg.textContent = 'Erreur réseau. Réessayez.';
-    errMsg.style.display = 'block';
+  } catch {
+    document.getElementById('alertMsg').textContent = 'Erreur réseau. Réessayez.';
+    alertEl.style.display = 'flex';
     btn.disabled = false;
-    btn.innerHTML = 'Terminer →';
+    btn.innerHTML = 'Terminer';
   }
 }
+
+function copyLink() {
+  if (!patientLinkUrl) return;
+  navigator.clipboard?.writeText(patientLinkUrl).catch(()=>{});
+}
+
+// Init stepper
+updateStepper(1);
 </script>
 </body>
 </html>

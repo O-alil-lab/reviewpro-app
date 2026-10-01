@@ -29,11 +29,6 @@
     "binding": "AI"
   },
 
-  // Super-admin credentials
-  "vars": {
-    "ADMIN_EMAIL": "oussama-alilou@um5r.ac.ma",
-    "ADMIN_WA": "+212605932376",
-    "ADMIN_SECRET": "reviewpro-admin-2026",
-    "BASE_URL": "https://reviewpro-saas.pages.dev"
-  }
+  // vars defined in Cloudflare dashboard (not here to avoid conflict)
+  "vars": {}
 }
